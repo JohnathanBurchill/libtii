@@ -88,7 +88,27 @@ int main(int argc, char **argv)
         goto cleanup;
     }
 
-    // From http://www.xmlsoft.org/examples/xpath1.c
+    // get DBL filename and check that we can open it.
+    
+    // Set file offset to read full image packets
+
+    // Read all bytes
+
+    // Set file offset to read full image continued packets
+
+    // Read all bytes
+
+    // Confirm bytes read is what was expected
+
+
+    // Loop through the images and print the image data
+    // print voltages and other settings
+    // Make png files with text overlays
+    // Get the ion admittance from LP&TII packets and convert to density
+    // Get config packet info as needed.
+
+
+
 
 cleanup:
 
