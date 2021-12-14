@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Earth_Explorer_Header>
+   <Fixed_Header>
+      <File_Name>SW_OPER_EFIATIC_0__20211207T211752_20211208T005254_0201</File_Name>
+      <File_Description>EFI TII Calibration Mode Data Level 0 Product</File_Description>
+      <Notes></Notes>
+      <Mission>Swarm</Mission>
+      <File_Class>OPER</File_Class>
+      <File_Type>EFIATIC_0_</File_Type>
+      <Validity_Period>
+         <Validity_Start>UTC=2021-12-07T21:17:52</Validity_Start>
+         <Validity_Stop>UTC=2021-12-08T00:52:54</Validity_Stop>
+      </Validity_Period>
+      <File_Version>0201</File_Version>
+      <Source>
+         <System>APDF</System>
+         <Creator>L0_Processor</Creator>
+         <Creator_Version>01.09</Creator_Version>
+         <Creation_Date>UTC=2021-12-13T08:54:12</Creation_Date>
+      </Source>
+   </Fixed_Header>
+   <Variable_Header>
+      <MPH>
+         <Product>SW_OPER_EFIATIC_0__20211207T211752_20211208T005254_0201</Product>
+         <Proc_Stage_Code>OPER</Proc_Stage_Code>
+         <Ref_Doc>SWARM-GSEG-EOPG-05-001</Ref_Doc>
+         <Acquisition_Station>KSS</Acquisition_Station>
+         <Proc_Center>SWAPDF</Proc_Center>
+         <Proc_Time>UTC=2021-12-13T08:54:12.118079</Proc_Time>
+         <Software_Version>KSPT L0GF/01.09</Software_Version>
+         <Abs_Orbit_Start>045238</Abs_Orbit_Start>
+         <Abs_Orbit_Stop>045241</Abs_Orbit_Stop>
+         <State_Vector_Time>UTC=2021-12-07T19:57:06.315220</State_Vector_Time>
+         <Delta_UT1 unit="s">+.106765</Delta_UT1>
+         <X_Position unit="m">+0995309.188</X_Position>
+         <Y_Position unit="m">-6735122.500</Y_Position>
+         <Z_Position unit="m">+0005771.385</Z_Position>
+         <X_Velocity unit="m/s">-0144.786377</X_Velocity>
+         <Y_Velocity unit="m/s">-0003.283276</Y_Velocity>
+         <Z_Velocity unit="m/s">+7645.277832</Z_Velocity>
+         <State_Vector_Source>FP</State_Vector_Source>
+         <Product_Err>0</Product_Err>
+         <Tot_Size unit="bytes">000000000000026984920</Tot_Size>
+      </MPH>
+      <SPH>
+         <SPH_Descriptor>EFI TII Calibration Mode Data SPECIFIC HEADER</SPH_Descriptor>
+         <Sensing_Start>UTC=2021-12-07T21:17:52.000000</Sensing_Start>
+         <Sensing_Stop>UTC=2021-12-08T00:52:54.000000</Sensing_Stop>
+         <Rel_Time_ASC_Node_Start unit="s">4846.439711</Rel_Time_ASC_Node_Start>
+         <Rel_Time_ASC_Node_Stop unit="s">0976.193098</Rel_Time_ASC_Node_Stop>
+         <ABS_Orbit_Start>045238</ABS_Orbit_Start>
+         <ABS_Orbit_Stop>045241</ABS_Orbit_Stop>
+         <Abs_Time_ASC_Node_Start>UTC=2021-12-07T19:57:05.560326</Abs_Time_ASC_Node_Start>
+         <Abs_Time_ASC_Node_Stop>UTC=2021-12-08T00:36:37.806902</Abs_Time_ASC_Node_Stop>
+         <Ascending_Flag>A</Ascending_Flag>
+         <Product_Location>
+            <Downlink_Start_UTC>UTC=2021-12-08T00:53:14.000000</Downlink_Start_UTC>
+            <Downlink_Stop_UTC>UTC=2021-12-08T01:12:25.000000</Downlink_Stop_UTC>
+            <Downlink_Orbit>045241</Downlink_Orbit>
+         </Product_Location>
+         <Product_Confidence_Data>
+            <Num_ISPs>0019358</Num_ISPs>
+            <Num_Missing_ISPs>0000000</Num_Missing_ISPs>
+            <Num_Discarded_ISPs>0000000</Num_Discarded_ISPs>
+         </Product_Confidence_Data>
+         <List_of_DSDs count="5">
+            <DSD>
+               <Data_Set_Name>EFI TII Full Image Packet - TII-Calibration Mode</Data_Set_Name>
+               <Data_Set_Type>M</Data_Set_Type>
+               <File_Name></File_Name>
+               <Data_Set_Offset unit="bytes">-00000000000000000000</Data_Set_Offset>
+               <Data_Set_Size unit="bytes">+00000000000013351008</Data_Set_Size>
+               <Num_of_Records>+0000006456</Num_of_Records>
+               <Record_Size unit="bytes">+0000002068</Record_Size>
+               <Byte_Order>3210</Byte_Order>
+            </DSD>
+            <DSD>
+               <Data_Set_Name>EFI Configuration Packet - TII-Calibration Mode</Data_Set_Name>
+               <Data_Set_Type>M</Data_Set_Type>
+               <File_Name></File_Name>
+               <Data_Set_Offset unit="bytes">+00000000000013351008</Data_Set_Offset>
+               <Data_Set_Size unit="bytes">+00000000000000747736</Data_Set_Size>
+               <Num_of_Records>+0000006446</Num_of_Records>
+               <Record_Size unit="bytes">+0000000116</Record_Size>
+               <Byte_Order>3210</Byte_Order>
+            </DSD>
+            <DSD>
+               <Data_Set_Name>EFI TII Full Image Cont-d Packet - TII-Calibration Mode</Data_Set_Name>
+               <Data_Set_Type>M</Data_Set_Type>
+               <File_Name></File_Name>
+               <Data_Set_Offset unit="bytes">+00000000000014098744</Data_Set_Offset>
+               <Data_Set_Size unit="bytes">+00000000000012886176</Data_Set_Size>
+               <Num_of_Records>+0000006456</Num_of_Records>
+               <Record_Size unit="bytes">+0000001996</Record_Size>
+               <Byte_Order>3210</Byte_Order>
+            </DSD>
+            <DSD>
+               <Data_Set_Name>RECORDED_TELEMETRY_FILE</Data_Set_Name>
+               <Data_Set_Type>R</Data_Set_Type>
+               <File_Name>SW_OPER_TMA_VC4KIR_20211208T005314_20211208T011225_0001</File_Name>
+               <Data_Set_Offset unit="bytes">+00000000000000000000</Data_Set_Offset>
+               <Data_Set_Size unit="bytes">+00000000000000000000</Data_Set_Size>
+               <Num_of_Records>+0000000000</Num_of_Records>
+               <Record_Size unit="bytes">+0000000000</Record_Size>
+               <Byte_Order></Byte_Order>
+            </DSD>
+            <DSD>
+               <Data_Set_Name>ORBIT_STATE_VECTOR_FILE</Data_Set_Name>
+               <Data_Set_Type>R</Data_Set_Type>
+               <File_Name>SW_OPER_MPLAORBPRE_20211204T000000_20220108T000000_2933</File_Name>
+               <Data_Set_Offset unit="bytes">+00000000000000000000</Data_Set_Offset>
+               <Data_Set_Size unit="bytes">+00000000000000000000</Data_Set_Size>
+               <Num_of_Records>+0000000000</Num_of_Records>
+               <Record_Size unit="bytes">+0000000000</Record_Size>
+               <Byte_Order></Byte_Order>
+            </DSD>
+         </List_of_DSDs>
+      </SPH>
+   </Variable_Header>
+</Earth_Explorer_Header>

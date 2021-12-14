@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Earth_Explorer_Header>
+   <Fixed_Header>
+      <File_Name>SW_OPER_EFIANOM_0__20211213T003621_20211213T125320_0201</File_Name>
+      <File_Description>EFI Normal Mode Data Level 0 Product</File_Description>
+      <Notes></Notes>
+      <Mission>Swarm</Mission>
+      <File_Class>OPER</File_Class>
+      <File_Type>EFIANOM_0_</File_Type>
+      <Validity_Period>
+         <Validity_Start>UTC=2021-12-13T00:36:21</Validity_Start>
+         <Validity_Stop>UTC=2021-12-13T12:53:20</Validity_Stop>
+      </Validity_Period>
+      <File_Version>0201</File_Version>
+      <Source>
+         <System>APDF</System>
+         <Creator>L0_Processor</Creator>
+         <Creator_Version>01.09</Creator_Version>
+         <Creation_Date>UTC=2021-12-13T13:32:31</Creation_Date>
+      </Source>
+   </Fixed_Header>
+   <Variable_Header>
+      <MPH>
+         <Product>SW_OPER_EFIANOM_0__20211213T003621_20211213T125320_0201</Product>
+         <Proc_Stage_Code>OPER</Proc_Stage_Code>
+         <Ref_Doc>SWARM-GSEG-EOPG-05-001</Ref_Doc>
+         <Acquisition_Station>SGS</Acquisition_Station>
+         <Proc_Center>SWAPDF</Proc_Center>
+         <Proc_Time>UTC=2021-12-13T13:32:30.800121</Proc_Time>
+         <Software_Version>KSPT L0GF/01.09</Software_Version>
+         <Abs_Orbit_Start>045318</Abs_Orbit_Start>
+         <Abs_Orbit_Stop>045326</Abs_Orbit_Stop>
+         <State_Vector_Time>UTC=2021-12-13T00:11:19.306311</State_Vector_Time>
+         <Delta_UT1 unit="s">+.107550</Delta_UT1>
+         <X_Position unit="m">-6018742.500</X_Position>
+         <Y_Position unit="m">-3181223.750</Y_Position>
+         <Z_Position unit="m">+0005342.113</Z_Position>
+         <X_Velocity unit="m/s">-0051.919693</X_Velocity>
+         <Y_Velocity unit="m/s">+0135.306580</Y_Velocity>
+         <Z_Velocity unit="m/s">+7645.819824</Z_Velocity>
+         <State_Vector_Source>FP</State_Vector_Source>
+         <Product_Err>0</Product_Err>
+         <Tot_Size unit="bytes">000000000000034992760</Tot_Size>
+      </MPH>
+      <SPH>
+         <SPH_Descriptor>EFI Normal Mode Data SPECIFIC HEADER</SPH_Descriptor>
+         <Sensing_Start>UTC=2021-12-13T00:36:21.000000</Sensing_Start>
+         <Sensing_Stop>UTC=2021-12-13T12:53:20.000000</Sensing_Stop>
+         <Rel_Time_ASC_Node_Start unit="s">1502.392383</Rel_Time_ASC_Node_Start>
+         <Rel_Time_ASC_Node_Stop unit="s">0996.605034</Rel_Time_ASC_Node_Stop>
+         <ABS_Orbit_Start>045318</ABS_Orbit_Start>
+         <ABS_Orbit_Stop>045326</ABS_Orbit_Stop>
+         <Abs_Time_ASC_Node_Start>UTC=2021-12-13T00:11:18.607615</Abs_Time_ASC_Node_Start>
+         <Abs_Time_ASC_Node_Stop>UTC=2021-12-13T12:36:43.394966</Abs_Time_ASC_Node_Stop>
+         <Ascending_Flag>D</Ascending_Flag>
+         <Product_Location>
+            <Downlink_Start_UTC>UTC=2021-12-13T12:53:27.000000</Downlink_Start_UTC>
+            <Downlink_Stop_UTC>UTC=2021-12-13T12:57:37.000000</Downlink_Stop_UTC>
+            <Downlink_Orbit>045326</Downlink_Orbit>
+         </Product_Location>
+         <Product_Confidence_Data>
+            <Num_ISPs>0046164</Num_ISPs>
+            <Num_Missing_ISPs>0000000</Num_Missing_ISPs>
+            <Num_Discarded_ISPs>0000000</Num_Discarded_ISPs>
+         </Product_Confidence_Data>
+         <List_of_DSDs count="8">
+            <DSD>
+               <Data_Set_Name>EFI LP Sweep Packet - Normal Mode</Data_Set_Name>
+               <Data_Set_Type>M</Data_Set_Type>
+               <File_Name></File_Name>
+               <Data_Set_Offset unit="bytes">-00000000000000000000</Data_Set_Offset>
+               <Data_Set_Size unit="bytes">+00000000000000380044</Data_Set_Size>
+               <Num_of_Records>+0000000343</Num_of_Records>
+               <Record_Size unit="bytes">+0000001108</Record_Size>
+               <Byte_Order>3210</Byte_Order>
+            </DSD>
+            <DSD>
+               <Data_Set_Name>EFI TII Full Image Packet - Normal Mode</Data_Set_Name>
+               <Data_Set_Type>M</Data_Set_Type>
+               <File_Name></File_Name>
+               <Data_Set_Offset unit="bytes">+00000000000000380044</Data_Set_Offset>
+               <Data_Set_Size unit="bytes">+00000000000001302840</Data_Set_Size>
+               <Num_of_Records>+0000000630</Num_of_Records>
+               <Record_Size unit="bytes">+0000002068</Record_Size>
+               <Byte_Order>3210</Byte_Order>
+            </DSD>
+            <DSD>
+               <Data_Set_Name>EFI LP and TII Science Data - Normal Mode</Data_Set_Name>
+               <Data_Set_Type>M</Data_Set_Type>
+               <File_Name></File_Name>
+               <Data_Set_Offset unit="bytes">+00000000000001682884</Data_Set_Offset>
+               <Data_Set_Size unit="bytes">+00000000000032010936</Data_Set_Size>
+               <Num_of_Records>+0000044214</Num_of_Records>
+               <Record_Size unit="bytes">+0000000724</Record_Size>
+               <Byte_Order>3210</Byte_Order>
+            </DSD>
+            <DSD>
+               <Data_Set_Name>EFI Configuration Packet - Normal Mode</Data_Set_Name>
+               <Data_Set_Type>M</Data_Set_Type>
+               <File_Name></File_Name>
+               <Data_Set_Offset unit="bytes">+00000000000033693820</Data_Set_Offset>
+               <Data_Set_Size unit="bytes">+00000000000000040020</Data_Set_Size>
+               <Num_of_Records>+0000000345</Num_of_Records>
+               <Record_Size unit="bytes">+0000000116</Record_Size>
+               <Byte_Order>3210</Byte_Order>
+            </DSD>
+            <DSD>
+               <Data_Set_Name>EFI TII Full Image Cont'd Packet - Normal Mode</Data_Set_Name>
+               <Data_Set_Type>M</Data_Set_Type>
+               <File_Name></File_Name>
+               <Data_Set_Offset unit="bytes">+00000000000033733840</Data_Set_Offset>
+               <Data_Set_Size unit="bytes">+00000000000001257480</Data_Set_Size>
+               <Num_of_Records>+0000000630</Num_of_Records>
+               <Record_Size unit="bytes">+0000001996</Record_Size>
+               <Byte_Order>3210</Byte_Order>
+            </DSD>
+            <DSD>
+               <Data_Set_Name>EFI LP Offset Packet - Normal Mode</Data_Set_Name>
+               <Data_Set_Type>M</Data_Set_Type>
+               <File_Name></File_Name>
+               <Data_Set_Offset unit="bytes">+00000000000034991320</Data_Set_Offset>
+               <Data_Set_Size unit="bytes">+00000000000000001440</Data_Set_Size>
+               <Num_of_Records>+0000000002</Num_of_Records>
+               <Record_Size unit="bytes">+0000000720</Record_Size>
+               <Byte_Order>3210</Byte_Order>
+            </DSD>
+            <DSD>
+               <Data_Set_Name>RECORDED_TELEMETRY_FILE</Data_Set_Name>
+               <Data_Set_Type>R</Data_Set_Type>
+               <File_Name>SW_OPER_TMA_VC4SVA_20211213T125327_20211213T125737_0001</File_Name>
+               <Data_Set_Offset unit="bytes">+00000000000000000000</Data_Set_Offset>
+               <Data_Set_Size unit="bytes">+00000000000000000000</Data_Set_Size>
+               <Num_of_Records>+0000000000</Num_of_Records>
+               <Record_Size unit="bytes">+0000000000</Record_Size>
+               <Byte_Order></Byte_Order>
+            </DSD>
+            <DSD>
+               <Data_Set_Name>ORBIT_STATE_VECTOR_FILE</Data_Set_Name>
+               <Data_Set_Type>R</Data_Set_Type>
+               <File_Name>SW_OPER_MPLAORBPRE_20211209T000000_20220113T000000_2938</File_Name>
+               <Data_Set_Offset unit="bytes">+00000000000000000000</Data_Set_Offset>
+               <Data_Set_Size unit="bytes">+00000000000000000000</Data_Set_Size>
+               <Num_of_Records>+0000000000</Num_of_Records>
+               <Record_Size unit="bytes">+0000000000</Record_Size>
+               <Byte_Order></Byte_Order>
+            </DSD>
+         </List_of_DSDs>
+      </SPH>
+   </Variable_Header>
+</Earth_Explorer_Header>
