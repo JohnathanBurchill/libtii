@@ -1,7 +1,0 @@
-[
-{
-  "directory": "/Users/john/src/tiim/build",
-  "command": "/usr/bin/gcc -DHAVE_GETOPT_H   -g -std=gnu99  -g -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX12.0.sdk -mmacosx-version-min=11.4 -o CMakeFiles/tiim.dir/tiim.c.o -c /Users/john/src/tiim/tiim.c",
-  "file": "/Users/john/src/tiim/tiim.c"
-}
-]
