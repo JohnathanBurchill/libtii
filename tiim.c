@@ -1,9 +1,14 @@
 #include "tiim.h"
 
+#include "isp.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
+#include <unistd.h>
+#include <sys/errno.h>
+#include <stdint.h>
 
 #include <libxml/parser.h>
 #include <libxml/tree.h>
@@ -23,6 +28,14 @@ int main(int argc, char **argv)
 
     xmlInitParser();
     LIBXML_TEST_VERSION
+
+    FILE * dblFile = NULL;
+
+    // memory pointers
+    // FullImagePacket * fullImagePackets = NULL;
+    uint8_t * fullImagePackets = NULL;
+    uint8_t * continuedPackets = NULL;
+
 
     char * hdr = argv[1];
     size_t len = strlen(hdr);
@@ -82,6 +95,11 @@ int main(int argc, char **argv)
     printf("Full image          : offset = %ld, # records = %ld, record size = %ld\n", fullImageOffset, numFullImageRecords, fullImageBytes);
     printf("Full image continued: offset = %ld, # records = %ld, record size = %ld\n", continuedImageOffset, numContinuedImageRecords, continuedImageBytes);
 
+    if (fullImageBytes != FULL_IMAGE_PACKET_SIZE || continuedImageBytes != FULL_IMAGE_CONT_PACKET_SIZE)
+    {
+        printf("Something's amiss: one of the packet sizes is not what I expected. Might want to check the .HDR file.\n");
+        goto cleanup;
+    }
     if (numFullImageRecords != numContinuedImageRecords)
     {
         printf("Incomplete images found. Skipping this file.\n");
@@ -89,13 +107,79 @@ int main(int argc, char **argv)
     }
 
     // get DBL filename and check that we can open it.
+    char dbl[FILENAME_MAX];
+    snprintf(dbl, strlen(hdr)-3, "%s", hdr);
+    sprintf(dbl, "%s.DBL", dbl);
     
-    // Set file offset to read full image packets
+    if (access(dbl, R_OK))
+    {
+        printf("I need a readable .DBL file in the same folder as the .HDR file. Game over, try again.\n");
+        goto cleanup;
+    }
+    printf("%s\n", dbl);
 
-    // Read all bytes
+    dblFile = fopen(dbl, "r");
+    if (dblFile == NULL)
+    {
+        printf("I'm having trouble reading your .DBL file.\n");
+        goto cleanup;
+    }
+    size_t fullImageTotalBytes = (size_t) numFullImageRecords * (size_t) fullImageBytes;
+    fullImagePackets = (uint8_t*) malloc(fullImageTotalBytes * sizeof(uint8_t));
+    if (fullImagePackets == NULL)
+    {
+        printf("I could not find memory to store the full image packets.");
+        goto cleanup;
+    }
+    size_t continuedTotalBytes = (size_t) numContinuedImageRecords * (size_t) continuedImageBytes;
+    continuedPackets = (uint8_t*) malloc(continuedTotalBytes * sizeof(uint8_t));
+    if (fullImagePackets == NULL)
+    {
+        printf("I could not find memory to store the full image continued packets.");
+        goto cleanup;
+    }
+
+
+    size_t bytesRead = 0;
+    // Set file offset to read full image packets
+    if (fseek(dblFile, fullImageOffset, SEEK_SET))
+    {
+        printf("Your OS is giving me a hard time - I wan't able to seek the full image packets in the .DBL file.\n");
+        printf("It tells me this: %s\n", strerror(errno));
+    }
+    if ((bytesRead = fread((uint8_t*)fullImagePackets, sizeof(uint8_t), fullImageTotalBytes, dblFile)) != fullImageTotalBytes)
+    {
+        printf("Had trouble reading the full image bytes. Expected to read %ld bytes, got %ld bytes. Bye.\n", fullImageTotalBytes, bytesRead);
+        goto cleanup;
+    }
+    // Set file offset to read full image continued packets
+    if (fseek(dblFile, continuedImageOffset, SEEK_SET))
+    {
+        printf("Your OS is giving me a hard time - I wan't able to seek the full image packets continued in the .DBL file.\n");
+        printf("It tells me this: %s\n", strerror(errno));
+    }
+    if ((bytesRead = fread((uint8_t*)continuedPackets, sizeof(uint8_t), continuedTotalBytes, dblFile)) != continuedTotalBytes)
+    {
+        printf("Had trouble reading the full image continued bytes. Expected to read %ld bytes, got %ld bytes. Bye.\n", continuedTotalBytes, bytesRead);
+        goto cleanup;
+    }
 
     // Set file offset to read full image continued packets
-
+    uint16_t pixels[NUM_FULL_IMAGE_PIXELS];
+    for (int i = 0; i < numFullImageRecords; i++)
+    {
+        FullImagePacket *fip = (FullImagePacket*)(fullImagePackets + i*FULL_IMAGE_PACKET_SIZE);
+        FullImageContinuedPacket *cip = (FullImageContinuedPacket*)(continuedPackets + i*FULL_IMAGE_CONT_PACKET_SIZE);
+        ImageAuxData aux;
+        getImageData(fip, cip, &aux, pixels);
+        printf("ISP %d:", i+1);
+        printf(" EFI %d, sensor %d, meas. timestamp: %d", aux.EfiInstrumentId, aux.SensorNumber, fip->MeasurementTimestamp);
+        printf(", CCD: %5.1lf C, V_FP: %5.2lf V", aux.CcdTemperature, aux.FaceplateVoltageMonitor);
+        printf(", V_ID: %6.1lf V", aux.BiasGridVoltageMonitor);
+        printf(", V_MCP: %7.1lf V", aux.McpVoltageMonitor);
+        printf(", V_P: %7.1lf V", aux.PhosphorVoltageMonitor);
+        printf("\n");
+    }
     // Read all bytes
 
     // Confirm bytes read is what was expected
@@ -111,6 +195,10 @@ int main(int argc, char **argv)
 
 
 cleanup:
+
+    if (dblFile != NULL) fclose(dblFile);
+    if (fullImagePackets != NULL) free(fullImagePackets);
+    if (continuedPackets != NULL) free(continuedPackets);
 
     xmlFreeDoc(doc);
     xmlCleanupParser();
