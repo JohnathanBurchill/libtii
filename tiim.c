@@ -2,6 +2,7 @@
 
 #include "isp.h"
 #include "xml.h"
+#include "png.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -11,7 +12,7 @@
 #include <sys/errno.h>
 #include <stdint.h>
 #include <spng.h>
-
+#include <math.h>
 
 int main(int argc, char **argv)
 {
@@ -28,16 +29,10 @@ int main(int argc, char **argv)
     LIBXML_TEST_VERSION
 
     FILE * dblFile = NULL;
-
     // memory pointers
     // FullImagePacket * fullImagePackets = NULL;
     uint8_t * fullImagePackets = NULL;
     uint8_t * continuedPackets = NULL;
-
-    size_t png_size;
-    void *png_buf = NULL;
-    int ret = 0;
-    spng_ctx *enc = NULL;
 
     char * hdr = argv[1];
     size_t len = strlen(hdr);
@@ -109,7 +104,9 @@ int main(int argc, char **argv)
     char dbl[FILENAME_MAX];
     snprintf(dbl, strlen(hdr)-3, "%s", hdr);
     sprintf(dbl, "%s.DBL", dbl);
-    
+
+    char pngFile[FILENAME_MAX];
+
     if (access(dbl, R_OK))
     {
         printf("I need a readable .DBL file in the same folder as the .HDR file. Game over, try again.\n");
@@ -162,62 +159,67 @@ int main(int argc, char **argv)
         goto cleanup;
     }
     // Set file offset to read full image continued packets
-    uint16_t pixels[NUM_FULL_IMAGE_PIXELS];
+    uint16_t pixels1[NUM_FULL_IMAGE_PIXELS], pixels2[NUM_FULL_IMAGE_PIXELS];
+    uint8_t imageBuf[IMAGE_BUFFER_SIZE];
     char efiUnit[3] = {'C', 'B', 'A'};
-//    for (int i = 0; i < numFullImageRecords; i++)
-    for (int i = 0; i < 1; i++)
-    {
-        FullImagePacket *fip = (FullImagePacket*)(fullImagePackets + i*FULL_IMAGE_PACKET_SIZE);
-        FullImageContinuedPacket *cip = (FullImageContinuedPacket*)(continuedPackets + i*FULL_IMAGE_CONT_PACKET_SIZE);
-        ImageAuxData aux;
-        getImageData(fip, cip, &aux, pixels);
-        printf("%4d:", i+1);
-        printf(" %c %s", efiUnit[aux.EfiInstrumentId-1], aux.SensorNumber ? "V" : "H");
-        printf(" (%5.1lf C), FP: %5.2lf V", aux.CcdTemperature, aux.FaceplateVoltageMonitor);
-        printf(", ID: %6.1lf V", aux.BiasGridVoltageMonitor);
-        printf(", MCP: %7.1lf V", aux.McpVoltageMonitor);
-        printf(", PHOS: %7.1lf V", aux.PhosphorVoltageMonitor);
-        printf("\n");
-    }
-    for (int i = 0; i < NUM_FULL_IMAGE_PIXELS; i++)
-    {
-        printf("%d ", pixels[i]);
-    }
-    printf("\n");
+    FullImagePacket * fip1, *fip2;
+    FullImageContinuedPacket *cip1, *cip2;
+    ImageAuxData aux1, aux2;
+    int x, y;
 
-    // Make png files with text overlays
-    enc = spng_ctx_new(SPNG_CTX_ENCODER);
-    // int spng_set_png_file(spng_ctx *ctx, FILE *file);
-    spng_set_option(enc, SPNG_ENCODE_TO_BUFFER, 1);
-    struct spng_ihdr ihdr;
-    ihdr.bit_depth = 16;
-    ihdr.color_type = SPNG_COLOR_TYPE_GRAYSCALE;
-    ihdr.compression_method = SPNG_EICCP_COMPRESSION_METHOD;
-    ihdr.height = 66;
-    ihdr.width = 40;
-    ihdr.interlace_method = SPNG_INTERLACE_NONE;
-    ihdr.filter_method = SPNG_FILTER_NONE;
-    //    spng_set_png_file(enc, pngFile); // Need to make a new file for each image
-    spng_set_ihdr(enc, &ihdr);
-    size_t out_size = 2640;
-    unsigned char * out = NULL;
-    out = malloc(out_size);
-    if (spng_encode_image(enc, pixels, out_size, SPNG_FMT_PNG, SPNG_ENCODE_FINALIZE))
+    int p = 0;
+    for (int i = 0; i < numFullImageRecords-1; i+=2)
     {
-        printf("spng_encode_image() error: %s\n", spng_strerror(ret));
-//        goto cleanup;
-    }
-    png_buf = spng_get_png_buffer(enc, &png_size, &ret);
-    if(png_buf == NULL)
-    {
-        printf("spng_get_png_buffer() error: %s\n", spng_strerror(ret));
-    }
+        fip1 = (FullImagePacket*)(fullImagePackets + i*FULL_IMAGE_PACKET_SIZE);
+        cip1 = (FullImageContinuedPacket*)(continuedPackets + i*FULL_IMAGE_CONT_PACKET_SIZE);
+        fip2 = (FullImagePacket*)(fullImagePackets + (i+1)*FULL_IMAGE_PACKET_SIZE);
+        cip2 = (FullImageContinuedPacket*)(continuedPackets + (i+1)*FULL_IMAGE_CONT_PACKET_SIZE);
+        getImageData(fip1, cip1, &aux1, pixels1);
+        getImageData(fip2, cip2, &aux2, pixels2);
+        // printf("%4d:", i+1);
+        // printf(" %c %s", efiUnit[aux.EfiInstrumentId-1], aux1.SensorNumber ? "V" : "H");
+        // printf(" (%5.1lf C), FP: %5.2lf V", aux1.CcdTemperature, aux1.FaceplateVoltageMonitor);
+        // printf(", ID: %6.1lf V", aux1.BiasGridVoltageMonitor);
+        // printf(", MCP: %7.1lf V", aux1.McpVoltageMonitor);
+        // printf(", PHOS: %7.1lf V", aux1.PhosphorVoltageMonitor);
+        // printf("\n");
+        sprintf(pngFile, "EFI%c_%05d.png", efiUnit[aux1.EfiInstrumentId-1], i);
+        p = 0;
+        double max = 1800.0;
+        double v;
+        memset(imageBuf, 0, IMAGE_BUFFER_SIZE);
+        for (int k = 0; k < NUM_FULL_IMAGE_PIXELS; k++ )
+        {
 
-    for (int i = 0; i < png_size; i++)
-    {
-        printf("%d ", ((uint8_t*)png_buf)[i]);
+            v = floor((double)pixels1[k] / max * 255.);
+            if (v > 255) v = 255;
+            x = k / 66;
+            y = 65 - (k % 66);
+            imageBuf[100*y+x] = v;
+            p++;
+        }
+        for (int k = 0; k < NUM_FULL_IMAGE_PIXELS; k++ )
+        {
+            v = floor((double)pixels2[k] / max * 255.);
+            if (v > 255) v = 255;
+            x = 60 + k / 66;
+            y = 65 - (k % 66);
+            imageBuf[100*y+x] = v;
+            p++;
+        }
+        if (writePng(pngFile, imageBuf, 2*40+20, 66))
+        {
+            printf("I couldn't write the PNG file. Sorry.\n");
+            goto cleanup;
+        }
+
     }
-    printf("\n");
+    // for (int i = 0; i < NUM_FULL_IMAGE_PIXELS; i++)
+    // {
+    //     printf("%d ", pixels[i]);
+    // }
+    // printf("\n");
+
     // Get the ion admittance from LP&TII packets and convert to density
     // Get config packet info as needed.
 
@@ -226,8 +228,6 @@ cleanup:
     if (dblFile != NULL) fclose(dblFile);
     if (fullImagePackets != NULL) free(fullImagePackets);
     if (continuedPackets != NULL) free(continuedPackets);
-    if (png_buf != NULL) free(png_buf);
-    if (enc != NULL) spng_ctx_free(enc);
     xmlFreeDoc(doc);
     xmlCleanupParser();
     exit(0);
