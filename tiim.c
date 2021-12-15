@@ -3,6 +3,7 @@
 #include "isp.h"
 #include "xml.h"
 #include "png.h"
+#include "colortable.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -172,6 +173,18 @@ int main(int argc, char **argv)
     double maxValueH, maxValueV;
     int imageIndex;
     int p = 0;
+
+    struct spng_plte colorTable;
+    uint8_t background = 0; // white / transparent
+    colorTable.n_entries = 256;
+    for (int c = 0; c < 256; c++)
+    {
+        colorTable.entries[c].red = colorsrgbrgb[3*c];
+        colorTable.entries[c].green = colorsrgbrgb[3*c + 1];
+        colorTable.entries[c].blue = colorsrgbrgb[3*c + 2];
+    }
+    colorTable.entries[0].alpha = 0;
+
     // for (int i = 0; i < numFullImageRecords-1; i+=2)
     for (int i = 0; i < 2-1; i+=2)
     {
@@ -192,7 +205,9 @@ int main(int argc, char **argv)
         sprintf(pngFile, "EFI%c_%05d.png", efiUnit[aux1.EfiInstrumentId-1], i);
         p = 0;
         double v;
-        memset(imageBuf, 255, IMAGE_BUFFER_SIZE);
+        int maxLevel = 255;
+        int minLevel = 1; // white / background
+        memset(imageBuf, background, IMAGE_BUFFER_SIZE);
         if (max < 0.0)
         {
             maxValueH = -1.0;
@@ -212,8 +227,9 @@ int main(int argc, char **argv)
         for (int k = 0; k < NUM_FULL_IMAGE_PIXELS; k++ )
         {
 
-            v = floor((double)pixels1[k] / maxValueH * 255.);
-            if (v > 255) v = 255;
+            v = floor((double)pixels1[k] / maxValueH * maxLevel);
+            if (v > maxLevel) v = maxLevel;
+            if (v < minLevel) v = minLevel;
             x = k / 66;
             y = 65 - (k % 66);
             for (int sx = 0; sx < IMAGE_SCALE; sx++)
@@ -229,8 +245,9 @@ int main(int argc, char **argv)
         }
         for (int k = 0; k < NUM_FULL_IMAGE_PIXELS; k++ )
         {
-            v = floor((double)pixels2[k] / maxValueV * 255.);
-            if (v > 255) v = 255;
+            v = floor((double)pixels2[k] / maxValueV * maxLevel);
+            if (v > maxLevel) v = maxLevel;
+            if (v < minLevel) v = minLevel;
             x = k / 66;
             y = 65 - (k % 66);
             for (int sx = 0; sx < IMAGE_SCALE; sx++)
@@ -244,7 +261,7 @@ int main(int argc, char **argv)
             }
             p++;
         }
-        if (writePng(pngFile, imageBuf, IMAGE_WIDTH, IMAGE_HEIGHT))
+        if (writePng(pngFile, imageBuf, IMAGE_WIDTH, IMAGE_HEIGHT, &colorTable))
         {
             printf("I couldn't write the PNG file. Sorry.\n");
             goto cleanup;
