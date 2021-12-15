@@ -18,9 +18,9 @@ int main(int argc, char **argv)
 {
     printf("Hi there.\n");
     printf("So you want to read the Swarm TII image data...\n");
-    if (argc != 2)
+    if (argc != 3)
     {
-        printf("usage: %s normalModeHeaderFile.HDR\n", argv[0]);
+        printf("usage: %s normalModeHeaderFile.HDR maxSignal (pass -1 for autoscaling)\n", argv[0]);
         exit(1);
     }
     printf("Okay, let's have a look at the HDR file. Hope you passed that as your argument.\n");
@@ -41,6 +41,9 @@ int main(int argc, char **argv)
     	printf("We are sloppy today, aren't we? Try passing me a .HDR file.\n");
 	    exit(1);
     }
+
+    double max = atof(argv[2]);
+
 
     printf("What do we have here?\n");
 
@@ -166,9 +169,11 @@ int main(int argc, char **argv)
     FullImageContinuedPacket *cip1, *cip2;
     ImageAuxData aux1, aux2;
     int x, y;
+    double maxValueH, maxValueV;
 
     int p = 0;
-    for (int i = 0; i < numFullImageRecords-1; i+=2)
+    // for (int i = 0; i < numFullImageRecords-1; i+=2)
+    for (int i = 0; i < 2-1; i+=2)
     {
         fip1 = (FullImagePacket*)(fullImagePackets + i*FULL_IMAGE_PACKET_SIZE);
         cip1 = (FullImageContinuedPacket*)(continuedPackets + i*FULL_IMAGE_CONT_PACKET_SIZE);
@@ -185,29 +190,44 @@ int main(int argc, char **argv)
         // printf("\n");
         sprintf(pngFile, "EFI%c_%05d.png", efiUnit[aux1.EfiInstrumentId-1], i);
         p = 0;
-        double max = 1800.0;
         double v;
-        memset(imageBuf, 0, IMAGE_BUFFER_SIZE);
+        memset(imageBuf, 255, IMAGE_BUFFER_SIZE);
+        if (max < 0.0)
+        {
+            maxValueH = -1.0;
+            for (int k = 0; k < NUM_FULL_IMAGE_PIXELS; k++)
+            {
+                if ((double)pixels1[k] > maxValueH)
+                    maxValueH = pixels1[k];
+                if ((double)pixels2[k] > maxValueV)
+                    maxValueV = pixels2[k];
+            }
+        }
+        else
+        {
+            maxValueH = max;
+            maxValueV = max;
+        }
         for (int k = 0; k < NUM_FULL_IMAGE_PIXELS; k++ )
         {
 
-            v = floor((double)pixels1[k] / max * 255.);
+            v = floor((double)pixels1[k] / maxValueH * 255.);
             if (v > 255) v = 255;
             x = k / 66;
             y = 65 - (k % 66);
-            imageBuf[100*y+x] = v;
+            imageBuf[IMAGE_WIDTH*(y+IMAGE_OFFSET_Y)+(x+IMAGE_OFFSET_X)] = v;
             p++;
         }
         for (int k = 0; k < NUM_FULL_IMAGE_PIXELS; k++ )
         {
-            v = floor((double)pixels2[k] / max * 255.);
+            v = floor((double)pixels2[k] / maxValueV * 255.);
             if (v > 255) v = 255;
             x = 60 + k / 66;
             y = 65 - (k % 66);
-            imageBuf[100*y+x] = v;
+            imageBuf[IMAGE_WIDTH*(y+IMAGE_OFFSET_Y)+(x+V_IMAGE_OFFSET_X + IMAGE_OFFSET_X)] = v;
             p++;
         }
-        if (writePng(pngFile, imageBuf, 2*40+20, 66))
+        if (writePng(pngFile, imageBuf, IMAGE_WIDTH, IMAGE_HEIGHT))
         {
             printf("I couldn't write the PNG file. Sorry.\n");
             goto cleanup;
