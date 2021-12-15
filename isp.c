@@ -34,7 +34,6 @@ void getImageData(FullImagePacket * fip, FullImageContinuedPacket * cip, ImageAu
     uint8_t contSensor = (contBytes[0] >> 7) & 0x01;
     uint8_t contGainTableId = ((contBytes[0] & 0x03) << 2) | (contBytes[1] >> 6);
     uint8_t contEfiInstrumentId = ((contBytes[1] >> 2) & 0x0f);
-
     // Init pixels to zeros
     memset((void*)pixels, 0, NUM_FULL_IMAGE_PIXELS * sizeof(uint16_t));
 
@@ -45,12 +44,11 @@ void getImageData(FullImagePacket * fip, FullImageContinuedPacket * cip, ImageAu
     int p = 0;
     for (int i = 0; i < NUM_FULL_IMAGE_PACKET_PIXELS-1; i+=2)
     {
-        pixels[p] = (fip->PixelBytes[b] << 4) | ((fip->PixelBytes[b+1] >> 4) & 0x0f);
-        pixels[p+1] = (fip->PixelBytes[b+1] << 8) | fip->PixelBytes[b+2];
+        pixels[p++] = (fip->PixelBytes[b] << 4) | ((fip->PixelBytes[b+1] >> 4) & 0x0f);
+        pixels[p++] = ((fip->PixelBytes[b+1] & 0x0f) << 8) | fip->PixelBytes[b+2];
         b+=3;
-        p+=2;
     }
-    pixels[p] = (fip->PixelBytes[b] << 4) | ((fip->PixelBytes[b+1] >> 4) & 0x0f);
+    pixels[p++] = (fip->PixelBytes[b] << 4) | ((fip->PixelBytes[b+1] >> 4) & 0x0f);
 
     // Need a measurement time
     // TODO compare times as well
@@ -65,10 +63,10 @@ void getImageData(FullImagePacket * fip, FullImageContinuedPacket * cip, ImageAu
     b = 0;
     for (int i = 0; i < NUM_FULL_IMAGE_CONT_PACKET_PIXELS-1; i+=2)
     {
-        pixels[p] = (cip->PixelBytes[b] << 4) | ((cip->PixelBytes[b+1] >> 4) & 0x0f);
-        pixels[p+1] = (cip->PixelBytes[b+1] << 8) | cip->PixelBytes[b+2];
+//        printf("%d %d %d\n", cip->PixelBytes[b], cip->PixelBytes[b+1], cip->PixelBytes[b+2]);
+        pixels[p++] = (cip->PixelBytes[b] << 4) | ((cip->PixelBytes[b+1] >> 4) & 0x0f);
+        pixels[p++] = ((cip->PixelBytes[b+1] & 0x0f) << 8) | cip->PixelBytes[b+2];
         b+=3;
-        p+=2;
     }
     pixels[p] = (cip->PixelBytes[b] << 4) | ((cip->PixelBytes[b+1] >> 4) & 0x0f);
 

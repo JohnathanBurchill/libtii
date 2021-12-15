@@ -19,7 +19,7 @@ typedef struct fullImagePacket
     uint8_t StructureId; // 37 bytes
 
     uint8_t AuxData[13];
-    int16_t MeasurementTimestamp;
+    uint8_t MeasurementTimestamp[2];
     uint8_t PixelBytes[2012];
     uint8_t ErrorControlField[2];
 
@@ -32,9 +32,8 @@ typedef struct fullImageContinuedPacket
     uint8_t DataFieldHeader[12];
     uint8_t StructureId; // 37 bytes
 
-    uint8_t AuxData[2];
-    uint16_t NPixels;
-    int16_t MeasurementTimestamp;
+    uint8_t AuxData[4];
+    uint8_t MeasurementTimestamp[2];
     uint8_t PixelBytes[1949];
     uint8_t ErrorControlField[2];
 
