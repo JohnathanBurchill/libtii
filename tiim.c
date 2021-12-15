@@ -170,11 +170,12 @@ int main(int argc, char **argv)
     ImageAuxData aux1, aux2;
     int x, y;
     double maxValueH, maxValueV;
-
+    int imageIndex;
     int p = 0;
     // for (int i = 0; i < numFullImageRecords-1; i+=2)
     for (int i = 0; i < 2-1; i+=2)
     {
+        // TODO pair images with H on left, V on right.
         fip1 = (FullImagePacket*)(fullImagePackets + i*FULL_IMAGE_PACKET_SIZE);
         cip1 = (FullImageContinuedPacket*)(continuedPackets + i*FULL_IMAGE_CONT_PACKET_SIZE);
         fip2 = (FullImagePacket*)(fullImagePackets + (i+1)*FULL_IMAGE_PACKET_SIZE);
@@ -215,16 +216,32 @@ int main(int argc, char **argv)
             if (v > 255) v = 255;
             x = k / 66;
             y = 65 - (k % 66);
-            imageBuf[IMAGE_WIDTH*(y+IMAGE_OFFSET_Y)+(x+IMAGE_OFFSET_X)] = v;
+            for (int sx = 0; sx < IMAGE_SCALE; sx++)
+            {
+                for (int sy = 0; sy < IMAGE_SCALE; sy++)
+                {
+                    imageIndex = (IMAGE_WIDTH*(IMAGE_SCALE*(y)+sy+IMAGE_OFFSET_Y)+(IMAGE_SCALE*(x)+sx+IMAGE_OFFSET_X));
+                    if (imageIndex > IMAGE_BUFFER_SIZE-1) imageIndex = IMAGE_BUFFER_SIZE -1;
+                    imageBuf[imageIndex] = v;
+                }
+            }
             p++;
         }
         for (int k = 0; k < NUM_FULL_IMAGE_PIXELS; k++ )
         {
             v = floor((double)pixels2[k] / maxValueV * 255.);
             if (v > 255) v = 255;
-            x = 60 + k / 66;
+            x = k / 66;
             y = 65 - (k % 66);
-            imageBuf[IMAGE_WIDTH*(y+IMAGE_OFFSET_Y)+(x+V_IMAGE_OFFSET_X + IMAGE_OFFSET_X)] = v;
+            for (int sx = 0; sx < IMAGE_SCALE; sx++)
+            {
+                for (int sy = 0; sy < IMAGE_SCALE; sy++)
+                {
+                    imageIndex = (IMAGE_WIDTH*(IMAGE_SCALE*(y)+sy+IMAGE_OFFSET_Y)+(IMAGE_SCALE*(x)+sx + IMAGE_SCALE*V_IMAGE_OFFSET_X + IMAGE_OFFSET_X));
+                    if (imageIndex > IMAGE_BUFFER_SIZE-1) imageIndex = IMAGE_BUFFER_SIZE -1;
+                    imageBuf[imageIndex] = v;
+                }
+            }
             p++;
         }
         if (writePng(pngFile, imageBuf, IMAGE_WIDTH, IMAGE_HEIGHT))
