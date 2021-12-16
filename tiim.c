@@ -401,13 +401,11 @@ int main(int argc, char **argv)
             annotate(title, 12, 370 + 150, 50 + 4 * lineSpacing + monYOff, imageBuf);
         }
 
-        if (writePng(pngFile, imageBuf, IMAGE_WIDTH, IMAGE_HEIGHT, &colorTable))
+        if (!writePng(pngFile, imageBuf, IMAGE_WIDTH, IMAGE_HEIGHT, &colorTable))
         {
-            printf("I couldn't write the PNG file. Sorry.\n");
-            goto cleanup;
+            filenameCounter++;
         }
 
-        filenameCounter++;
 
     }
 
@@ -415,7 +413,10 @@ int main(int argc, char **argv)
     // Get the ion admittance from LP&TII packets and convert to density
     // Get config packet info as needed.
 
-    printf("%s\n", movieFilename);
+    if (filenameCounter > 0)
+        printf("%s\n", movieFilename);
+    else
+        printf("No-Frames-For-This-Date\n");
 
 
 cleanup:
