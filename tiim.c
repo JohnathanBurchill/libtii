@@ -209,7 +209,11 @@ int main(int argc, char **argv)
     bool gotVImage;
 
     ImageStats statsH;
+    statsH.cumulativePaCount = 0;
+    statsH.cumulativeMeaslesCount = 0;
     ImageStats statsV;
+    statsV.cumulativePaCount = 0;
+    statsV.cumulativeMeaslesCount = 0;
 
     for (int i = 0; i < numFullImageRecords-1; i+=2)
     // for (int i = 0; i < 2-1; i+=2)
