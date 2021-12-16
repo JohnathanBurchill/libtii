@@ -77,5 +77,6 @@ void getImageData(FullImagePacket * fip, FullImageContinuedPacket *cip, ImageAux
 
 int getImagePair(uint8_t *fullImagePackets, uint8_t *continuedPackets, long packetIndex, long numberOfPackets, ImageAuxData * aux1, uint16_t *pixels1, ImageAuxData *aux2, uint16_t *pixels2);
 
+void alignImages(ImageAuxData *aux1, uint16_t *pixels1, ImageAuxData *aux2, uint16_t *pixels2, int *packetIndex, bool *gotHImage, bool *gotVImage, long *numFullImageRecords);
 
 #endif // _ISP_H

@@ -1,4 +1,5 @@
 #include "isp.h"
+#include "tiim.h"
 
 #include <math.h>
 #include <stdio.h>
@@ -106,4 +107,37 @@ int getImagePair(uint8_t *fullImagePackets, uint8_t *continuedPackets, long pack
     getImageData(fip2, cip2, aux2, pixels2);
 
     return 0;
+}
+
+
+void alignImages(ImageAuxData *aux1, uint16_t *pixels1, ImageAuxData *aux2, uint16_t *pixels2, int *packetIndex, bool *gotHImage, bool *gotVImage, long *numFullImageRecords)
+{
+    *gotHImage = true;
+    *gotVImage = true;
+
+    // Check that image 1 is an H image. If not, increase i by 1 and decrease numFullImageRecords by 1.
+    if (aux1->SensorNumber == 1)
+    {
+        *gotHImage = false;
+        // We got a V image first. Draw an empty H image, then update the counter.
+        (*packetIndex)++;
+        if ((*packetIndex) % 2 == 1) (*numFullImageRecords)--;
+        // Swap H and V and zero out H pixels
+        memcpy(pixels2, pixels1, NUM_FULL_IMAGE_PIXELS * sizeof(uint16_t));
+        memset(pixels1, FOREGROUND_COLOR, NUM_FULL_IMAGE_PIXELS * sizeof(uint16_t));
+        memcpy(aux2, aux1, sizeof(ImageAuxData));
+        memset(aux1, 0, sizeof(ImageAuxData));
+
+    }
+    else if (aux1->SensorNumber == 0 && aux2->SensorNumber == 0)
+    {
+        *gotVImage = false;
+        (*packetIndex)++;
+        if ((*packetIndex) % 2 == 1) (*numFullImageRecords)--;
+        // Zero out V pixels
+        memset(pixels2, FOREGROUND_COLOR, NUM_FULL_IMAGE_PIXELS * sizeof(uint16_t));
+        memset(aux2, 0, sizeof(ImageAuxData));
+
+    }
+    return;
 }
