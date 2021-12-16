@@ -275,10 +275,32 @@ int main(int argc, char **argv)
         }
 
         // color scales
-
-        // Annotations
+        int xoff = IMAGE_OFFSET_X + 270;
+        int yoff = IMAGE_OFFSET_Y + IMAGE_SCALE * 66 - 37;
+        int cbarWidth = 8;
+        int cbarSeparation = 30;
+        for (int x = xoff; x < xoff+cbarWidth; x++)
+        {
+            for (int y = minLevel; y <= maxLevel; y+=2)
+            {
+                imageBuf[IMAGE_WIDTH * (yoff - y/2) + x] = y;
+                imageBuf[IMAGE_WIDTH * (yoff - y/2) + x + cbarWidth + cbarSeparation] = y;
+            }
+        }
         char title[40];
         memset(title, 0, 40);
+
+        annotate("DN", 12, xoff+cbarWidth + cbarSeparation/2 - 7, yoff + 7, imageBuf);
+        annotate("H", 12, xoff, yoff - maxLevel / 2 - 20, imageBuf);
+        annotate("V", 12, xoff + cbarWidth + cbarSeparation, yoff - maxLevel / 2 - 20, imageBuf);
+        annotate("0", 9, xoff+cbarWidth+3, yoff-10, imageBuf);
+        annotate("0", 9, xoff + cbarWidth + cbarSeparation + cbarWidth+3, yoff-10, imageBuf);
+        sprintf(title, "%d", (int)floor(maxValueH));
+        annotate(title, 9, xoff+cbarWidth+3, yoff - maxLevel/2+3, imageBuf);
+        sprintf(title, "%d", (int)floor(maxValueV));
+        annotate(title, 9, xoff + cbarWidth + cbarSeparation + cbarWidth+3, yoff - maxLevel/2+3, imageBuf);
+
+        // Aux data
         int mo = (aux1.month-1)*3;
         sprintf(title, "Swarm %c %2d %c%c%c %4d %02d:%02d:%02d UT", aux1.satellite, aux1.day, months[mo], months[mo+1], months[mo+2], aux1.year, aux1.hour, aux1.minute, aux1.second);
         annotate(title, 15, IMAGE_WIDTH/2 - strlen(title)/2*10, 5, imageBuf);
@@ -292,21 +314,32 @@ int main(int argc, char **argv)
         sprintf(title, "%c %02d:%02d:%02d UT", aux2.sensor, aux2.hour, aux2.minute, aux2.second);
         annotate(title, 9, 165, 40, imageBuf);
 
-        // printf("%4d:", i+1);
-        // printf(" %c %s", efiUnit[aux.EfiInstrumentId-1], aux1.SensorNumber ? "V" : "H");
-        // printf(" (%5.1lf C), FP: %5.2lf V", aux1.CcdTemperature, aux1.FaceplateVoltageMonitor);
-        // printf(", ID: %6.1lf V", aux1.BiasGridVoltageMonitor);
-        // printf(", MCP: %7.1lf V", aux1.McpVoltageMonitor);
-        // printf(", PHOS: %7.1lf V", aux1.PhosphorVoltageMonitor);
+        // Monitors
+        int monYOff = 60;
+        annotate("H", 15, 490, 30 + monYOff, imageBuf);
+        annotate("V", 15, 490 + 70, 30 + monYOff, imageBuf);
 
-        sprintf(title, "      MCP: %5.0lf V", aux1.McpVoltageMonitor);
-        annotate(title, 12, 400, 40, imageBuf);
-        sprintf(title, "     Phos: %5.0lf V", aux1.PhosphorVoltageMonitor);
-        annotate(title, 12, 400, 40 + lineSpacing, imageBuf);
-        sprintf(title, "  ID Bias: %5.0lf V", aux1.BiasGridVoltageMonitor);
-        annotate(title, 12, 400, 40 + 2 * lineSpacing, imageBuf);
-        sprintf(title, "Faceplate: %5.0lf V", aux1.FaceplateVoltageMonitor);
-        annotate(title, 12, 400, 40 + 3 * lineSpacing, imageBuf);
+        sprintf(title, "      MCP: %6.0lf V", aux1.McpVoltageMonitor);
+        annotate(title, 12, 370, 50 + monYOff, imageBuf);
+        sprintf(title, "     Phos: %6.0lf V", aux1.PhosphorVoltageMonitor);
+        annotate(title, 12, 370, 50 + lineSpacing + monYOff, imageBuf);
+        sprintf(title, "  ID Bias: %6.1lf V", aux1.BiasGridVoltageMonitor);
+        annotate(title, 12, 370, 50 + 2 * lineSpacing + monYOff, imageBuf);
+        sprintf(title, "Faceplate: %6.1lf V", aux1.FaceplateVoltageMonitor);
+        annotate(title, 12, 370, 50 + 3 * lineSpacing + monYOff, imageBuf);
+        sprintf(title, "CCD temp.: %6.1lf C", aux1.CcdTemperature);
+        annotate(title, 12, 370, 50 + 4 * lineSpacing + monYOff, imageBuf);
+
+        sprintf(title, "  %6.0lf V", aux2.McpVoltageMonitor);
+        annotate(title, 12, 370 + 150, 50 + monYOff, imageBuf);
+        sprintf(title, "  %6.0lf V", aux2.PhosphorVoltageMonitor);
+        annotate(title, 12, 370 + 150, 50 + lineSpacing + monYOff, imageBuf);
+        sprintf(title, "  %6.1lf V", aux2.BiasGridVoltageMonitor);
+        annotate(title, 12, 370 + 150, 50 + 2 * lineSpacing + monYOff, imageBuf);
+        sprintf(title, "  %6.1lf V", aux2.FaceplateVoltageMonitor);
+        annotate(title, 12, 370 + 150, 50 + 3 * lineSpacing + monYOff, imageBuf);
+        sprintf(title, "  %6.1lf C", aux2.CcdTemperature);
+        annotate(title, 12, 370 + 150, 50 + 4 * lineSpacing + monYOff, imageBuf);
 
         if (writePng(pngFile, imageBuf, IMAGE_WIDTH, IMAGE_HEIGHT, &colorTable))
         {
