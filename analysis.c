@@ -39,7 +39,7 @@ void analyzeImage(uint16_t *pixels, bool gotImage, double requestedMaxValue, Ima
             dx = (double) x - OPTICAL_CENTER_X;
             dy = OPTICAL_CENTER_Y - (double) y; // y increases downward, switch to match graphics in case needed for other analysis
             r = sqrt(dx * dx + dy * dy);
-            if (r > PA_MINIMUM_RADIUS && pixels[k] != 4095 && pixels[k] > PA_MINIMUM_VALUE)
+            if (r >= PA_MINIMUM_RADIUS && r <= PA_MAXIMUM_RADIUS && pixels[k] != 4095 && pixels[k] > PA_MINIMUM_VALUE)
                 paCounter++;
         }
     }

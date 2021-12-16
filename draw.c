@@ -13,6 +13,7 @@ void drawImage(uint8_t * imageBuf, ImageAuxData *auxH, uint16_t *pixels1, bool g
 {
     double v;
     int x, y;
+    double dx, dy, r, r1;
     int imageIndex;
 
     char months[36] = "JanFebMarAprMayJunJulAugSepOctNovDec";
@@ -20,6 +21,7 @@ void drawImage(uint8_t * imageBuf, ImageAuxData *auxH, uint16_t *pixels1, bool g
 
     memset(imageBuf, BACKGROUND_COLOR, IMAGE_BUFFER_SIZE);
 
+    // Raw H image
     for (int k = 0; k < NUM_FULL_IMAGE_PIXELS; k++ )
     {
         if (gotHImage)
@@ -34,16 +36,20 @@ void drawImage(uint8_t * imageBuf, ImageAuxData *auxH, uint16_t *pixels1, bool g
         }
         x = k / 66;
         y = 65 - (k % 66);
-        for (int sx = 0; sx < IMAGE_SCALE; sx++)
+        for (int sx = 0; sx < RAW_IMAGE_SCALE; sx++)
         {
-            for (int sy = 0; sy < IMAGE_SCALE; sy++)
+            for (int sy = 0; sy < RAW_IMAGE_SCALE; sy++)
             {
-                imageIndex = (IMAGE_WIDTH*(IMAGE_SCALE*(y)+sy+IMAGE_OFFSET_Y)+(IMAGE_SCALE*(x)+sx+IMAGE_OFFSET_X));
-                if (imageIndex > IMAGE_BUFFER_SIZE-1) imageIndex = IMAGE_BUFFER_SIZE -1;
-                imageBuf[imageIndex] = v;
+                imageIndex = (IMAGE_WIDTH*(RAW_IMAGE_SCALE*(y)+sy+IMAGE_OFFSET_Y)+(RAW_IMAGE_SCALE*(x)+sx+IMAGE_OFFSET_X));
+                if (imageIndex < IMAGE_BUFFER_SIZE)
+                {
+                    imageBuf[imageIndex] = v;
+                }
             }
         }
     }
+
+    // Raw V image
     for (int k = 0; k < NUM_FULL_IMAGE_PIXELS; k++ )
     {
         if (gotVImage)
@@ -58,20 +64,22 @@ void drawImage(uint8_t * imageBuf, ImageAuxData *auxH, uint16_t *pixels1, bool g
         }
         x = k / 66;
         y = 65 - (k % 66);
-        for (int sx = 0; sx < IMAGE_SCALE; sx++)
+        for (int sx = 0; sx < RAW_IMAGE_SCALE; sx++)
         {
-            for (int sy = 0; sy < IMAGE_SCALE; sy++)
+            for (int sy = 0; sy < RAW_IMAGE_SCALE; sy++)
             {
-                imageIndex = (IMAGE_WIDTH*(IMAGE_SCALE*(y)+sy+IMAGE_OFFSET_Y)+(IMAGE_SCALE*(x)+sx + IMAGE_SCALE*V_IMAGE_OFFSET_X + IMAGE_OFFSET_X));
-                if (imageIndex > IMAGE_BUFFER_SIZE-1) imageIndex = IMAGE_BUFFER_SIZE -1;
-                imageBuf[imageIndex] = v;
+                imageIndex = (IMAGE_WIDTH*(RAW_IMAGE_SCALE*(y)+sy+IMAGE_OFFSET_Y)+(RAW_IMAGE_SCALE*(x)+sx + RAW_IMAGE_SCALE*V_IMAGE_OFFSET_X + IMAGE_OFFSET_X));
+                if (imageIndex < IMAGE_BUFFER_SIZE)
+                {
+                    imageBuf[imageIndex] = v;
+                }
             }
         }
     }
 
     // color scales
     int xoff = IMAGE_OFFSET_X + 270;
-    int yoff = IMAGE_OFFSET_Y + IMAGE_SCALE * 66 - 37;
+    int yoff = IMAGE_OFFSET_Y + RAW_IMAGE_SCALE * 66 - 37;
     int cbarWidth = 8;
     int cbarSeparation = 30;
     for (int x = xoff; x < xoff+cbarWidth; x++)
@@ -100,8 +108,8 @@ void drawImage(uint8_t * imageBuf, ImageAuxData *auxH, uint16_t *pixels1, bool g
     sprintf(title, "Swarm %c %2d %c%c%c %4d %02d:%02d:%02d UT", auxH->satellite, auxH->day, months[mo], months[mo+1], months[mo+2], auxH->year, auxH->hour, auxH->minute, auxH->second);
     annotate(title, 15, IMAGE_WIDTH/2 - strlen(title)/2*10, 5, imageBuf);
 
-    annotate("H", 15, 85, IMAGE_OFFSET_Y + 200, imageBuf);
-    annotate("V", 15, 220, IMAGE_OFFSET_Y + 200, imageBuf);
+    annotate("Raw H", 15, 85 - 8*2.5, IMAGE_OFFSET_Y + 200, imageBuf);
+    annotate("Raw V", 15, 220 - 8*2.5, IMAGE_OFFSET_Y + 200, imageBuf);
 
     // Add times in images for montages
     if (gotHImage)
@@ -172,6 +180,89 @@ void drawImage(uint8_t * imageBuf, ImageAuxData *auxH, uint16_t *pixels1, bool g
         sprintf(title, "  %6d", statsV->cumulativeMeaslesCount);
         annotate(title, 12, MONITOR_LABEL_OFFSET_X + 150, 50 + 8 * LINE_SPACING + MONITOR_LABEL_OFFSET_Y, imageBuf);
    }
+
+    // PA region H image
+    for (int k = 0; k < NUM_FULL_IMAGE_PIXELS; k++ )
+    {
+        if (gotHImage)
+        {
+            v = floor((double)pixels1[k] / statsH->maxValue * MAX_COLOR_VALUE);
+            if (v > MAX_COLOR_VALUE) v = MAX_COLOR_VALUE;
+            if (v < MIN_COLOR_VALUE) v = MIN_COLOR_VALUE;
+        }
+        else
+        {
+            v = FOREGROUND_COLOR;
+        }
+        x = k / 66;
+        y = 65 - (k % 66);
+        dx = (double) x - OPTICAL_CENTER_X;
+        dy = OPTICAL_CENTER_Y - (double) y; // y increases downward, switch to match graphics in case needed for other analysis
+        r = sqrt(dx * dx + dy * dy);
+        r1 = sqrt(dx * dx + dy * dy / (PA_DY_FACTOR * PA_DY_FACTOR));
+        for (int sx = 0; sx < PA_REGION_IMAGE_SCALE; sx++)
+        {
+            for (int sy = 0; sy < PA_REGION_IMAGE_SCALE; sy++)
+            {
+                imageIndex = (IMAGE_WIDTH*(PA_REGION_IMAGE_SCALE*(y)+sy+PA_REGION_IMAGE_OFFSET_Y)+(PA_REGION_IMAGE_SCALE*(x)+sx+PA_REGION_IMAGE_OFFSET_X));
+                if (imageIndex < IMAGE_BUFFER_SIZE)
+                {
+                    if (r1 >= PA_MINIMUM_RADIUS && r <= PA_MAXIMUM_RADIUS && gotHImage)
+                        imageBuf[imageIndex] = v;
+                    else if (gotHImage)
+                        imageBuf[imageIndex] = BACKGROUND_COLOR;
+                    else 
+                        imageBuf[imageIndex] = FOREGROUND_COLOR;
+
+                }
+            }
+        }
+    }
+
+    // PA region V image
+    for (int k = 0; k < NUM_FULL_IMAGE_PIXELS; k++ )
+    {
+        if (gotVImage)
+        {
+            v = floor((double)pixels2[k] / statsV->maxValue * MAX_COLOR_VALUE);
+            if (v > MAX_COLOR_VALUE) v = MAX_COLOR_VALUE;
+            if (v < MIN_COLOR_VALUE) v = MIN_COLOR_VALUE;
+        }
+        else
+        {
+            v = FOREGROUND_COLOR;
+        }
+        x = k / 66;
+        y = 65 - (k % 66);
+        dx = (double) x - OPTICAL_CENTER_X;
+        dy = OPTICAL_CENTER_Y - (double) y; // y increases downward, switch to match graphics in case needed for other analysis
+        r = sqrt(dx * dx + dy * dy);
+        r1 = sqrt(dx * dx + dy * dy / (PA_DY_FACTOR * PA_DY_FACTOR));
+        for (int sx = 0; sx < PA_REGION_IMAGE_SCALE; sx++)
+        {
+            for (int sy = 0; sy < PA_REGION_IMAGE_SCALE; sy++)
+            {
+                imageIndex = (IMAGE_WIDTH*(PA_REGION_IMAGE_SCALE*(y)+sy+PA_REGION_IMAGE_OFFSET_Y)+(PA_REGION_IMAGE_SCALE*(x)+sx + PA_REGION_IMAGE_SCALE*V_IMAGE_OFFSET_X + PA_REGION_IMAGE_OFFSET_X));
+                if (imageIndex < IMAGE_BUFFER_SIZE)
+                {
+                    if (r1 >= PA_MINIMUM_RADIUS && r <= PA_MAXIMUM_RADIUS && gotHImage)
+                        imageBuf[imageIndex] = v;
+                    else if (gotHImage)
+                        imageBuf[imageIndex] = BACKGROUND_COLOR;
+                    else 
+                        imageBuf[imageIndex] = FOREGROUND_COLOR;
+
+                }
+            }
+        }
+    }
+
+    // PA region annotations
+    annotate("PA analysis", 12, 75, PA_REGION_IMAGE_OFFSET_Y-20, imageBuf);
+    annotate("H", 12, 75, PA_REGION_IMAGE_OFFSET_Y + 130, imageBuf);
+    annotate("V", 12, 170, PA_REGION_IMAGE_OFFSET_Y + 130, imageBuf);
+
+
 
     return;
     
