@@ -75,7 +75,7 @@ void getImageData(FullImagePacket * fip, FullImageContinuedPacket * cip, ImageAu
     // TODO compare times as well
     if (contSensor != aux->SensorNumber || contGainTableId != aux->GainTableId || contEfiInstrumentId != aux->EfiInstrumentId)
     {
-        printf("Problem here!: %d,%d  %d,%d  %d,%d\n", aux->SensorNumber, contSensor, aux->GainTableId, contGainTableId, aux->EfiInstrumentId, contEfiInstrumentId);
+        // printf("Problem here!: %d,%d  %d,%d  %d,%d\n", aux->SensorNumber, contSensor, aux->GainTableId, contGainTableId, aux->EfiInstrumentId, contEfiInstrumentId);
         aux->consistentImage = false;
         // Return a partial image
         return;
@@ -95,14 +95,15 @@ void getImageData(FullImagePacket * fip, FullImageContinuedPacket * cip, ImageAu
 
 int getImagePair(uint8_t *fullImagePackets, uint8_t *continuedPackets, long packetIndex, long numberOfPackets, ImageAuxData * aux1, uint16_t *pixels1, ImageAuxData *aux2, uint16_t *pixels2)
 {
-        if (packetIndex > numberOfPackets-2)
-            return -1;
+    if (packetIndex > numberOfPackets-2)
+        return -1;
 
-        FullImagePacket *fip1 = (FullImagePacket*)(fullImagePackets + packetIndex*FULL_IMAGE_PACKET_SIZE);
-        FullImageContinuedPacket *cip1 = (FullImageContinuedPacket*)(continuedPackets + packetIndex*FULL_IMAGE_CONT_PACKET_SIZE);
-        FullImagePacket *fip2 = (FullImagePacket*)(fullImagePackets + (packetIndex+1)*FULL_IMAGE_PACKET_SIZE);
-        FullImageContinuedPacket *cip2 = (FullImageContinuedPacket*)(continuedPackets + (packetIndex+1)*FULL_IMAGE_CONT_PACKET_SIZE);
-        getImageData(fip1, cip1, aux1, pixels1);
-        getImageData(fip2, cip2, aux2, pixels2);
+    FullImagePacket *fip1 = (FullImagePacket*)(fullImagePackets + packetIndex*FULL_IMAGE_PACKET_SIZE);
+    FullImageContinuedPacket *cip1 = (FullImageContinuedPacket*)(continuedPackets + packetIndex*FULL_IMAGE_CONT_PACKET_SIZE);
+    FullImagePacket *fip2 = (FullImagePacket*)(fullImagePackets + (packetIndex+1)*FULL_IMAGE_PACKET_SIZE);
+    FullImageContinuedPacket *cip2 = (FullImageContinuedPacket*)(continuedPackets + (packetIndex+1)*FULL_IMAGE_CONT_PACKET_SIZE);
+    getImageData(fip1, cip1, aux1, pixels1);
+    getImageData(fip2, cip2, aux2, pixels2);
 
+    return 0;
 }

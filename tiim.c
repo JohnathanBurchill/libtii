@@ -170,6 +170,7 @@ int main(int argc, char **argv)
 
     struct spng_plte colorTable;
     uint8_t background = 255; // white / transparent
+    uint8_t foreground = 254; // black / foreground / missing pixel data
     int maxLevel = 253; // 254 is black, 255 is white (and background)
     int minLevel = 0;
     colorTable.n_entries = 256;
@@ -205,19 +206,42 @@ int main(int argc, char **argv)
     sprintf(movieFilename, "SW_OPER_EFI%cTIIMOV_%s_%s_%s.mp4", aux1.satellite, startDate, stopDate, TIIM_VERSION);
 
     // Construct frames and export to PNG files
+    int filenameCounter = 0;
+    bool gotHImage;
+    bool gotVImage;
     for (int i = 0; i < numFullImageRecords-1; i+=2)
     // for (int i = 0; i < 2-1; i+=2)
     {
         // TODO pair images with H on left, V on right.
+        gotHImage = true;
+        gotVImage = true;
         getImagePair(fullImagePackets, continuedPackets, i, numFullImageRecords, &aux1, pixels1, &aux2, pixels2);
-        // printf("%4d:", i+1);
-        // printf(" %c %s", efiUnit[aux.EfiInstrumentId-1], aux1.SensorNumber ? "V" : "H");
-        // printf(" (%5.1lf C), FP: %5.2lf V", aux1.CcdTemperature, aux1.FaceplateVoltageMonitor);
-        // printf(", ID: %6.1lf V", aux1.BiasGridVoltageMonitor);
-        // printf(", MCP: %7.1lf V", aux1.McpVoltageMonitor);
-        // printf(", PHOS: %7.1lf V", aux1.PhosphorVoltageMonitor);
-        // printf("\n");
-        sprintf(pngFile, "EFI%c_%05d.png", aux1.satellite, i/2);
+        // Check that image 1 is an H image. If not, increase i by 1 and decrease numFullImageRecords by 1.
+        if (aux1.SensorNumber == 1)
+        {
+            gotHImage = false;
+            // We got a V image first. Draw an empty H image, then update the counter.
+            i++;
+            if (i % 2 == 1) numFullImageRecords--;
+            // Swap H and V and zero out H pixels
+            memcpy(pixels2, pixels1, NUM_FULL_IMAGE_PIXELS * sizeof(uint16_t));
+            memset(pixels1, foreground, NUM_FULL_IMAGE_PIXELS * sizeof(uint16_t));
+            memcpy(&aux2, &aux1, sizeof(ImageAuxData));
+            memset(&aux1, 0, sizeof(ImageAuxData));
+
+        }
+        else if (aux1.SensorNumber == 0 && aux2.SensorNumber == 0)
+        {
+            gotVImage = false;
+            i++;
+            if (i % 2 == 1) numFullImageRecords--;
+            // Zero out V pixels
+            memset(pixels2, foreground, NUM_FULL_IMAGE_PIXELS * sizeof(uint16_t));
+            memset(&aux2, 0, sizeof(ImageAuxData));
+
+        }
+
+        sprintf(pngFile, "EFI%c_%05d.png", gotHImage ? aux1.satellite : aux2.satellite, filenameCounter);
         p = 0;
         double v;
         memset(imageBuf, background, IMAGE_BUFFER_SIZE);
@@ -227,9 +251,9 @@ int main(int argc, char **argv)
             maxValueV = -1.0;
             for (int k = 0; k < NUM_FULL_IMAGE_PIXELS; k++)
             {
-                if ((double)pixels1[k] > maxValueH)
+                if (gotHImage && (double)pixels1[k] > maxValueH)
                     maxValueH = pixels1[k];
-                if ((double)pixels2[k] > maxValueV)
+                if (gotVImage && (double)pixels2[k] > maxValueV)
                     maxValueV = pixels2[k];
             }
         }
@@ -238,12 +262,22 @@ int main(int argc, char **argv)
             maxValueH = max;
             maxValueV = max;
         }
+
+        if (!gotHImage) maxValueH = 1;
+        if (!gotVImage) maxValueV = 1;
+
         for (int k = 0; k < NUM_FULL_IMAGE_PIXELS; k++ )
         {
-
-            v = floor((double)pixels1[k] / maxValueH * maxLevel);
-            if (v > maxLevel) v = maxLevel;
-            if (v < minLevel) v = minLevel;
+            if (gotHImage)
+            {
+                v = floor((double)pixels1[k] / maxValueH * maxLevel);
+                if (v > maxLevel) v = maxLevel;
+                if (v < minLevel) v = minLevel;
+            }
+            else
+            {
+                v = foreground;
+            }
             x = k / 66;
             y = 65 - (k % 66);
             for (int sx = 0; sx < IMAGE_SCALE; sx++)
@@ -259,9 +293,16 @@ int main(int argc, char **argv)
         }
         for (int k = 0; k < NUM_FULL_IMAGE_PIXELS; k++ )
         {
-            v = floor((double)pixels2[k] / maxValueV * maxLevel);
-            if (v > maxLevel) v = maxLevel;
-            if (v < minLevel) v = minLevel;
+            if (gotVImage)
+            {
+                v = floor((double)pixels2[k] / maxValueV * maxLevel);
+                if (v > maxLevel) v = maxLevel;
+                if (v < minLevel) v = minLevel;
+            }
+            else
+            {
+                v = foreground;
+            }
             x = k / 66;
             y = 65 - (k % 66);
             for (int sx = 0; sx < IMAGE_SCALE; sx++)
@@ -311,37 +352,54 @@ int main(int argc, char **argv)
         annotate("V", 15, 220, IMAGE_OFFSET_Y + 200, imageBuf);
 
         // Add times in images for montages
-        sprintf(title, "%c %02d:%02d:%02d UT", aux1.sensor, aux1.hour, aux1.minute, aux1.second);
-        annotate(title, 9, 30, 40, imageBuf);
-        sprintf(title, "%c %02d:%02d:%02d UT", aux2.sensor, aux2.hour, aux2.minute, aux2.second);
-        annotate(title, 9, 165, 40, imageBuf);
+        if (gotHImage)
+        {
+            sprintf(title, "%c %02d:%02d:%02d UT", aux1.sensor, aux1.hour, aux1.minute, aux1.second);
+            annotate(title, 9, 30, 40, imageBuf);
+        }
+        if (gotVImage)
+        {
+            sprintf(title, "%c %02d:%02d:%02d UT", aux2.sensor, aux2.hour, aux2.minute, aux2.second);
+            annotate(title, 9, 165, 40, imageBuf);
+        }
 
         // Monitors
         int monYOff = 60;
         annotate("H", 15, 490, 30 + monYOff, imageBuf);
         annotate("V", 15, 490 + 70, 30 + monYOff, imageBuf);
 
-        sprintf(title, "      MCP: %6.0lf V", aux1.McpVoltageMonitor);
-        annotate(title, 12, 370, 50 + monYOff, imageBuf);
-        sprintf(title, "     Phos: %6.0lf V", aux1.PhosphorVoltageMonitor);
-        annotate(title, 12, 370, 50 + lineSpacing + monYOff, imageBuf);
-        sprintf(title, "  ID Bias: %6.1lf V", aux1.BiasGridVoltageMonitor);
-        annotate(title, 12, 370, 50 + 2 * lineSpacing + monYOff, imageBuf);
-        sprintf(title, "Faceplate: %6.1lf V", aux1.FaceplateVoltageMonitor);
-        annotate(title, 12, 370, 50 + 3 * lineSpacing + monYOff, imageBuf);
-        sprintf(title, "CCD temp.: %6.1lf C", aux1.CcdTemperature);
-        annotate(title, 12, 370, 50 + 4 * lineSpacing + monYOff, imageBuf);
+        annotate("      MCP:", 12, 370, 50 + monYOff, imageBuf);
+        annotate("     Phos:", 12, 370, 50 + lineSpacing + monYOff, imageBuf);
+        annotate("  ID Bias:", 12, 370, 50 + 2 * lineSpacing + monYOff, imageBuf);
+        annotate("Faceplate:", 12, 370, 50 + 3 * lineSpacing + monYOff, imageBuf);
+        annotate("CCD temp.:", 12, 370, 50 + 4 * lineSpacing + monYOff, imageBuf);
+        if (gotHImage)
+        {
+            sprintf(title, "  %6.0lf V", aux1.McpVoltageMonitor);
+            annotate(title, 12, 370 + 80, 50 + monYOff, imageBuf);
+            sprintf(title, "  %6.0lf V", aux1.PhosphorVoltageMonitor);
+            annotate(title, 12, 370 + 80, 50 + lineSpacing + monYOff, imageBuf);
+            sprintf(title, "  %6.1lf V", aux1.BiasGridVoltageMonitor);
+            annotate(title, 12, 370 + 80, 50 + 2 * lineSpacing + monYOff, imageBuf);
+            sprintf(title, "  %6.1lf V", aux1.FaceplateVoltageMonitor);
+            annotate(title, 12, 370 + 80, 50 + 3 * lineSpacing + monYOff, imageBuf);
+            sprintf(title, "  %6.1lf C", aux1.CcdTemperature);
+            annotate(title, 12, 370 + 80, 50 + 4 * lineSpacing + monYOff, imageBuf);
+        }
 
-        sprintf(title, "  %6.0lf V", aux2.McpVoltageMonitor);
-        annotate(title, 12, 370 + 150, 50 + monYOff, imageBuf);
-        sprintf(title, "  %6.0lf V", aux2.PhosphorVoltageMonitor);
-        annotate(title, 12, 370 + 150, 50 + lineSpacing + monYOff, imageBuf);
-        sprintf(title, "  %6.1lf V", aux2.BiasGridVoltageMonitor);
-        annotate(title, 12, 370 + 150, 50 + 2 * lineSpacing + monYOff, imageBuf);
-        sprintf(title, "  %6.1lf V", aux2.FaceplateVoltageMonitor);
-        annotate(title, 12, 370 + 150, 50 + 3 * lineSpacing + monYOff, imageBuf);
-        sprintf(title, "  %6.1lf C", aux2.CcdTemperature);
-        annotate(title, 12, 370 + 150, 50 + 4 * lineSpacing + monYOff, imageBuf);
+        if (gotVImage)
+        {            
+            sprintf(title, "  %6.0lf V", aux2.McpVoltageMonitor);
+            annotate(title, 12, 370 + 150, 50 + monYOff, imageBuf);
+            sprintf(title, "  %6.0lf V", aux2.PhosphorVoltageMonitor);
+            annotate(title, 12, 370 + 150, 50 + lineSpacing + monYOff, imageBuf);
+            sprintf(title, "  %6.1lf V", aux2.BiasGridVoltageMonitor);
+            annotate(title, 12, 370 + 150, 50 + 2 * lineSpacing + monYOff, imageBuf);
+            sprintf(title, "  %6.1lf V", aux2.FaceplateVoltageMonitor);
+            annotate(title, 12, 370 + 150, 50 + 3 * lineSpacing + monYOff, imageBuf);
+            sprintf(title, "  %6.1lf C", aux2.CcdTemperature);
+            annotate(title, 12, 370 + 150, 50 + 4 * lineSpacing + monYOff, imageBuf);
+        }
 
         if (writePng(pngFile, imageBuf, IMAGE_WIDTH, IMAGE_HEIGHT, &colorTable))
         {
@@ -349,10 +407,15 @@ int main(int argc, char **argv)
             goto cleanup;
         }
 
+        filenameCounter++;
+
     }
+
     // TODO
     // Get the ion admittance from LP&TII packets and convert to density
     // Get config packet info as needed.
+
+    printf("%s\n", movieFilename);
 
 
 cleanup:
@@ -361,9 +424,8 @@ cleanup:
     if (continuedPackets != NULL) free(continuedPackets);
     xmlFreeDoc(doc);
     xmlCleanupParser();
-
-    printf("%s\n", movieFilename);
     fflush(stdout);
+
     exit(0);
 }
 
