@@ -215,7 +215,7 @@ int main(int argc, char **argv)
         // printf(", MCP: %7.1lf V", aux1.McpVoltageMonitor);
         // printf(", PHOS: %7.1lf V", aux1.PhosphorVoltageMonitor);
         // printf("\n");
-        sprintf(pngFile, "EFI%c_%05d.png", aux1.satellite, i);
+        sprintf(pngFile, "EFI%c_%05d.png", aux1.satellite, i/2);
         p = 0;
         double v;
         memset(imageBuf, background, IMAGE_BUFFER_SIZE);
