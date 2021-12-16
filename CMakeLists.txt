@@ -30,4 +30,5 @@ ADD_EXECUTABLE(tiim tiim.c isp.c xml.c png.c fonts.c)
 TARGET_LINK_LIBRARIES(tiim ${LIBS})
 
 install(TARGETS tiim DESTINATION $ENV{HOME}/bin)
+install(PROGRAMS Swarm_fast_movie_generator.sh DESTINATION $ENV{HOME}/bin)
 
