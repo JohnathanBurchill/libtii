@@ -20,10 +20,10 @@
 #define PA_REGION_IMAGE_SCALE 2
 #define GAIN_CORRECTED_IMAGE_SCALE 2
 
-#define FOREGROUND_COLOR 254
+#define FOREGROUND_COLOR 252 // three font colors, with index 252 being the darkest
 #define BACKGROUND_COLOR 255
 #define MIN_COLOR_VALUE 0
-#define MAX_COLOR_VALUE 253
+#define MAX_COLOR_VALUE 251
 
 #define LINE_SPACING 16
 

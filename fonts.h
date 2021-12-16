@@ -3,6 +3,12 @@
 
 #include <stdint.h>
 
+
+#define FONTLEVEL1 16
+#define FONTLEVEL2 93
+#define FONTLEVEL3 200
+
+
 int annotate(const char * text, int fontsize, int x, int y, uint8_t *imageBuffer);
 int placeCharacter(uint8_t c, int8_t *font, int x, int y, uint8_t *imageBuffer);
 

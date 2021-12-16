@@ -75,6 +75,7 @@ int placeCharacter(uint8_t characterNumber, int8_t *font, int x, int y, uint8_t 
     int characterIndex = 0;
     int positionIndex = 0;
     int xoffset, yoffset;
+    int fontColorIndex;
     int imageIndex;
     while (characterIndex < characterNumber -1)
     {
@@ -85,8 +86,9 @@ int placeCharacter(uint8_t characterNumber, int8_t *font, int x, int y, uint8_t 
     while(font[positionIndex] != -1)
     {
         yoffset = font[positionIndex++];
-        xoffset = font[positionIndex];
-        if (xoffset == -1)
+        xoffset = font[positionIndex++];
+        fontColorIndex = font[positionIndex++];
+        if (xoffset == -1 || yoffset == -1 || fontColorIndex == -1)
         {
             // Font offsets not paired 
             status = FONTS_FONT_FILE_ISSUE;
@@ -95,10 +97,19 @@ int placeCharacter(uint8_t characterNumber, int8_t *font, int x, int y, uint8_t 
         imageIndex = (IMAGE_WIDTH*(y + yoffset)+(x + xoffset));
         if (imageIndex >= 0 && imageIndex < IMAGE_BUFFER_SIZE)
         {
-            imageBuffer[imageIndex] = 254; // black (foreground)
+            // on image data just use darkest level
+            if (imageBuffer[imageIndex] <= MAX_COLOR_VALUE)
+            {
+                // Otherwise the characters are too bold
+                if (fontColorIndex < 3)
+                   imageBuffer[imageIndex] = MAX_COLOR_VALUE + 1;
+            }
+            else
+            {
+                // On background (white)
+                imageBuffer[imageIndex] = MAX_COLOR_VALUE + fontColorIndex;
+            }
         }
-        // Get next offset pair
-        positionIndex++;
     }
 
     return status;

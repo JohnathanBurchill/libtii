@@ -181,9 +181,15 @@ int main(int argc, char **argv)
         colorTable.entries[c].blue = colorsrgbrgb[3*c + 2];
     }
     // Foreground black
-    colorTable.entries[FOREGROUND_COLOR].red = 0;
-    colorTable.entries[FOREGROUND_COLOR].green = 0;
-    colorTable.entries[FOREGROUND_COLOR].blue = 0;
+    colorTable.entries[252].red = FONTLEVEL1;
+    colorTable.entries[252].green = FONTLEVEL1;
+    colorTable.entries[252].blue = FONTLEVEL1;
+    colorTable.entries[253].red = FONTLEVEL2;
+    colorTable.entries[253].green = FONTLEVEL2;
+    colorTable.entries[253].blue = FONTLEVEL2;
+    colorTable.entries[254].red = FONTLEVEL3;
+    colorTable.entries[254].green = FONTLEVEL3;
+    colorTable.entries[254].blue = FONTLEVEL3;
     // Background white / transparent
     colorTable.entries[BACKGROUND_COLOR].red = 255;
     colorTable.entries[BACKGROUND_COLOR].green = 255;
