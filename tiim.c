@@ -4,6 +4,7 @@
 #include "xml.h"
 #include "png.h"
 #include "colortable.h"
+#include "fonts.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -175,18 +176,28 @@ int main(int argc, char **argv)
     int p = 0;
 
     struct spng_plte colorTable;
-    uint8_t background = 0; // white / transparent
+    uint8_t background = 255; // white / transparent
+    int maxLevel = 253; // 254 is black, 255 is white (and background)
+    int minLevel = 0;
     colorTable.n_entries = 256;
-    for (int c = 0; c < 256; c++)
+    for (int c = minLevel; c <= maxLevel; c++)
     {
         colorTable.entries[c].red = colorsrgbrgb[3*c];
         colorTable.entries[c].green = colorsrgbrgb[3*c + 1];
         colorTable.entries[c].blue = colorsrgbrgb[3*c + 2];
     }
-    colorTable.entries[0].alpha = 0;
+    // Foreground black
+    colorTable.entries[254].red = 0;
+    colorTable.entries[254].green = 0;
+    colorTable.entries[254].blue = 0;
+    // Background white / transparent
+    colorTable.entries[255].red = 255;
+    colorTable.entries[255].green = 255;
+    colorTable.entries[255].blue = 255;
+    colorTable.entries[255].alpha = 0;
 
-    // for (int i = 0; i < numFullImageRecords-1; i+=2)
-    for (int i = 0; i < 2-1; i+=2)
+    for (int i = 0; i < numFullImageRecords-1; i+=2)
+    // for (int i = 0; i < 2-1; i+=2)
     {
         // TODO pair images with H on left, V on right.
         fip1 = (FullImagePacket*)(fullImagePackets + i*FULL_IMAGE_PACKET_SIZE);
@@ -205,12 +216,11 @@ int main(int argc, char **argv)
         sprintf(pngFile, "EFI%c_%05d.png", efiUnit[aux1.EfiInstrumentId-1], i);
         p = 0;
         double v;
-        int maxLevel = 255;
-        int minLevel = 1; // white / background
         memset(imageBuf, background, IMAGE_BUFFER_SIZE);
         if (max < 0.0)
         {
             maxValueH = -1.0;
+            maxValueV = -1.0;
             for (int k = 0; k < NUM_FULL_IMAGE_PIXELS; k++)
             {
                 if ((double)pixels1[k] > maxValueH)
@@ -261,6 +271,9 @@ int main(int argc, char **argv)
             }
             p++;
         }
+        // Annotate
+        annotate("Hi there!", 24, 320, 240, imageBuf);
+
         if (writePng(pngFile, imageBuf, IMAGE_WIDTH, IMAGE_HEIGHT, &colorTable))
         {
             printf("I couldn't write the PNG file. Sorry.\n");
