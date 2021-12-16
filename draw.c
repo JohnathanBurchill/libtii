@@ -99,9 +99,9 @@ void drawImage(uint8_t * imageBuf, ImageAuxData *auxH, uint16_t *pixels1, bool g
     annotate("0", 9, xoff+cbarWidth+3, yoff-10, imageBuf);
     annotate("0", 9, xoff + cbarWidth + cbarSeparation + cbarWidth+3, yoff-10, imageBuf);
     sprintf(title, "%d", (int)floor(statsH->maxValue));
-    annotate(title, 9, xoff+cbarWidth+3, yoff - MAX_COLOR_VALUE/2+3, imageBuf);
+    annotate(title, 9, xoff+cbarWidth+3, yoff - MAX_COLOR_VALUE/2 - 2, imageBuf);
     sprintf(title, "%d", (int)floor(statsV->maxValue));
-    annotate(title, 9, xoff + cbarWidth + cbarSeparation + cbarWidth+3, yoff - MAX_COLOR_VALUE/2+3, imageBuf);
+    annotate(title, 9, xoff + cbarWidth + cbarSeparation + cbarWidth+3, yoff - MAX_COLOR_VALUE/2 - 2, imageBuf);
 
     // Aux data
     int mo = (auxH->month-1)*3;
