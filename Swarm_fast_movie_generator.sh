@@ -15,6 +15,6 @@ MOVIEFILE=`tiim $1 $2`
 
 echo "tiim'd backup movie ${MOVIEFILE}"
 
-rm EFI${SAT}_?????.png
+rm -f EFI${SAT}_?????.png
 
 )
