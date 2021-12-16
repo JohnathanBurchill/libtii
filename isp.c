@@ -91,3 +91,18 @@ void getImageData(FullImagePacket * fip, FullImageContinuedPacket * cip, ImageAu
     pixels[p] = (cip->PixelBytes[b] << 4) | ((cip->PixelBytes[b+1] >> 4) & 0x0f);
 
 }
+
+
+int getImagePair(uint8_t *fullImagePackets, uint8_t *continuedPackets, long packetIndex, long numberOfPackets, ImageAuxData * aux1, uint16_t *pixels1, ImageAuxData *aux2, uint16_t *pixels2)
+{
+        if (packetIndex > numberOfPackets-2)
+            return -1;
+
+        FullImagePacket *fip1 = (FullImagePacket*)(fullImagePackets + packetIndex*FULL_IMAGE_PACKET_SIZE);
+        FullImageContinuedPacket *cip1 = (FullImageContinuedPacket*)(continuedPackets + packetIndex*FULL_IMAGE_CONT_PACKET_SIZE);
+        FullImagePacket *fip2 = (FullImagePacket*)(fullImagePackets + (packetIndex+1)*FULL_IMAGE_PACKET_SIZE);
+        FullImageContinuedPacket *cip2 = (FullImageContinuedPacket*)(continuedPackets + (packetIndex+1)*FULL_IMAGE_CONT_PACKET_SIZE);
+        getImageData(fip1, cip1, aux1, pixels1);
+        getImageData(fip2, cip2, aux2, pixels2);
+
+}

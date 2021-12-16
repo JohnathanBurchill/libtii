@@ -18,14 +18,11 @@
 
 int main(int argc, char **argv)
 {
-    printf("Hi there.\n");
-    printf("So you want to read the Swarm TII image data...\n");
     if (argc != 3)
     {
         printf("usage: %s normalModeHeaderFile.HDR maxSignal (pass -1 for autoscaling)\n", argv[0]);
         exit(1);
     }
-    printf("Okay, let's have a look at the HDR file. Hope you passed that as your argument.\n");
 
     xmlInitParser();
     LIBXML_TEST_VERSION
@@ -45,9 +42,6 @@ int main(int argc, char **argv)
     }
 
     double max = atof(argv[2]);
-
-
-    printf("What do we have here?\n");
 
     xmlDoc *doc = NULL;
     xmlNode *root = NULL;
@@ -198,16 +192,24 @@ int main(int argc, char **argv)
     char months[36] = "JanFebMarAprMayJunJulAugSepOctNovDec";
     int lineSpacing = 16;
 
+    // Get start and stop times
+    getImagePair(fullImagePackets, continuedPackets, 0, numFullImageRecords, &aux1, pixels1, &aux2, pixels2);
+    char startDate[16];
+    memset(startDate, 0, 16);
+    sprintf(startDate, "%04d%02d%02dT%02d%02d%02d", aux1.year, aux1.month, aux1.day, aux1.hour, aux1.minute, aux1.second);
+    getImagePair(fullImagePackets, continuedPackets, numFullImageRecords-2, numFullImageRecords, &aux1, pixels1, &aux2, pixels2);
+    char stopDate[16];
+    memset(stopDate, 0, 16);
+    sprintf(stopDate, "%04d%02d%02dT%02d%02d%02d", aux2.year, aux2.month, aux2.day, aux2.hour, aux2.minute, aux2.second);
+    char movieFilename[60];
+    sprintf(movieFilename, "SW_OPER_EFI%cTIIMOV_%s_%s_%s.mp4", aux1.satellite, startDate, stopDate, TIIM_VERSION);
+
+    // Construct frames and export to PNG files
     for (int i = 0; i < numFullImageRecords-1; i+=2)
     // for (int i = 0; i < 2-1; i+=2)
     {
         // TODO pair images with H on left, V on right.
-        fip1 = (FullImagePacket*)(fullImagePackets + i*FULL_IMAGE_PACKET_SIZE);
-        cip1 = (FullImageContinuedPacket*)(continuedPackets + i*FULL_IMAGE_CONT_PACKET_SIZE);
-        fip2 = (FullImagePacket*)(fullImagePackets + (i+1)*FULL_IMAGE_PACKET_SIZE);
-        cip2 = (FullImageContinuedPacket*)(continuedPackets + (i+1)*FULL_IMAGE_CONT_PACKET_SIZE);
-        getImageData(fip1, cip1, &aux1, pixels1);
-        getImageData(fip2, cip2, &aux2, pixels2);
+        getImagePair(fullImagePackets, continuedPackets, i, numFullImageRecords, &aux1, pixels1, &aux2, pixels2);
         // printf("%4d:", i+1);
         // printf(" %c %s", efiUnit[aux.EfiInstrumentId-1], aux1.SensorNumber ? "V" : "H");
         // printf(" (%5.1lf C), FP: %5.2lf V", aux1.CcdTemperature, aux1.FaceplateVoltageMonitor);
@@ -348,12 +350,7 @@ int main(int argc, char **argv)
         }
 
     }
-    // for (int i = 0; i < NUM_FULL_IMAGE_PIXELS; i++)
-    // {
-    //     printf("%d ", pixels[i]);
-    // }
-    // printf("\n");
-
+    // TODO
     // Get the ion admittance from LP&TII packets and convert to density
     // Get config packet info as needed.
 
@@ -364,6 +361,9 @@ cleanup:
     if (continuedPackets != NULL) free(continuedPackets);
     xmlFreeDoc(doc);
     xmlCleanupParser();
+
+    printf("%s\n", movieFilename);
+    fflush(stdout);
     exit(0);
 }
 

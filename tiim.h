@@ -3,6 +3,8 @@
 
 #include <libxml/xpathInternals.h>
 
+#define TIIM_VERSION "0101"
+
 #define IMAGE_WIDTH 640
 #define IMAGE_HEIGHT 480
 #define IMAGE_BUFFER_SIZE ((size_t)(IMAGE_WIDTH*IMAGE_HEIGHT))
