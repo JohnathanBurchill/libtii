@@ -8,7 +8,7 @@
 #define IMAGE_BUFFER_SIZE ((size_t)(IMAGE_WIDTH*IMAGE_HEIGHT))
 
 #define IMAGE_OFFSET_X 30
-#define IMAGE_OFFSET_Y 30
+#define IMAGE_OFFSET_Y 40
 #define V_IMAGE_OFFSET_X 45
 
 #define IMAGE_SCALE 3

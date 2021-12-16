@@ -41,6 +41,15 @@ typedef struct fullImageContinuedPacket
 
 
 typedef struct imageAuxData {
+    char satellite;
+    char sensor;
+    int year;
+    int month;
+    int day;
+    int hour;
+    int minute;
+    int second;
+    int millisecond;
     uint16_t CcdDarkCurrent;
     double CcdTemperature;
     uint16_t FaceplateVoltageMonitorRaw;

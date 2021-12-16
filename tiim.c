@@ -166,7 +166,6 @@ int main(int argc, char **argv)
     // Set file offset to read full image continued packets
     uint16_t pixels1[NUM_FULL_IMAGE_PIXELS], pixels2[NUM_FULL_IMAGE_PIXELS];
     uint8_t imageBuf[IMAGE_BUFFER_SIZE];
-    char efiUnit[3] = {'C', 'B', 'A'};
     FullImagePacket * fip1, *fip2;
     FullImageContinuedPacket *cip1, *cip2;
     ImageAuxData aux1, aux2;
@@ -196,6 +195,9 @@ int main(int argc, char **argv)
     colorTable.entries[255].blue = 255;
     colorTable.entries[255].alpha = 0;
 
+    char months[36] = "JanFebMarAprMayJunJulAugSepOctNovDec";
+    int lineSpacing = 16;
+
     for (int i = 0; i < numFullImageRecords-1; i+=2)
     // for (int i = 0; i < 2-1; i+=2)
     {
@@ -213,7 +215,7 @@ int main(int argc, char **argv)
         // printf(", MCP: %7.1lf V", aux1.McpVoltageMonitor);
         // printf(", PHOS: %7.1lf V", aux1.PhosphorVoltageMonitor);
         // printf("\n");
-        sprintf(pngFile, "EFI%c_%05d.png", efiUnit[aux1.EfiInstrumentId-1], i);
+        sprintf(pngFile, "EFI%c_%05d.png", aux1.satellite, i);
         p = 0;
         double v;
         memset(imageBuf, background, IMAGE_BUFFER_SIZE);
@@ -271,8 +273,40 @@ int main(int argc, char **argv)
             }
             p++;
         }
-        // Annotate
-        annotate("Hi there!", 24, 320, 240, imageBuf);
+
+        // color scales
+
+        // Annotations
+        char title[40];
+        memset(title, 0, 40);
+        int mo = (aux1.month-1)*3;
+        sprintf(title, "Swarm %c %2d %c%c%c %4d %02d:%02d:%02d UT", aux1.satellite, aux1.day, months[mo], months[mo+1], months[mo+2], aux1.year, aux1.hour, aux1.minute, aux1.second);
+        annotate(title, 15, IMAGE_WIDTH/2 - strlen(title)/2*10, 5, imageBuf);
+
+        annotate("H", 15, 85, IMAGE_OFFSET_Y + 200, imageBuf);
+        annotate("V", 15, 220, IMAGE_OFFSET_Y + 200, imageBuf);
+
+        // Add times in images for montages
+        sprintf(title, "%c %02d:%02d:%02d UT", aux1.sensor, aux1.hour, aux1.minute, aux1.second);
+        annotate(title, 9, 30, 40, imageBuf);
+        sprintf(title, "%c %02d:%02d:%02d UT", aux2.sensor, aux2.hour, aux2.minute, aux2.second);
+        annotate(title, 9, 165, 40, imageBuf);
+
+        // printf("%4d:", i+1);
+        // printf(" %c %s", efiUnit[aux.EfiInstrumentId-1], aux1.SensorNumber ? "V" : "H");
+        // printf(" (%5.1lf C), FP: %5.2lf V", aux1.CcdTemperature, aux1.FaceplateVoltageMonitor);
+        // printf(", ID: %6.1lf V", aux1.BiasGridVoltageMonitor);
+        // printf(", MCP: %7.1lf V", aux1.McpVoltageMonitor);
+        // printf(", PHOS: %7.1lf V", aux1.PhosphorVoltageMonitor);
+
+        sprintf(title, "      MCP: %5.0lf V", aux1.McpVoltageMonitor);
+        annotate(title, 12, 400, 40, imageBuf);
+        sprintf(title, "     Phos: %5.0lf V", aux1.PhosphorVoltageMonitor);
+        annotate(title, 12, 400, 40 + lineSpacing, imageBuf);
+        sprintf(title, "  ID Bias: %5.0lf V", aux1.BiasGridVoltageMonitor);
+        annotate(title, 12, 400, 40 + 2 * lineSpacing, imageBuf);
+        sprintf(title, "Faceplate: %5.0lf V", aux1.FaceplateVoltageMonitor);
+        annotate(title, 12, 400, 40 + 3 * lineSpacing, imageBuf);
 
         if (writePng(pngFile, imageBuf, IMAGE_WIDTH, IMAGE_HEIGHT, &colorTable))
         {

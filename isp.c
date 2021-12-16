@@ -3,9 +3,11 @@
 #include <math.h>
 #include <stdio.h>
 #include <string.h>
+#include <time.h>
 
 void getImageData(FullImagePacket * fip, FullImageContinuedPacket * cip, ImageAuxData * aux, uint16_t *pixels)
 {
+
     uint8_t * fullBytes = fip->AuxData;
     uint8_t * contBytes = cip->AuxData;
 
@@ -30,6 +32,25 @@ void getImageData(FullImagePacket * fip, FullImageContinuedPacket * cip, ImageAu
     aux->SensorNumber = (fullBytes[9] >> 1) & 0x01;
     aux->GainTableId = ((fullBytes[11] & 0x01) << 3) | (fullBytes[12] >> 5);
     aux->EfiInstrumentId = (fullBytes[12] >> 1) & 0x0f;
+
+    char efiUnit[3] = {'C', 'B', 'A'};
+    aux->satellite = efiUnit[aux->EfiInstrumentId-1];
+    aux->sensor = aux->SensorNumber ? 'V' : 'H';
+    // ISP time (epoch 2000-01-01 00:00:00 UT)
+    uint8_t * cds = fip->DataFieldHeader+4;
+    double day = (double) (cds[0]*256 + cds[1] + 10957); // relative to 1970-01-01 00:00:00 UT
+    double ms = (double) (cds[2]*256*256*256 + cds[3]*256*256 + cds[4]*256 + cds[5]);
+    double us = (double) (cds[6]*256 + cds[7]);
+    double secondsSince1970 = day * 86400. + ms / 1.0e3 + us / 1.0e6;
+    time_t seconds = floor(secondsSince1970);
+    struct tm *timeStruct = gmtime(&seconds);
+    aux->year = timeStruct->tm_year + 1900;
+    aux->month = timeStruct->tm_mon + 1;
+    aux->day = timeStruct->tm_mday;
+    aux->hour = timeStruct->tm_hour;
+    aux->minute = timeStruct->tm_min;
+    aux->second = timeStruct->tm_sec;
+    aux->millisecond = floor((secondsSince1970 - (double)seconds)*1000);
 
     uint8_t contSensor = (contBytes[0] >> 7) & 0x01;
     uint8_t contGainTableId = ((contBytes[0] & 0x03) << 2) | (contBytes[1] >> 6);
@@ -63,7 +84,6 @@ void getImageData(FullImagePacket * fip, FullImageContinuedPacket * cip, ImageAu
     b = 0;
     for (int i = 0; i < NUM_FULL_IMAGE_CONT_PACKET_PIXELS-1; i+=2)
     {
-//        printf("%d %d %d\n", cip->PixelBytes[b], cip->PixelBytes[b+1], cip->PixelBytes[b+2]);
         pixels[p++] = (cip->PixelBytes[b] << 4) | ((cip->PixelBytes[b+1] >> 4) & 0x0f);
         pixels[p++] = ((cip->PixelBytes[b+1] & 0x0f) << 8) | cip->PixelBytes[b+2];
         b+=3;
