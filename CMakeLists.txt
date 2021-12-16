@@ -31,4 +31,5 @@ TARGET_LINK_LIBRARIES(tiim ${LIBS})
 
 install(TARGETS tiim DESTINATION $ENV{HOME}/bin)
 install(PROGRAMS Swarm_fast_movie_generator.sh DESTINATION $ENV{HOME}/bin)
+install(PROGRAMS Swarm_fast_movie_generator-historical.sh DESTINATION $ENV{HOME}/bin)
 
