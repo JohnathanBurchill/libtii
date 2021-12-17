@@ -26,6 +26,7 @@ int main(int argc, char **argv)
         exit(1);
     }
 
+    int status = 0;
     xmlInitParser();
     LIBXML_TEST_VERSION
 
@@ -53,52 +54,13 @@ int main(int argc, char **argv)
         printf("Nothing to see. Try pointing me to a real file that I am allowed to read.\n");
         exit(1);
     }
-    long fullImageOffset = 0;
-    long numFullImageRecords = 0;
-    long fullImageBytes = 0;
-    long continuedImageOffset = 0;
-    long numContinuedImageRecords = 0;
-    long continuedImageBytes = 0;
-    if (getLongValue(doc, "//DSD[Data_Set_Name=\"EFI TII Full Image Packet - Normal Mode\"]/Data_Set_Offset", &fullImageOffset))
-    {
-        printf("Full image offset not found. Bye.\n");
-        goto cleanup;
-    }
-    if (getLongValue(doc, "//DSD[Data_Set_Name=\"EFI TII Full Image Packet - Normal Mode\"]/Num_of_Records", &numFullImageRecords))
-    {
-        printf("Full image number of records not found. Bye.\n");
-        goto cleanup;
-    }
-    if (getLongValue(doc, "//DSD[Data_Set_Name=\"EFI TII Full Image Packet - Normal Mode\"]/Record_Size", &fullImageBytes))
-    {
-        printf("Full image record size not found. Bye.\n");
-        goto cleanup;
-    }
-    if (getLongValue(doc, "//DSD[Data_Set_Name=\"EFI TII Full Image Cont'd Packet - Normal Mode\"]/Data_Set_Offset", &continuedImageOffset))
-    {
-        printf("Full image continued offset not found. Bye.\n");
-        goto cleanup;
-    }
-    if (getLongValue(doc, "//DSD[Data_Set_Name=\"EFI TII Full Image Cont'd Packet - Normal Mode\"]/Num_of_Records", &numContinuedImageRecords))
-    {
-        printf("Full image continued number of records not found. Bye.\n");
-        goto cleanup;
-    }
-    if (getLongValue(doc, "//DSD[Data_Set_Name=\"EFI TII Full Image Cont'd Packet - Normal Mode\"]/Record_Size", &continuedImageBytes))
-    {
-        printf("Full image continued record size not found. Bye.\n");
-        goto cleanup;
-    }
 
-    if (fullImageBytes != FULL_IMAGE_PACKET_SIZE || continuedImageBytes != FULL_IMAGE_CONT_PACKET_SIZE)
+    HdrInfo fi, ci;
+    status = parseHdr(doc, &fi, &ci);
+    if (status)
     {
-        printf("Something's amiss: one of the packet sizes is not what I expected. Might want to check the .HDR file.\n");
-        goto cleanup;
-    }
-    if (numFullImageRecords != numContinuedImageRecords)
-    {
-        printf("Incomplete images found. Skipping this file.\n");
-        goto cleanup;
+        printf("Could not parse HDR file.\n");
+        exit(status);
     }
 
     // get DBL filename and check that we can open it.
@@ -120,14 +82,14 @@ int main(int argc, char **argv)
         printf("I'm having trouble reading your .DBL file.\n");
         goto cleanup;
     }
-    size_t fullImageTotalBytes = (size_t) numFullImageRecords * (size_t) fullImageBytes;
+    size_t fullImageTotalBytes = (size_t) fi.numRecords * (size_t) fi.recordSize;
     fullImagePackets = (uint8_t*) malloc(fullImageTotalBytes * sizeof(uint8_t));
     if (fullImagePackets == NULL)
     {
         printf("Danger, Will Robinson! I could not find memory to store the full image packets.");
         goto cleanup;
     }
-    size_t continuedTotalBytes = (size_t) numContinuedImageRecords * (size_t) continuedImageBytes;
+    size_t continuedTotalBytes = (size_t) ci.numRecords * (size_t) ci.recordSize;
     continuedPackets = (uint8_t*) malloc(continuedTotalBytes * sizeof(uint8_t));
     if (fullImagePackets == NULL)
     {
@@ -138,7 +100,7 @@ int main(int argc, char **argv)
 
     size_t bytesRead = 0;
     // Set file offset to read full image packets
-    if (fseek(dblFile, fullImageOffset, SEEK_SET))
+    if (fseek(dblFile, fi.offset, SEEK_SET))
     {
         printf("Your OS is giving me a hard time - I was't able to seek to the full-image packets in the .DBL file.\n");
         printf("It tells me this: %s\n", strerror(errno));
@@ -149,7 +111,7 @@ int main(int argc, char **argv)
         goto cleanup;
     }
     // Set file offset to read full image continued packets
-    if (fseek(dblFile, continuedImageOffset, SEEK_SET))
+    if (fseek(dblFile, ci.offset, SEEK_SET))
     {
         printf("Your OS is giving me a hard time - I was't able to seek to the full-image-continued packets in the .DBL file.\n");
         printf("It tells me this: %s\n", strerror(errno));
@@ -198,11 +160,11 @@ int main(int argc, char **argv)
 
 
     // Get start and stop times
-    getImagePair(fullImagePackets, continuedPackets, 0, numFullImageRecords, &aux1, pixels1, &aux2, pixels2);
+    getImagePair(fullImagePackets, continuedPackets, 0, fi.numRecords, &aux1, pixels1, &aux2, pixels2);
     char startDate[16];
     memset(startDate, 0, 16);
     sprintf(startDate, "%04d%02d%02dT%02d%02d%02d", aux1.year, aux1.month, aux1.day, aux1.hour, aux1.minute, aux1.second);
-    getImagePair(fullImagePackets, continuedPackets, numFullImageRecords-2, numFullImageRecords, &aux1, pixels1, &aux2, pixels2);
+    getImagePair(fullImagePackets, continuedPackets, fi.numRecords-2, fi.numRecords, &aux1, pixels1, &aux2, pixels2);
     char stopDate[16];
     memset(stopDate, 0, 16);
     sprintf(stopDate, "%04d%02d%02dT%02d%02d%02d", aux2.year, aux2.month, aux2.day, aux2.hour, aux2.minute, aux2.second);
@@ -221,11 +183,11 @@ int main(int argc, char **argv)
     statsV.cumulativePaCount = 0;
     statsV.cumulativeMeaslesCount = 0;
 
-    for (int i = 0; i < numFullImageRecords-1; i+=2)
+    for (int i = 0; i < fi.numRecords-1; i+=2)
     // for (int i = 0; i < 2-1; i+=2)
     {
-        getImagePair(fullImagePackets, continuedPackets, i, numFullImageRecords, &aux1, pixels1, &aux2, pixels2);
-        alignImages(&aux1, pixels1, &aux2, pixels2, &i, &gotHImage, &gotVImage, &numFullImageRecords);
+        getImagePair(fullImagePackets, continuedPackets, i, fi.numRecords, &aux1, pixels1, &aux2, pixels2);
+        alignImages(&aux1, pixels1, &aux2, pixels2, &i, &gotHImage, &gotVImage, &(fi.numRecords));
         sprintf(pngFile, "EFI%c_%05d.png", gotHImage ? aux1.satellite : aux2.satellite, filenameCounter);
 
         //analyze imagery

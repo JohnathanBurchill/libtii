@@ -1,6 +1,48 @@
 #include "xml.h"
 
+#include "isp.h"
+
 #include <libxml/xpath.h>
+
+int parseHdr(xmlDocPtr doc, HdrInfo *fi, HdrInfo *ci)
+{
+    if (getLongValue(doc, "//DSD[Data_Set_Name=\"EFI TII Full Image Packet - Normal Mode\"]/Data_Set_Offset", &(fi->offset)))
+    {
+        return HDR_PARSE_ERR_FULL_IMAGE_OFFSET;
+    }
+    if (getLongValue(doc, "//DSD[Data_Set_Name=\"EFI TII Full Image Packet - Normal Mode\"]/Num_of_Records", &(fi->numRecords)))
+    {
+        return HDR_PARSE_ERR_FULL_IMAGE_NUM_RECORDS;
+    }
+    if (getLongValue(doc, "//DSD[Data_Set_Name=\"EFI TII Full Image Packet - Normal Mode\"]/Record_Size", &(fi->recordSize)))
+    {
+        return HDR_PARSE_ERR_FULL_IMAGE_RECORD_SIZE;
+    }
+    if (getLongValue(doc, "//DSD[Data_Set_Name=\"EFI TII Full Image Cont'd Packet - Normal Mode\"]/Data_Set_Offset", &(ci->offset)))
+    {
+        return HDR_PARSE_ERR_FULL_IMAGE_CONT_OFFSET;
+    }
+    if (getLongValue(doc, "//DSD[Data_Set_Name=\"EFI TII Full Image Cont'd Packet - Normal Mode\"]/Num_of_Records", &(ci->numRecords)))
+    {
+        return HDR_PARSE_ERR_FULL_IMAGE_CONT_NUM_RECORDS;
+    }
+    if (getLongValue(doc, "//DSD[Data_Set_Name=\"EFI TII Full Image Cont'd Packet - Normal Mode\"]/Record_Size", &(ci->recordSize)))
+    {
+        return HDR_PARSE_ERR_FULL_IMAGE_CONT_RECORD_SIZE;
+    }
+
+    if (fi->recordSize != FULL_IMAGE_PACKET_SIZE)
+    {
+        return HDR_PARSE_ERR_FULL_IMAGE_RECORD_SIZE;
+    }
+    if (ci->recordSize != FULL_IMAGE_CONT_PACKET_SIZE)
+    {
+        return HDR_PARSE_ERR_FULL_IMAGE_CONT_RECORD_SIZE;
+    }
+
+    return HDR_PARSE_OK;
+
+}
 
 int getLongValue(xmlDocPtr doc, const char * xpath, long *value)
 {
