@@ -5,7 +5,7 @@
 #include <unistd.h>
 #include <string.h>
 
-int importImagery(const char *hdr, HdrInfo *fi, HdrInfo *ci, uint8_t **fullImagePacketsPtr, uint8_t **continuedPacketsPtr)
+int importImagery(const char *hdr, HdrInfo *fi, HdrInfo *ci, uint8_t **fullImagePacketsPtr, uint8_t **continuedPacketsPtr, long *nImagePairs)
 {
     int status = IMPORT_OK;
     // get DBL filename and check that we can open it.
@@ -93,7 +93,7 @@ int importImagery(const char *hdr, HdrInfo *fi, HdrInfo *ci, uint8_t **fullImage
 
 
 cleanup:
-
+    *nImagePairs = nImages;
     *fullImagePacketsPtr = fullImagePackets;
     *continuedPacketsPtr = continuedPackets;
     if (dblFile != NULL) fclose(dblFile);

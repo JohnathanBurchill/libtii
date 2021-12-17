@@ -94,50 +94,84 @@ void getImageData(FullImagePacket * fip, FullImageContinuedPacket * cip, ImageAu
 }
 
 
-int getImagePair(uint8_t *fullImagePackets, uint8_t *continuedPackets, long packetIndex, long numberOfPackets, ImageAuxData * aux1, uint16_t *pixels1, ImageAuxData *aux2, uint16_t *pixels2)
+void getImagePair(uint8_t *fullImagePackets, uint8_t *continuedPackets, long packetIndex, long numberOfPackets, ImageAuxData * aux1, uint16_t *pixels1, ImageAuxData *aux2, uint16_t *pixels2)
 {
-    if (packetIndex > numberOfPackets-2)
-        return -1;
 
-    FullImagePacket *fip1 = (FullImagePacket*)(fullImagePackets + packetIndex*FULL_IMAGE_PACKET_SIZE);
-    FullImageContinuedPacket *cip1 = (FullImageContinuedPacket*)(continuedPackets + packetIndex*FULL_IMAGE_CONT_PACKET_SIZE);
-    FullImagePacket *fip2 = (FullImagePacket*)(fullImagePackets + (packetIndex+1)*FULL_IMAGE_PACKET_SIZE);
-    FullImageContinuedPacket *cip2 = (FullImageContinuedPacket*)(continuedPackets + (packetIndex+1)*FULL_IMAGE_CONT_PACKET_SIZE);
-    getImageData(fip1, cip1, aux1, pixels1);
-    getImageData(fip2, cip2, aux2, pixels2);
+    FullImagePacket *fip1, *fip2;
+    FullImageContinuedPacket *cip1, *cip2;
 
-    return 0;
+    if (packetIndex < numberOfPackets)
+    {
+        fip1 = (FullImagePacket*)(fullImagePackets + packetIndex*FULL_IMAGE_PACKET_SIZE);
+        cip1 = (FullImageContinuedPacket*)(continuedPackets + packetIndex*FULL_IMAGE_CONT_PACKET_SIZE);
+        getImageData(fip1, cip1, aux1, pixels1);
+    }
+    else
+    {
+        memset(fip1, 0, FULL_IMAGE_PACKET_SIZE);
+        memset(cip1, 0, FULL_IMAGE_CONT_PACKET_SIZE);
+        aux1->EfiInstrumentId = UNIT_INVALID;
+    }
+    if (packetIndex + 1 < numberOfPackets)
+    {
+        fip2 = (FullImagePacket*)(fullImagePackets + (packetIndex+1)*FULL_IMAGE_PACKET_SIZE);
+        cip2 = (FullImageContinuedPacket*)(continuedPackets + (packetIndex+1)*FULL_IMAGE_CONT_PACKET_SIZE);
+        getImageData(fip2, cip2, aux2, pixels2);
+    }
+    else
+    {
+        memset(fip2, 0, FULL_IMAGE_PACKET_SIZE);
+        memset(cip2, 0, FULL_IMAGE_CONT_PACKET_SIZE);
+        aux2->EfiInstrumentId = UNIT_INVALID;
+    }
 }
 
 
-void alignImages(ImageAuxData *aux1, uint16_t *pixels1, ImageAuxData *aux2, uint16_t *pixels2, int *packetIndex, bool *gotHImage, bool *gotVImage, long *numFullImageRecords)
+int alignImages(ImageAuxData *aux1, uint16_t *pixels1, ImageAuxData *aux2, uint16_t *pixels2, bool *gotHImage, bool *gotVImage)
 {
-    *gotHImage = aux1->EfiInstrumentId != 0; // Can be 0 when packet is missing
-    *gotVImage = aux2->EfiInstrumentId != 0;
+    int status = ISP_ALIGNED_IMAGE_PAIR;
 
+    // Init to true if we have image data
+    // EfiInstrumentId is 0 if image data are zeros (i.e., missing packet)
+    *gotHImage = aux1->EfiInstrumentId != UNIT_INVALID; // Can be 0 when packet is missing
+    *gotVImage = aux2->EfiInstrumentId != UNIT_INVALID;
+
+    if (!(*gotHImage) && !(*gotVImage))
+    {
+        status = ISP_NO_IMAGE_PAIR;
+    }
+    else if (aux1->SensorNumber == H_SENSOR && aux2->SensorNumber == V_SENSOR)
+    {
+        status = ISP_ALIGNED_IMAGE_PAIR;
+    }
     // Check that image 1 is an H image. If not, increase i by 1 and decrease numFullImageRecords by 1.
-    if (aux1->SensorNumber == 1)
+    // Some won't like this :)
+    else if (aux1->SensorNumber == V_SENSOR)
     {
         *gotHImage = false;
-        // We got a V image first. Draw an empty H image, then update the counter.
-        (*packetIndex)++;
-        if ((*packetIndex) % 2 == 1) (*numFullImageRecords)--;
+        // We got a V image first. Draw an empty H image.
         // Swap H and V and zero out H pixels
         memcpy(pixels2, pixels1, NUM_FULL_IMAGE_PIXELS * sizeof(uint16_t));
         memset(pixels1, FOREGROUND_COLOR, NUM_FULL_IMAGE_PIXELS * sizeof(uint16_t));
         memcpy(aux2, aux1, sizeof(ImageAuxData));
         memset(aux1, 0, sizeof(ImageAuxData));
-
+        status = ISP_V_IMAGE;
     }
     else if (aux1->SensorNumber == 0 && aux2->SensorNumber == 0)
     {
         *gotVImage = false;
-        (*packetIndex)++;
-        if ((*packetIndex) % 2 == 1) (*numFullImageRecords)--;
         // Zero out V pixels
         memset(pixels2, FOREGROUND_COLOR, NUM_FULL_IMAGE_PIXELS * sizeof(uint16_t));
         memset(aux2, 0, sizeof(ImageAuxData));
-
+        status = ISP_H_IMAGE;
     }
-    return;
+    return status;
+}
+
+int getAlignedImagePair(uint8_t *fullImagePackets, uint8_t *continuedPackets, long packetIndex, long numberOfPackets, ImageAuxData * aux1, uint16_t *pixels1, ImageAuxData *aux2, uint16_t *pixels2, bool *gotHImage, bool *gotVImage)
+{
+    int status = 0;
+    getImagePair(fullImagePackets, continuedPackets, packetIndex, numberOfPackets, aux1, pixels1, aux2, pixels2);
+    status = alignImages(aux1, pixels1, aux2, pixels2, gotHImage, gotVImage);
+    return status;
 }

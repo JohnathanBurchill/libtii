@@ -50,7 +50,9 @@ int main(int argc, char **argv)
     uint8_t * fullImagePackets = NULL;
     uint8_t * continuedPackets = NULL;
 
-    status = importImagery(hdr, &fi, &ci, &fullImagePackets, &continuedPackets);
+    long nImages = 0;
+
+    status = importImagery(hdr, &fi, &ci, &fullImagePackets, &continuedPackets, &nImages);
     if (status)
     {
         printf("Could not import image data.\n");
@@ -92,21 +94,19 @@ int main(int argc, char **argv)
 
     struct spng_plte colorTable = getColorTable();
 
-    for (int i = 0; i < fi.numRecords-1; i+=2)
-    // for (int i = 0; i < 2-1; i+=2)
+    for (long i = 0; i < nImages-1;)
     {
-        getImagePair(fullImagePackets, continuedPackets, i, fi.numRecords, &aux1, pixels1, &aux2, pixels2);
-        if (aux1.EfiInstrumentId == 0 && aux2.EfiInstrumentId == 0) 
+        status = getAlignedImagePair(fullImagePackets, continuedPackets, i, nImages, &aux1, pixels1, &aux2, pixels2, &gotHImage, &gotVImage);
+        if (status == ISP_NO_IMAGE_PAIR)
         {
             i++;
             continue;
         }
-        alignImages(&aux1, pixels1, &aux2, pixels2, &i, &gotHImage, &gotVImage, &(fi.numRecords));
-        if (!gotHImage && !gotVImage)
-        {
+        else if (status == ISP_ALIGNED_IMAGE_PAIR)
+            i+=2;
+        else
             i++;
-            continue;
-        }
+
         sprintf(pngFile, "EFI%c_%05d.png", gotHImage ? aux1.satellite : aux2.satellite, filenameCounter);
 
         //analyze imagery

@@ -16,7 +16,7 @@ enum IMPORT_ERROR
 
 };
 
-int importImagery(const char *hdr, HdrInfo *fi, HdrInfo *ci, uint8_t **fullImagePackets, uint8_t **continuedPackets);
+int importImagery(const char *hdr, HdrInfo *fi, HdrInfo *ci, uint8_t **fullImagePackets, uint8_t **continuedPackets, long *nImages);
 
 
 #endif // _IMPORT_H
