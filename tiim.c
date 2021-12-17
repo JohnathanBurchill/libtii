@@ -3,6 +3,7 @@
 #include "isp.h"
 #include "xml.h"
 #include "import.h"
+#include "utility.h"
 #include "analysis.h"
 #include "draw.h"
 #include "png.h"
@@ -38,83 +39,37 @@ int main(int argc, char **argv)
 
     double max = atof(argv[2]);
 
-    HdrInfo fi, ci;
-    status = parseHdr(hdr, &fi, &ci);
-    if (status)
-    {
-        printf("Could not parse HDR file.\n");
-        exit(status);
-    }
+    // Data
+    ImagePackets imagePackets;
 
-    // memory pointers
-    uint8_t * fullImagePackets = NULL;
-    uint8_t * continuedPackets = NULL;
-
-    long nImages = 0;
-
-    status = importImagery(hdr, &fi, &ci, &fullImagePackets, &continuedPackets, &nImages);
+    status = importImagery(hdr, &imagePackets);
     if (status)
     {
         printf("Could not import image data.\n");
         goto cleanup;
     }
 
-
     char pngFile[FILENAME_MAX];
-    uint16_t pixels1[NUM_FULL_IMAGE_PIXELS], pixels2[NUM_FULL_IMAGE_PIXELS];
+    uint16_t pixelsH[NUM_FULL_IMAGE_PIXELS], pixelsV[NUM_FULL_IMAGE_PIXELS];
     uint8_t imageBuf[IMAGE_BUFFER_SIZE];
     FullImagePacket * fip1, *fip2;
     FullImageContinuedPacket *cip1, *cip2;
-    ImageAuxData aux1, aux2;
+    ImagePair imagePair;
+    ImageAuxData auxH, auxV;
+    imagePair.auxH = &auxH;
+    imagePair.auxV = &auxV;
+    imagePair.pixelsH = pixelsH;
+    imagePair.pixelsV = pixelsV;
     double maxValueH, maxValueV;
     int imagesRead = 0;
-    bool gotHImage;
-    bool gotVImage;
 
-    // Get time of first valid image
-    // Need valid UNIT ID so loop forward until we get a valid image
-    char startDate[16];
-    memset(startDate, 0, 16);
-    char stopDate[16];
-    memset(stopDate, 0, 16);
-    int packetIndex = 0;
-    char satellite = 'X';
     char movieFilename[FILENAME_MAX];
-    while((status = getAlignedImagePair(fullImagePackets, continuedPackets, packetIndex++, nImages, &aux1, pixels1, &aux2, pixels2, &gotHImage, &gotVImage, &imagesRead)) == ISP_NO_IMAGE_PAIR && packetIndex < nImages);
-    switch(status)
+    status = constructMovieFilename(&imagePackets, &imagePair, movieFilename);
+    if (status != UTIL_OK)
     {
-        case ISP_ALIGNED_IMAGE_PAIR:
-        case ISP_H_IMAGE:
-            sprintf(startDate, "%04d%02d%02dT%02d%02d%02d", aux1.dateTime.year, aux1.dateTime.month, aux1.dateTime.day, aux1.dateTime.hour, aux1.dateTime.minute, aux1.dateTime.second);
-            satellite = aux1.satellite;
-            break;
-        case ISP_V_IMAGE:
-            sprintf(startDate, "%04d%02d%02dT%02d%02d%02d", aux2.dateTime.year, aux2.dateTime.month, aux2.dateTime.day, aux2.dateTime.hour, aux2.dateTime.minute, aux2.dateTime.second);
-            satellite = aux2.satellite;
-            break;
-        default:
-            printf("Could not find valid start time.\n");
-            goto cleanup;
+        printf("Could not construct movie filename.\n");
+        goto cleanup;
     }
-    packetIndex = nImages-1;
-    while((status = getAlignedImagePair(fullImagePackets, continuedPackets, packetIndex--, nImages, &aux1, pixels1, &aux2, pixels2, &gotHImage, &gotVImage, &imagesRead)) == ISP_NO_IMAGE_PAIR && packetIndex >= 0);
-    switch(status)
-    {
-        case ISP_ALIGNED_IMAGE_PAIR:
-        case ISP_H_IMAGE:
-            sprintf(stopDate, "%04d%02d%02dT%02d%02d%02d", aux1.dateTime.year, aux1.dateTime.month, aux1.dateTime.day, aux1.dateTime.hour, aux1.dateTime.minute, aux1.dateTime.second);
-            satellite = aux1.satellite;
-            break;
-        case ISP_V_IMAGE:
-            sprintf(stopDate, "%04d%02d%02dT%02d%02d%02d", aux2.dateTime.year, aux2.dateTime.month, aux2.dateTime.day, aux2.dateTime.hour, aux2.dateTime.minute, aux2.dateTime.second);
-            satellite = aux2.satellite;
-            break;
-        default:
-            printf("Could not find valid stop time.\n");
-            goto cleanup;
-    }
-    sprintf(movieFilename, "SW_OPER_EFI%cTIIMOV_%s_%s_%s.mp4", satellite, startDate, stopDate, TIIM_VERSION);
-
     // Construct frames and export to PNG files
     int filenameCounter = 0;
 
@@ -127,22 +82,22 @@ int main(int argc, char **argv)
 
     struct spng_plte colorTable = getColorTable();
 
-    for (long i = 0; i < nImages-1;)
+    for (long i = 0; i < imagePackets.numberOfImages-1;)
     {
-        status = getAlignedImagePair(fullImagePackets, continuedPackets, i, nImages, &aux1, pixels1, &aux2, pixels2, &gotHImage, &gotVImage, &imagesRead);
+        status = getAlignedImagePair(&imagePackets, i, &imagePair, &imagesRead);
         i+=imagesRead;
         if (status == ISP_NO_IMAGE_PAIR)
             continue;
 
         //analyze imagery
-        analyzeImage(pixels1, gotHImage, max, &statsH);
-        analyzeImage(pixels2, gotVImage, max, &statsV);
+        analyzeImage(pixelsH, imagePair.gotImageH, max, &statsH);
+        analyzeImage(pixelsV, imagePair.gotImageV, max, &statsV);
 
         // Prepare the PNG frame buffer
-        drawImage(imageBuf, &aux1, pixels1, gotHImage, &statsH, &aux2, pixels2, gotVImage, &statsV);
+        drawImage(imageBuf, &imagePair, &statsH, &statsV);
 
         // Write the frame to file
-        sprintf(pngFile, "EFI%c_%05d.png", gotHImage ? aux1.satellite : aux2.satellite, filenameCounter);
+        sprintf(pngFile, "EFI%c_%05d.png", getSatellite(&imagePair), filenameCounter);
         if (!writePng(pngFile, imageBuf, IMAGE_WIDTH, IMAGE_HEIGHT, &colorTable))
         {
             filenameCounter++;
@@ -162,8 +117,8 @@ int main(int argc, char **argv)
 
 
 cleanup:
-    if (fullImagePackets != NULL) free(fullImagePackets);
-    if (continuedPackets != NULL) free(continuedPackets);
+    if (imagePackets.fullImagePackets != NULL) free(imagePackets.fullImagePackets);
+    if (imagePackets.continuedPackets != NULL) free(imagePackets.continuedPackets);
     fflush(stdout);
 
     exit(0);

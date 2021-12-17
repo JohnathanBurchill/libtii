@@ -1,13 +1,24 @@
 #include "import.h"
+#include "isp.h"
+
+#include "xml.h"
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
 
-int importImagery(const char *hdr, HdrInfo *fi, HdrInfo *ci, uint8_t **fullImagePacketsPtr, uint8_t **continuedPacketsPtr, long *nImagePairs)
+int importImagery(const char *hdr, ImagePackets *imagePackets)
 {
     int status = IMPORT_OK;
+
+    HdrInfo fi, ci;
+    status = parseHdr(hdr, &fi, &ci);
+    if (status)
+    {
+        return status;
+    }
+
     // get DBL filename and check that we can open it.
     char dbl[FILENAME_MAX];
     snprintf(dbl, strlen(hdr)-3, "%s", hdr);
@@ -28,22 +39,22 @@ int importImagery(const char *hdr, HdrInfo *fi, HdrInfo *ci, uint8_t **fullImage
         status = IMPORT_DBL_FILE_READ_PERMISION;
         goto cleanup;
     }
-    long nImages = fi->numRecords;
+    long nImages = fi.numRecords;
 
-    if (fi->numRecords < ci->numRecords)
+    if (fi.numRecords < ci.numRecords)
     {
         // Increase buffer size to be able to display partial images
-        nImages = ci->numRecords;
+        nImages = ci.numRecords;
     }
 
-    size_t fullImageBufferSize = (size_t) nImages * (size_t) fi->recordSize;
+    size_t fullImageBufferSize = (size_t) nImages * (size_t) fi.recordSize;
     fullImagePackets = (uint8_t*) malloc(fullImageBufferSize * sizeof(uint8_t));
     if (fullImagePackets == NULL)
     {
         status = IMPORT_DBL_BUFFER_ALLOCATION;
         goto cleanup;
     }
-    size_t continuedBufferSize = (size_t) nImages * (size_t) ci->recordSize;
+    size_t continuedBufferSize = (size_t) nImages * (size_t) ci.recordSize;
     continuedPackets = (uint8_t*) malloc(continuedBufferSize * sizeof(uint8_t));
     if (fullImagePackets == NULL)
     {
@@ -52,20 +63,20 @@ int importImagery(const char *hdr, HdrInfo *fi, HdrInfo *ci, uint8_t **fullImage
     }
 
     // Bytes to read
-    size_t fullImageTotalBytes = (size_t) fi->numRecords * (size_t) fi->recordSize;
-    size_t continuedTotalBytes = (size_t) ci->numRecords * (size_t) ci->recordSize;
+    size_t fullImageTotalBytes = (size_t) fi.numRecords * (size_t) fi.recordSize;
+    size_t continuedTotalBytes = (size_t) ci.numRecords * (size_t) ci.recordSize;
 
     size_t bytesRead = 0;
     // Set file offset to read full image packets
-    if (fseek(dblFile, fi->offset, SEEK_SET))
+    if (fseek(dblFile, fi.offset, SEEK_SET))
     {
         status = IMPORT_DBL_FILE_SEEK;
         goto cleanup;
     }
     uint8_t * bufferStart = (uint8_t*)fullImagePackets;
-    if (fi->numRecords < ci->numRecords)
+    if (fi.numRecords < ci.numRecords)
     {
-        bufferStart += (ci->numRecords - fi->numRecords) * fi->recordSize;
+        bufferStart += (ci.numRecords - fi.numRecords) * fi.recordSize;
     }    
     if ((bytesRead = fread(bufferStart, sizeof(uint8_t), fullImageTotalBytes, dblFile)) != fullImageTotalBytes)
     {
@@ -74,15 +85,15 @@ int importImagery(const char *hdr, HdrInfo *fi, HdrInfo *ci, uint8_t **fullImage
     }
 
     // Set file offset to read full image continued packets
-    if (fseek(dblFile, ci->offset, SEEK_SET))
+    if (fseek(dblFile, ci.offset, SEEK_SET))
     {
         status = IMPORT_DBL_FILE_SEEK;
         goto cleanup;
     }
     bufferStart = (uint8_t*)continuedPackets;
-    if (ci->numRecords < fi->numRecords)
+    if (ci.numRecords < fi.numRecords)
     {
-        bufferStart += (fi->numRecords - ci->numRecords) * ci->recordSize;
+        bufferStart += (fi.numRecords - ci.numRecords) * ci.recordSize;
     }
     if ((bytesRead = fread((uint8_t*)bufferStart, sizeof(uint8_t), continuedTotalBytes, dblFile)) != continuedTotalBytes)
     {
@@ -93,9 +104,9 @@ int importImagery(const char *hdr, HdrInfo *fi, HdrInfo *ci, uint8_t **fullImage
 
 
 cleanup:
-    *nImagePairs = nImages;
-    *fullImagePacketsPtr = fullImagePackets;
-    *continuedPacketsPtr = continuedPackets;
+    imagePackets->numberOfImages = nImages;
+    imagePackets->fullImagePackets = fullImagePackets;
+    imagePackets->continuedPackets = continuedPackets;
     if (dblFile != NULL) fclose(dblFile);
     return status; 
 }

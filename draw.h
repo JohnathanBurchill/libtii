@@ -7,6 +7,6 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-void drawImage(uint8_t * imageBuf, ImageAuxData *aux1, uint16_t *pixels1, bool gotHImage, ImageStats *statsH, ImageAuxData *aux2, uint16_t *pixels2, bool gotVImage, ImageStats *statsV);
+void drawImage(uint8_t * imageBuf, ImagePair *imagePair, ImageStats *statsH, ImageStats *statsV);
 
 #endif // _DRAW_H

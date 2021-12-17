@@ -9,7 +9,7 @@
 #include <string.h>
 #include <math.h>
 
-void drawImage(uint8_t * imageBuf, ImageAuxData *auxH, uint16_t *pixels1, bool gotHImage, ImageStats *statsH, ImageAuxData *auxV, uint16_t *pixels2, bool gotVImage, ImageStats *statsV)
+void drawImage(uint8_t * imageBuf, ImagePair *imagePair, ImageStats *statsH, ImageStats *statsV)
 {
     double v;
     int x, y;
@@ -24,9 +24,9 @@ void drawImage(uint8_t * imageBuf, ImageAuxData *auxH, uint16_t *pixels1, bool g
     // Raw H image
     for (int k = 0; k < NUM_FULL_IMAGE_PIXELS; k++ )
     {
-        if (gotHImage)
+        if (imagePair->gotImageH)
         {
-            v = floor((double)pixels1[k] / statsH->maxValue * MAX_COLOR_VALUE);
+            v = floor((double)(imagePair->pixelsH[k]) / statsH->maxValue * MAX_COLOR_VALUE);
             if (v > MAX_COLOR_VALUE) v = MAX_COLOR_VALUE;
             if (v < MIN_COLOR_VALUE) v = MIN_COLOR_VALUE;
         }
@@ -52,9 +52,9 @@ void drawImage(uint8_t * imageBuf, ImageAuxData *auxH, uint16_t *pixels1, bool g
     // Raw V image
     for (int k = 0; k < NUM_FULL_IMAGE_PIXELS; k++ )
     {
-        if (gotVImage)
+        if (imagePair->gotImageV)
         {
-            v = floor((double)pixels2[k] / statsV->maxValue * MAX_COLOR_VALUE);
+            v = floor((double)(imagePair->pixelsV[k]) / statsV->maxValue * MAX_COLOR_VALUE);
             if (v > MAX_COLOR_VALUE) v = MAX_COLOR_VALUE;
             if (v < MIN_COLOR_VALUE) v = MIN_COLOR_VALUE;
         }
@@ -104,16 +104,16 @@ void drawImage(uint8_t * imageBuf, ImageAuxData *auxH, uint16_t *pixels1, bool g
     annotate(title, 9, xoff + cbarWidth + cbarSeparation + cbarWidth+3, yoff - MAX_COLOR_VALUE/2 - 2, imageBuf);
 
     // Aux data
-    int mo = (auxH->dateTime.month-1)*3;
-    if (gotHImage)
+    int mo = (imagePair->auxH->dateTime.month-1)*3;
+    if (imagePair->gotImageH)
     {
-        mo = (auxH->dateTime.month-1)*3;
-        sprintf(title, "Swarm %c %2d %c%c%c %4d %02d:%02d:%02d UT", auxH->satellite, auxH->dateTime.day, months[mo], months[mo+1], months[mo+2], auxH->dateTime.year, auxH->dateTime.hour, auxH->dateTime.minute, auxH->dateTime.second);
+        mo = (imagePair->auxH->dateTime.month-1)*3;
+        sprintf(title, "Swarm %c %2d %c%c%c %4d %02d:%02d:%02d UT", imagePair->auxH->satellite, imagePair->auxH->dateTime.day, months[mo], months[mo+1], months[mo+2], imagePair->auxH->dateTime.year, imagePair->auxH->dateTime.hour, imagePair->auxH->dateTime.minute, imagePair->auxH->dateTime.second);
     }
     else
     {
-        mo = (auxV->dateTime.month-1)*3;
-        sprintf(title, "Swarm %c %2d %c%c%c %4d %02d:%02d:%02d UT", auxV->satellite, auxV->dateTime.day, months[mo], months[mo+1], months[mo+2], auxV->dateTime.year, auxV->dateTime.hour, auxV->dateTime.minute, auxV->dateTime.second);
+        mo = (imagePair->auxV->dateTime.month-1)*3;
+        sprintf(title, "Swarm %c %2d %c%c%c %4d %02d:%02d:%02d UT", imagePair->auxV->satellite, imagePair->auxV->dateTime.day, months[mo], months[mo+1], months[mo+2], imagePair->auxV->dateTime.year, imagePair->auxV->dateTime.hour, imagePair->auxV->dateTime.minute, imagePair->auxV->dateTime.second);
     }
     annotate(title, 15, IMAGE_WIDTH/2 - strlen(title)/2*10, 5, imageBuf);
 
@@ -121,14 +121,14 @@ void drawImage(uint8_t * imageBuf, ImageAuxData *auxH, uint16_t *pixels1, bool g
     annotate("Raw V", 15, 220 - 8*2.5, IMAGE_OFFSET_Y + 200, imageBuf);
 
     // Add times in images for montages
-    if (gotHImage)
+    if (imagePair->gotImageH)
     {
-        sprintf(title, "%c %02d:%02d:%02d UT", auxH->sensor, auxH->dateTime.hour, auxH->dateTime.minute, auxH->dateTime.second);
+        sprintf(title, "%c %02d:%02d:%02d UT", imagePair->auxH->sensor, imagePair->auxH->dateTime.hour, imagePair->auxH->dateTime.minute, imagePair->auxH->dateTime.second);
         annotate(title, 9, 30, 40, imageBuf);
     }
-    if (gotVImage)
+    if (imagePair->gotImageV)
     {
-        sprintf(title, "%c %02d:%02d:%02d UT", auxV->sensor, auxV->dateTime.hour, auxV->dateTime.minute, auxV->dateTime.second);
+        sprintf(title, "%c %02d:%02d:%02d UT", imagePair->auxV->sensor, imagePair->auxV->dateTime.hour, imagePair->auxV->dateTime.minute, imagePair->auxV->dateTime.second);
         annotate(title, 9, 165, 40, imageBuf);
     }
 
@@ -146,17 +146,17 @@ void drawImage(uint8_t * imageBuf, ImageAuxData *auxH, uint16_t *pixels1, bool g
     annotate("  Measles:", 12, MONITOR_LABEL_OFFSET_X, 50 + 7 * LINE_SPACING + MONITOR_LABEL_OFFSET_Y, imageBuf);
     annotate(" Tot. Msl:", 12, MONITOR_LABEL_OFFSET_X, 50 + 8 * LINE_SPACING + MONITOR_LABEL_OFFSET_Y, imageBuf);
 
-    if (gotHImage)
+    if (imagePair->gotImageH)
     {
-        sprintf(title, "  %6.0lf V", auxH->McpVoltageMonitor);
+        sprintf(title, "  %6.0lf V", imagePair->auxH->McpVoltageMonitor);
         annotate(title, 12, MONITOR_LABEL_OFFSET_X + 80, 50 + MONITOR_LABEL_OFFSET_Y, imageBuf);
-        sprintf(title, "  %6.0lf V", auxH->PhosphorVoltageMonitor);
+        sprintf(title, "  %6.0lf V", imagePair->auxH->PhosphorVoltageMonitor);
         annotate(title, 12, MONITOR_LABEL_OFFSET_X + 80, 50 + LINE_SPACING + MONITOR_LABEL_OFFSET_Y, imageBuf);
-        sprintf(title, "  %6.1lf V", auxH->BiasGridVoltageMonitor);
+        sprintf(title, "  %6.1lf V", imagePair->auxH->BiasGridVoltageMonitor);
         annotate(title, 12, MONITOR_LABEL_OFFSET_X + 80, 50 + 2 * LINE_SPACING + MONITOR_LABEL_OFFSET_Y, imageBuf);
-        sprintf(title, "  %6.1lf V", auxH->FaceplateVoltageMonitor);
+        sprintf(title, "  %6.1lf V", imagePair->auxH->FaceplateVoltageMonitor);
         annotate(title, 12, MONITOR_LABEL_OFFSET_X + 80, 50 + 3 * LINE_SPACING + MONITOR_LABEL_OFFSET_Y, imageBuf);
-        sprintf(title, "  %6.1lf C", auxH->CcdTemperature);
+        sprintf(title, "  %6.1lf C", imagePair->auxH->CcdTemperature);
         annotate(title, 12, MONITOR_LABEL_OFFSET_X + 80, 50 + 4 * LINE_SPACING + MONITOR_LABEL_OFFSET_Y, imageBuf);
         sprintf(title, "  %6d", statsH->paCount);
         annotate(title, 12, MONITOR_LABEL_OFFSET_X + 80, 50 + 5 * LINE_SPACING + MONITOR_LABEL_OFFSET_Y, imageBuf);
@@ -168,17 +168,17 @@ void drawImage(uint8_t * imageBuf, ImageAuxData *auxH, uint16_t *pixels1, bool g
         annotate(title, 12, MONITOR_LABEL_OFFSET_X + 80, 50 + 8 * LINE_SPACING + MONITOR_LABEL_OFFSET_Y, imageBuf);
     }
 
-    if (gotVImage)
+    if (imagePair->gotImageV)
     {            
-        sprintf(title, "  %6.0lf V", auxV->McpVoltageMonitor);
+        sprintf(title, "  %6.0lf V", imagePair->auxV->McpVoltageMonitor);
         annotate(title, 12, MONITOR_LABEL_OFFSET_X + 150, 50 + MONITOR_LABEL_OFFSET_Y, imageBuf);
-        sprintf(title, "  %6.0lf V", auxV->PhosphorVoltageMonitor);
+        sprintf(title, "  %6.0lf V", imagePair->auxV->PhosphorVoltageMonitor);
         annotate(title, 12, MONITOR_LABEL_OFFSET_X + 150, 50 + LINE_SPACING + MONITOR_LABEL_OFFSET_Y, imageBuf);
-        sprintf(title, "  %6.1lf V", auxV->BiasGridVoltageMonitor);
+        sprintf(title, "  %6.1lf V", imagePair->auxV->BiasGridVoltageMonitor);
         annotate(title, 12, MONITOR_LABEL_OFFSET_X + 150, 50 + 2 * LINE_SPACING + MONITOR_LABEL_OFFSET_Y, imageBuf);
-        sprintf(title, "  %6.1lf V", auxV->FaceplateVoltageMonitor);
+        sprintf(title, "  %6.1lf V", imagePair->auxV->FaceplateVoltageMonitor);
         annotate(title, 12, MONITOR_LABEL_OFFSET_X + 150, 50 + 3 * LINE_SPACING + MONITOR_LABEL_OFFSET_Y, imageBuf);
-        sprintf(title, "  %6.1lf C", auxV->CcdTemperature);
+        sprintf(title, "  %6.1lf C", imagePair->auxV->CcdTemperature);
         annotate(title, 12, MONITOR_LABEL_OFFSET_X + 150, 50 + 4 * LINE_SPACING + MONITOR_LABEL_OFFSET_Y, imageBuf);
         sprintf(title, "  %6d", statsV->paCount);
         annotate(title, 12, MONITOR_LABEL_OFFSET_X + 150, 50 + 5 * LINE_SPACING + MONITOR_LABEL_OFFSET_Y, imageBuf);
@@ -193,9 +193,9 @@ void drawImage(uint8_t * imageBuf, ImageAuxData *auxH, uint16_t *pixels1, bool g
     // PA region H image
     for (int k = 0; k < NUM_FULL_IMAGE_PIXELS; k++ )
     {
-        if (gotHImage)
+        if (imagePair->gotImageH)
         {
-            v = floor((double)pixels1[k] / statsH->maxValue * MAX_COLOR_VALUE);
+            v = floor((double)(imagePair->pixelsH[k]) / statsH->maxValue * MAX_COLOR_VALUE);
             if (v > MAX_COLOR_VALUE) v = MAX_COLOR_VALUE;
             if (v < MIN_COLOR_VALUE) v = MIN_COLOR_VALUE;
         }
@@ -216,9 +216,9 @@ void drawImage(uint8_t * imageBuf, ImageAuxData *auxH, uint16_t *pixels1, bool g
                 imageIndex = (IMAGE_WIDTH*(PA_REGION_IMAGE_SCALE*(y)+sy+PA_REGION_IMAGE_OFFSET_Y)+(PA_REGION_IMAGE_SCALE*(x)+sx+PA_REGION_IMAGE_OFFSET_X));
                 if (imageIndex < IMAGE_BUFFER_SIZE)
                 {
-                    if (r1 >= PA_MINIMUM_RADIUS && r <= PA_MAXIMUM_RADIUS && gotHImage)
+                    if (r1 >= PA_MINIMUM_RADIUS && r <= PA_MAXIMUM_RADIUS && imagePair->gotImageH)
                         imageBuf[imageIndex] = v;
-                    else if (gotHImage)
+                    else if (imagePair->gotImageH)
                         imageBuf[imageIndex] = BACKGROUND_COLOR;
                     else 
                         imageBuf[imageIndex] = FOREGROUND_COLOR;
@@ -231,9 +231,9 @@ void drawImage(uint8_t * imageBuf, ImageAuxData *auxH, uint16_t *pixels1, bool g
     // PA region V image
     for (int k = 0; k < NUM_FULL_IMAGE_PIXELS; k++ )
     {
-        if (gotVImage)
+        if (imagePair->gotImageV)
         {
-            v = floor((double)pixels2[k] / statsV->maxValue * MAX_COLOR_VALUE);
+            v = floor((double)(imagePair->pixelsV[k]) / statsV->maxValue * MAX_COLOR_VALUE);
             if (v > MAX_COLOR_VALUE) v = MAX_COLOR_VALUE;
             if (v < MIN_COLOR_VALUE) v = MIN_COLOR_VALUE;
         }
@@ -254,9 +254,9 @@ void drawImage(uint8_t * imageBuf, ImageAuxData *auxH, uint16_t *pixels1, bool g
                 imageIndex = (IMAGE_WIDTH*(PA_REGION_IMAGE_SCALE*(y)+sy+PA_REGION_IMAGE_OFFSET_Y)+(PA_REGION_IMAGE_SCALE*(x)+sx + PA_REGION_IMAGE_SCALE*V_IMAGE_OFFSET_X + PA_REGION_IMAGE_OFFSET_X));
                 if (imageIndex < IMAGE_BUFFER_SIZE)
                 {
-                    if (r1 >= PA_MINIMUM_RADIUS && r <= PA_MAXIMUM_RADIUS && gotVImage)
+                    if (r1 >= PA_MINIMUM_RADIUS && r <= PA_MAXIMUM_RADIUS && imagePair->gotImageV)
                         imageBuf[imageIndex] = v;
-                    else if (gotVImage)
+                    else if (imagePair->gotImageV)
                         imageBuf[imageIndex] = BACKGROUND_COLOR;
                     else 
                         imageBuf[imageIndex] = FOREGROUND_COLOR;

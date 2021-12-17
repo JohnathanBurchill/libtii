@@ -11,6 +11,14 @@
 #define NUM_FULL_IMAGE_CONT_PACKET_PIXELS 1299
 #define NUM_FULL_IMAGE_PIXELS 2640
 
+typedef struct imagePackets
+{
+    uint8_t *fullImagePackets;
+    uint8_t *continuedPackets;
+    long numberOfImages;
+
+} ImagePackets;
+
 typedef struct fullImagePacket
 {
     uint8_t IspHeader[20];
@@ -78,6 +86,16 @@ typedef struct imageAuxData {
 
 } ImageAuxData;
 
+typedef struct imagePair
+{
+    ImageAuxData *auxH;
+    uint16_t *pixelsH;
+    bool gotImageH;
+    ImageAuxData *auxV;
+    uint16_t *pixelsV;
+    bool gotImageV;
+} ImagePair;
+
 enum EFI_UNIT {
     UNIT_INVALID = 0,
     UNIT_EFI_C = 1,
@@ -101,10 +119,17 @@ enum ISP_STATUS
 
 void getImageData(FullImagePacket * fip, FullImageContinuedPacket *cip, ImageAuxData *aux, uint16_t *pixels);
 
-void getImagePair(uint8_t *fullImagePackets, uint8_t *continuedPackets, long packetIndex, long numberOfPackets, ImageAuxData * aux1, uint16_t *pixels1, ImageAuxData *aux2, uint16_t *pixels2);
+void getImagePair(ImagePackets *imagePackets, long packetIndex, ImagePair *imagePair);
 
-int alignImages(ImageAuxData *aux1, uint16_t *pixels1, ImageAuxData *aux2, uint16_t *pixels2, bool *gotHImage, bool *gotVImage);
+int alignImages(ImagePair *imagePair);
 
-int getAlignedImagePair(uint8_t *fullImagePackets, uint8_t *continuedPackets, long packetIndex, long numberOfPackets, ImageAuxData * aux1, uint16_t *pixels1, ImageAuxData *aux2, uint16_t *pixels2, bool *gotHImage, bool *gotVImage, int *imagesRead);
+int getAlignedImagePair(ImagePackets *imagePackets, long packetIndex, ImagePair *imagePair, int *imagesRead);
+
+int getFirstImagePair(ImagePackets *imagePackets, ImagePair *imagePair);
+int getLastImagePair(ImagePackets *imagePackets, ImagePair *imagePair);
+
+IspDateTime * getIspDateTime(ImagePair *imagePair);
+char getSatellite(ImagePair *imagePair);
+
 
 #endif // _ISP_H

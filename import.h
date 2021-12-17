@@ -1,6 +1,7 @@
 #ifndef _IMPORT_H
 #define _IMPORT_H
 
+#include "isp.h"
 #include "xml.h"
 
 #include <stdint.h>
@@ -16,7 +17,6 @@ enum IMPORT_ERROR
 
 };
 
-int importImagery(const char *hdr, HdrInfo *fi, HdrInfo *ci, uint8_t **fullImagePackets, uint8_t **continuedPackets, long *nImages);
-
+int importImagery(const char *hdr, ImagePackets *imagePackets);
 
 #endif // _IMPORT_H
