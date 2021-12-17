@@ -245,9 +245,9 @@ void drawImage(uint8_t * imageBuf, ImageAuxData *auxH, uint16_t *pixels1, bool g
                 imageIndex = (IMAGE_WIDTH*(PA_REGION_IMAGE_SCALE*(y)+sy+PA_REGION_IMAGE_OFFSET_Y)+(PA_REGION_IMAGE_SCALE*(x)+sx + PA_REGION_IMAGE_SCALE*V_IMAGE_OFFSET_X + PA_REGION_IMAGE_OFFSET_X));
                 if (imageIndex < IMAGE_BUFFER_SIZE)
                 {
-                    if (r1 >= PA_MINIMUM_RADIUS && r <= PA_MAXIMUM_RADIUS && gotHImage)
+                    if (r1 >= PA_MINIMUM_RADIUS && r <= PA_MAXIMUM_RADIUS && gotVImage)
                         imageBuf[imageIndex] = v;
-                    else if (gotHImage)
+                    else if (gotVImage)
                         imageBuf[imageIndex] = BACKGROUND_COLOR;
                     else 
                         imageBuf[imageIndex] = FOREGROUND_COLOR;
