@@ -34,8 +34,8 @@ void getImageData(FullImagePacket * fip, FullImageContinuedPacket * cip, ImageAu
     aux->GainTableId = ((fullBytes[11] & 0x01) << 3) | (fullBytes[12] >> 5);
     aux->EfiInstrumentId = (fullBytes[12] >> 1) & 0x0f;
 
-    char efiUnit[3] = {'C', 'B', 'A'};
-    aux->satellite = efiUnit[aux->EfiInstrumentId-1];
+    char efiUnit[4] = {'X', 'C', 'B', 'A'};
+    aux->satellite = efiUnit[aux->EfiInstrumentId];
     aux->sensor = aux->SensorNumber ? 'V' : 'H';
     // ISP time (epoch 2000-01-01 00:00:00 UT)
     uint8_t * cds = fip->DataFieldHeader+4;
@@ -112,8 +112,8 @@ int getImagePair(uint8_t *fullImagePackets, uint8_t *continuedPackets, long pack
 
 void alignImages(ImageAuxData *aux1, uint16_t *pixels1, ImageAuxData *aux2, uint16_t *pixels2, int *packetIndex, bool *gotHImage, bool *gotVImage, long *numFullImageRecords)
 {
-    *gotHImage = true;
-    *gotVImage = true;
+    *gotHImage = aux1->EfiInstrumentId != 0; // Can be 0 when packet is missing
+    *gotVImage = aux2->EfiInstrumentId != 0;
 
     // Check that image 1 is an H image. If not, increase i by 1 and decrease numFullImageRecords by 1.
     if (aux1->SensorNumber == 1)

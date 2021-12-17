@@ -79,7 +79,7 @@ void drawImage(uint8_t * imageBuf, ImageAuxData *auxH, uint16_t *pixels1, bool g
 
     // color scales
     int xoff = IMAGE_OFFSET_X + 270;
-    int yoff = IMAGE_OFFSET_Y + RAW_IMAGE_SCALE * 66 - 37;
+    int yoff = IMAGE_OFFSET_Y + RAW_IMAGE_SCALE * 66 - 30;
     int cbarWidth = 8;
     int cbarSeparation = 30;
     for (int x = xoff; x < xoff+cbarWidth; x++)
@@ -94,8 +94,8 @@ void drawImage(uint8_t * imageBuf, ImageAuxData *auxH, uint16_t *pixels1, bool g
     memset(title, 0, 40);
 
     annotate("DN", 12, xoff+cbarWidth + cbarSeparation/2 - 7, yoff + 7, imageBuf);
-    annotate("H", 12, xoff, yoff - MAX_COLOR_VALUE / 2 - 20, imageBuf);
-    annotate("V", 12, xoff + cbarWidth + cbarSeparation, yoff - MAX_COLOR_VALUE / 2 - 20, imageBuf);
+    annotate("H", 12, xoff-1, yoff - MAX_COLOR_VALUE / 2 - 20, imageBuf);
+    annotate("V", 12, xoff-1 + cbarWidth + cbarSeparation, yoff - MAX_COLOR_VALUE / 2 - 20, imageBuf);
     annotate("0", 9, xoff+cbarWidth+3, yoff-10, imageBuf);
     annotate("0", 9, xoff + cbarWidth + cbarSeparation + cbarWidth+3, yoff-10, imageBuf);
     sprintf(title, "%d", (int)floor(statsH->maxValue));
@@ -258,9 +258,9 @@ void drawImage(uint8_t * imageBuf, ImageAuxData *auxH, uint16_t *pixels1, bool g
     }
 
     // PA region annotations
-    annotate("PA analysis", 12, 75, PA_REGION_IMAGE_OFFSET_Y-20, imageBuf);
-    annotate("H", 12, 75, PA_REGION_IMAGE_OFFSET_Y + 130, imageBuf);
-    annotate("V", 12, 170, PA_REGION_IMAGE_OFFSET_Y + 130, imageBuf);
+    annotate("PA analysis", 12, 70, PA_REGION_IMAGE_OFFSET_Y-20, imageBuf);
+    annotate("H", 12, 65, PA_REGION_IMAGE_OFFSET_Y + 130, imageBuf);
+    annotate("V", 12, 155, PA_REGION_IMAGE_OFFSET_Y + 130, imageBuf);
 
 
 

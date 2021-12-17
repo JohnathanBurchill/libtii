@@ -1,7 +1,41 @@
 #include "png.h"
 
+#include "tiim.h"
+#include "colortable.h"
+#include "fonts.h"
+
 #include <spng.h>
 #include <errno.h>
+
+struct spng_plte getColorTable()
+{
+    struct spng_plte colorTable;
+    colorTable.n_entries = 256;
+    for (int c = MIN_COLOR_VALUE; c <= MAX_COLOR_VALUE; c++)
+    {
+        colorTable.entries[c].red = colorsrgbrgb[3*c];
+        colorTable.entries[c].green = colorsrgbrgb[3*c + 1];
+        colorTable.entries[c].blue = colorsrgbrgb[3*c + 2];
+    }
+    // Foreground black
+    colorTable.entries[252].red = FONTLEVEL1;
+    colorTable.entries[252].green = FONTLEVEL1;
+    colorTable.entries[252].blue = FONTLEVEL1;
+    colorTable.entries[253].red = FONTLEVEL2;
+    colorTable.entries[253].green = FONTLEVEL2;
+    colorTable.entries[253].blue = FONTLEVEL2;
+    colorTable.entries[254].red = FONTLEVEL3;
+    colorTable.entries[254].green = FONTLEVEL3;
+    colorTable.entries[254].blue = FONTLEVEL3;
+    // Background white / transparent
+    colorTable.entries[BACKGROUND_COLOR].red = 255;
+    colorTable.entries[BACKGROUND_COLOR].green = 255;
+    colorTable.entries[BACKGROUND_COLOR].blue = 255;
+    colorTable.entries[BACKGROUND_COLOR].alpha = 0;
+
+    return colorTable;
+
+}
 
 int writePng(const char * filename, uint8_t *pixels, int width, int height, struct spng_plte *colorTable)
 {

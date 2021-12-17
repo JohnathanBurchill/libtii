@@ -5,7 +5,6 @@
 #include "analysis.h"
 #include "draw.h"
 #include "png.h"
-#include "colortable.h"
 #include "fonts.h"
 
 #include <stdio.h>
@@ -82,46 +81,66 @@ int main(int argc, char **argv)
         printf("I'm having trouble reading your .DBL file.\n");
         goto cleanup;
     }
-    size_t fullImageTotalBytes = (size_t) fi.numRecords * (size_t) fi.recordSize;
-    fullImagePackets = (uint8_t*) malloc(fullImageTotalBytes * sizeof(uint8_t));
+    long nImages = fi.numRecords;
+    if (fi.numRecords < ci.numRecords)
+    {
+        // Increase buffer size to be able to display partial images
+        nImages = ci.numRecords;
+    }
+    size_t fullImageBufferSize = (size_t) nImages * (size_t) fi.recordSize;
+    fullImagePackets = (uint8_t*) malloc(fullImageBufferSize * sizeof(uint8_t));
     if (fullImagePackets == NULL)
     {
         printf("Danger, Will Robinson! I could not find memory to store the full image packets.");
         goto cleanup;
     }
-    size_t continuedTotalBytes = (size_t) ci.numRecords * (size_t) ci.recordSize;
-    continuedPackets = (uint8_t*) malloc(continuedTotalBytes * sizeof(uint8_t));
+    size_t continuedBufferSize = (size_t) nImages * (size_t) ci.recordSize;
+    continuedPackets = (uint8_t*) malloc(continuedBufferSize * sizeof(uint8_t));
     if (fullImagePackets == NULL)
     {
         printf("Danger, Will Robinson! I could not find memory to store the full image continued packets.");
         goto cleanup;
     }
 
+    // Bytes to read
+    size_t fullImageTotalBytes = (size_t) fi.numRecords * (size_t) fi.recordSize;
+    size_t continuedTotalBytes = (size_t) ci.numRecords * (size_t) ci.recordSize;
 
     size_t bytesRead = 0;
     // Set file offset to read full image packets
     if (fseek(dblFile, fi.offset, SEEK_SET))
     {
-        printf("Your OS is giving me a hard time - I was't able to seek to the full-image packets in the .DBL file.\n");
-        printf("It tells me this: %s\n", strerror(errno));
-    }
-    if ((bytesRead = fread((uint8_t*)fullImagePackets, sizeof(uint8_t), fullImageTotalBytes, dblFile)) != fullImageTotalBytes)
-    {
-        printf("Had trouble reading the full image bytes. Expected to read %ld bytes, got %ld bytes. Bye.\n", fullImageTotalBytes, bytesRead);
+        printf("Unable to seek full image packet offset.\n");
         goto cleanup;
     }
+    uint8_t * bufferStart = (uint8_t*)fullImagePackets;
+    if (fi.numRecords < ci.numRecords)
+    {
+        bufferStart += (ci.numRecords - fi.numRecords) * fi.recordSize;
+    }    
+    if ((bytesRead = fread(bufferStart, sizeof(uint8_t), fullImageTotalBytes, dblFile)) != fullImageTotalBytes)
+    {
+        printf("Unable to read full image packets.\n");
+        goto cleanup;
+    }
+
     // Set file offset to read full image continued packets
     if (fseek(dblFile, ci.offset, SEEK_SET))
     {
-        printf("Your OS is giving me a hard time - I was't able to seek to the full-image-continued packets in the .DBL file.\n");
-        printf("It tells me this: %s\n", strerror(errno));
-    }
-    if ((bytesRead = fread((uint8_t*)continuedPackets, sizeof(uint8_t), continuedTotalBytes, dblFile)) != continuedTotalBytes)
-    {
-        printf("Had trouble reading the full-image-continued bytes. Expected to read %ld bytes, got %ld bytes. Bye.\n", continuedTotalBytes, bytesRead);
+        printf("Unable to seek full image continued packet offset.\n");
         goto cleanup;
     }
-    // Set file offset to read full image continued packets
+    bufferStart = (uint8_t*)continuedPackets;
+    if (ci.numRecords < fi.numRecords)
+    {
+        bufferStart += (fi.numRecords - ci.numRecords) * ci.recordSize;
+    }
+    if ((bytesRead = fread((uint8_t*)bufferStart, sizeof(uint8_t), continuedTotalBytes, dblFile)) != continuedTotalBytes)
+    {
+        printf("Unable to read full image continued packets.\n");
+        goto cleanup;
+    }
+
     uint16_t pixels1[NUM_FULL_IMAGE_PIXELS], pixels2[NUM_FULL_IMAGE_PIXELS];
     uint8_t imageBuf[IMAGE_BUFFER_SIZE];
     FullImagePacket * fip1, *fip2;
@@ -132,32 +151,6 @@ int main(int argc, char **argv)
     // anomaly statistics
     int paCountsH, paCountsV, cumulativePaCountsH, cumulativePaCountsV;
     int measlesCountsH, measlesCountsV, cumulativeMeaslesCountsH, cumulativeMeaslesCountsV;
-
-
-    struct spng_plte colorTable;
-    colorTable.n_entries = 256;
-    for (int c = MIN_COLOR_VALUE; c <= MAX_COLOR_VALUE; c++)
-    {
-        colorTable.entries[c].red = colorsrgbrgb[3*c];
-        colorTable.entries[c].green = colorsrgbrgb[3*c + 1];
-        colorTable.entries[c].blue = colorsrgbrgb[3*c + 2];
-    }
-    // Foreground black
-    colorTable.entries[252].red = FONTLEVEL1;
-    colorTable.entries[252].green = FONTLEVEL1;
-    colorTable.entries[252].blue = FONTLEVEL1;
-    colorTable.entries[253].red = FONTLEVEL2;
-    colorTable.entries[253].green = FONTLEVEL2;
-    colorTable.entries[253].blue = FONTLEVEL2;
-    colorTable.entries[254].red = FONTLEVEL3;
-    colorTable.entries[254].green = FONTLEVEL3;
-    colorTable.entries[254].blue = FONTLEVEL3;
-    // Background white / transparent
-    colorTable.entries[BACKGROUND_COLOR].red = 255;
-    colorTable.entries[BACKGROUND_COLOR].green = 255;
-    colorTable.entries[BACKGROUND_COLOR].blue = 255;
-    colorTable.entries[BACKGROUND_COLOR].alpha = 0;
-
 
     // Get start and stop times
     getImagePair(fullImagePackets, continuedPackets, 0, fi.numRecords, &aux1, pixels1, &aux2, pixels2);
@@ -183,11 +176,23 @@ int main(int argc, char **argv)
     statsV.cumulativePaCount = 0;
     statsV.cumulativeMeaslesCount = 0;
 
+    struct spng_plte colorTable = getColorTable();
+
     for (int i = 0; i < fi.numRecords-1; i+=2)
     // for (int i = 0; i < 2-1; i+=2)
     {
         getImagePair(fullImagePackets, continuedPackets, i, fi.numRecords, &aux1, pixels1, &aux2, pixels2);
+        if (aux1.EfiInstrumentId == 0 && aux2.EfiInstrumentId == 0) 
+        {
+            i++;
+            continue;
+        }
         alignImages(&aux1, pixels1, &aux2, pixels2, &i, &gotHImage, &gotVImage, &(fi.numRecords));
+        if (!gotHImage && !gotVImage)
+        {
+            i++;
+            continue;
+        }
         sprintf(pngFile, "EFI%c_%05d.png", gotHImage ? aux1.satellite : aux2.satellite, filenameCounter);
 
         //analyze imagery
