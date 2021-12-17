@@ -168,10 +168,16 @@ int alignImages(ImageAuxData *aux1, uint16_t *pixels1, ImageAuxData *aux2, uint1
     return status;
 }
 
-int getAlignedImagePair(uint8_t *fullImagePackets, uint8_t *continuedPackets, long packetIndex, long numberOfPackets, ImageAuxData * aux1, uint16_t *pixels1, ImageAuxData *aux2, uint16_t *pixels2, bool *gotHImage, bool *gotVImage)
+int getAlignedImagePair(uint8_t *fullImagePackets, uint8_t *continuedPackets, long packetIndex, long numberOfPackets, ImageAuxData * aux1, uint16_t *pixels1, ImageAuxData *aux2, uint16_t *pixels2, bool *gotHImage, bool *gotVImage, int *imagesRead)
 {
     int status = 0;
     getImagePair(fullImagePackets, continuedPackets, packetIndex, numberOfPackets, aux1, pixels1, aux2, pixels2);
     status = alignImages(aux1, pixels1, aux2, pixels2, gotHImage, gotVImage);
+
+    if (status == ISP_ALIGNED_IMAGE_PAIR)
+        *imagesRead = 2;
+    else
+        *imagesRead = 1;
+
     return status;
 }

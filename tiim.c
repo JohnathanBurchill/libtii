@@ -94,18 +94,14 @@ int main(int argc, char **argv)
 
     struct spng_plte colorTable = getColorTable();
 
+    int imagesRead = 0;
+
     for (long i = 0; i < nImages-1;)
     {
-        status = getAlignedImagePair(fullImagePackets, continuedPackets, i, nImages, &aux1, pixels1, &aux2, pixels2, &gotHImage, &gotVImage);
+        status = getAlignedImagePair(fullImagePackets, continuedPackets, i, nImages, &aux1, pixels1, &aux2, pixels2, &gotHImage, &gotVImage, &imagesRead);
+        i+=imagesRead;
         if (status == ISP_NO_IMAGE_PAIR)
-        {
-            i++;
             continue;
-        }
-        else if (status == ISP_ALIGNED_IMAGE_PAIR)
-            i+=2;
-        else
-            i++;
 
         //analyze imagery
         analyzeImage(pixels1, gotHImage, max, &statsH);
