@@ -4,43 +4,73 @@
 
 #include <libxml/xpath.h>
 
-int parseHdr(xmlDocPtr doc, HdrInfo *fi, HdrInfo *ci)
+int parseHdr(const char *hdr, HdrInfo *fi, HdrInfo *ci)
 {
+
+    int status = HDR_PARSE_OK;
+
+    xmlInitParser();
+    LIBXML_TEST_VERSION
+
+    xmlDoc *doc = NULL;
+    xmlNode *root = NULL;
+
+    if ((doc = xmlReadFile(hdr, NULL, 0)) == NULL)
+    {
+        status = HDR_PARSE_ERR_FILE_READ;
+        goto cleanup;                
+    }
+
+
     if (getLongValue(doc, "//DSD[Data_Set_Name=\"EFI TII Full Image Packet - Normal Mode\"]/Data_Set_Offset", &(fi->offset)))
     {
-        return HDR_PARSE_ERR_FULL_IMAGE_OFFSET;
+        status = HDR_PARSE_ERR_FULL_IMAGE_OFFSET;
+        goto cleanup;
     }
     if (getLongValue(doc, "//DSD[Data_Set_Name=\"EFI TII Full Image Packet - Normal Mode\"]/Num_of_Records", &(fi->numRecords)))
     {
-        return HDR_PARSE_ERR_FULL_IMAGE_NUM_RECORDS;
+        status = HDR_PARSE_ERR_FULL_IMAGE_NUM_RECORDS;
+        goto cleanup;
     }
     if (getLongValue(doc, "//DSD[Data_Set_Name=\"EFI TII Full Image Packet - Normal Mode\"]/Record_Size", &(fi->recordSize)))
     {
-        return HDR_PARSE_ERR_FULL_IMAGE_RECORD_SIZE;
+        status = HDR_PARSE_ERR_FULL_IMAGE_RECORD_SIZE;
+        goto cleanup;
     }
     if (getLongValue(doc, "//DSD[Data_Set_Name=\"EFI TII Full Image Cont'd Packet - Normal Mode\"]/Data_Set_Offset", &(ci->offset)))
     {
-        return HDR_PARSE_ERR_FULL_IMAGE_CONT_OFFSET;
+        status = HDR_PARSE_ERR_FULL_IMAGE_CONT_OFFSET;
+        goto cleanup;
     }
     if (getLongValue(doc, "//DSD[Data_Set_Name=\"EFI TII Full Image Cont'd Packet - Normal Mode\"]/Num_of_Records", &(ci->numRecords)))
     {
-        return HDR_PARSE_ERR_FULL_IMAGE_CONT_NUM_RECORDS;
+        status = HDR_PARSE_ERR_FULL_IMAGE_CONT_NUM_RECORDS;
+        goto cleanup;
     }
     if (getLongValue(doc, "//DSD[Data_Set_Name=\"EFI TII Full Image Cont'd Packet - Normal Mode\"]/Record_Size", &(ci->recordSize)))
     {
-        return HDR_PARSE_ERR_FULL_IMAGE_CONT_RECORD_SIZE;
+        status = HDR_PARSE_ERR_FULL_IMAGE_CONT_RECORD_SIZE;
+        goto cleanup;
     }
 
     if (fi->recordSize != FULL_IMAGE_PACKET_SIZE)
     {
-        return HDR_PARSE_ERR_FULL_IMAGE_RECORD_SIZE;
+        status = HDR_PARSE_ERR_FULL_IMAGE_RECORD_SIZE;
+        goto cleanup;
     }
     if (ci->recordSize != FULL_IMAGE_CONT_PACKET_SIZE)
     {
-        return HDR_PARSE_ERR_FULL_IMAGE_CONT_RECORD_SIZE;
+        status = HDR_PARSE_ERR_FULL_IMAGE_CONT_RECORD_SIZE;
+        goto cleanup;
     }
 
-    return HDR_PARSE_OK;
+
+cleanup:
+
+    if (doc != NULL) xmlFreeDoc(doc);
+    xmlCleanupParser();
+
+    return status;
 
 }
 

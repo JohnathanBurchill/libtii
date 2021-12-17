@@ -26,7 +26,7 @@ SET(LIBS ${LIBS} ${MATH} ${LIBXML2_LIBRARIES} ${SPNG} )
 
 INCLUDE_DIRECTORIES(${INCLUDE_DIRS} ${SPNG_INCLUDE} ${LIBXML2_INCLUDE_DIR})
 
-ADD_EXECUTABLE(tiim tiim.c isp.c xml.c png.c fonts.c analysis.c draw.c)
+ADD_EXECUTABLE(tiim tiim.c isp.c xml.c png.c fonts.c analysis.c draw.c import.c)
 TARGET_LINK_LIBRARIES(tiim ${LIBS})
 
 install(TARGETS tiim DESTINATION $ENV{HOME}/bin)

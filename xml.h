@@ -21,10 +21,11 @@ enum HDR_PARSE_ERR
     HDR_PARSE_ERR_FULL_IMAGE_CONT_OFFSET = -4,
     HDR_PARSE_ERR_FULL_IMAGE_CONT_NUM_RECORDS = -5,
     HDR_PARSE_ERR_FULL_IMAGE_CONT_RECORD_SIZE = -6,
-    HDR_PARSE_ERR_RECORD_SIZE = -7
+    HDR_PARSE_ERR_RECORD_SIZE = -7,
+    HDR_PARSE_ERR_FILE_READ = -8
 };
 
-int parseHdr(xmlDocPtr doc, HdrInfo *fi, HdrInfo *ci);
+int parseHdr(const char *hdr, HdrInfo *fi, HdrInfo *ci);
 int getLongValue(xmlDocPtr doc, const char * xpath, long *value);
 
 #endif // _XML_H
