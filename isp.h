@@ -40,9 +40,8 @@ typedef struct fullImageContinuedPacket
 } FullImageContinuedPacket;
 
 
-typedef struct imageAuxData {
-    char satellite;
-    char sensor;
+typedef struct ispDateTime {
+    double secondsSince1970;
     int year;
     int month;
     int day;
@@ -50,6 +49,12 @@ typedef struct imageAuxData {
     int minute;
     int second;
     int millisecond;
+} IspDateTime;
+
+typedef struct imageAuxData {
+    char satellite;
+    char sensor;
+    IspDateTime dateTime;
     uint16_t CcdDarkCurrent;
     double CcdTemperature;
     uint16_t FaceplateVoltageMonitorRaw;

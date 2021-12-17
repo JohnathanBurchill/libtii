@@ -67,23 +67,56 @@ int main(int argc, char **argv)
     FullImageContinuedPacket *cip1, *cip2;
     ImageAuxData aux1, aux2;
     double maxValueH, maxValueV;
+    int imagesRead = 0;
+    bool gotHImage;
+    bool gotVImage;
 
-    // Get start and stop times
-    getImagePair(fullImagePackets, continuedPackets, 0, fi.numRecords, &aux1, pixels1, &aux2, pixels2);
+    // Get time of first valid image
+    // Need valid UNIT ID so loop forward until we get a valid image
     char startDate[16];
     memset(startDate, 0, 16);
-    sprintf(startDate, "%04d%02d%02dT%02d%02d%02d", aux1.year, aux1.month, aux1.day, aux1.hour, aux1.minute, aux1.second);
-    getImagePair(fullImagePackets, continuedPackets, fi.numRecords-2, fi.numRecords, &aux1, pixels1, &aux2, pixels2);
     char stopDate[16];
     memset(stopDate, 0, 16);
-    sprintf(stopDate, "%04d%02d%02dT%02d%02d%02d", aux2.year, aux2.month, aux2.day, aux2.hour, aux2.minute, aux2.second);
-    char movieFilename[60];
-    sprintf(movieFilename, "SW_OPER_EFI%cTIIMOV_%s_%s_%s.mp4", aux1.satellite, startDate, stopDate, TIIM_VERSION);
+    int packetIndex = 0;
+    char satellite = 'X';
+    char movieFilename[FILENAME_MAX];
+    while((status = getAlignedImagePair(fullImagePackets, continuedPackets, packetIndex++, nImages, &aux1, pixels1, &aux2, pixels2, &gotHImage, &gotVImage, &imagesRead)) == ISP_NO_IMAGE_PAIR && packetIndex < nImages);
+    switch(status)
+    {
+        case ISP_ALIGNED_IMAGE_PAIR:
+        case ISP_H_IMAGE:
+            sprintf(startDate, "%04d%02d%02dT%02d%02d%02d", aux1.dateTime.year, aux1.dateTime.month, aux1.dateTime.day, aux1.dateTime.hour, aux1.dateTime.minute, aux1.dateTime.second);
+            satellite = aux1.satellite;
+            break;
+        case ISP_V_IMAGE:
+            sprintf(startDate, "%04d%02d%02dT%02d%02d%02d", aux2.dateTime.year, aux2.dateTime.month, aux2.dateTime.day, aux2.dateTime.hour, aux2.dateTime.minute, aux2.dateTime.second);
+            satellite = aux2.satellite;
+            break;
+        default:
+            printf("Could not find valid start time.\n");
+            goto cleanup;
+    }
+    packetIndex = nImages-1;
+    while((status = getAlignedImagePair(fullImagePackets, continuedPackets, packetIndex--, nImages, &aux1, pixels1, &aux2, pixels2, &gotHImage, &gotVImage, &imagesRead)) == ISP_NO_IMAGE_PAIR && packetIndex >= 0);
+    switch(status)
+    {
+        case ISP_ALIGNED_IMAGE_PAIR:
+        case ISP_H_IMAGE:
+            sprintf(stopDate, "%04d%02d%02dT%02d%02d%02d", aux1.dateTime.year, aux1.dateTime.month, aux1.dateTime.day, aux1.dateTime.hour, aux1.dateTime.minute, aux1.dateTime.second);
+            satellite = aux1.satellite;
+            break;
+        case ISP_V_IMAGE:
+            sprintf(stopDate, "%04d%02d%02dT%02d%02d%02d", aux2.dateTime.year, aux2.dateTime.month, aux2.dateTime.day, aux2.dateTime.hour, aux2.dateTime.minute, aux2.dateTime.second);
+            satellite = aux2.satellite;
+            break;
+        default:
+            printf("Could not find valid stop time.\n");
+            goto cleanup;
+    }
+    sprintf(movieFilename, "SW_OPER_EFI%cTIIMOV_%s_%s_%s.mp4", satellite, startDate, stopDate, TIIM_VERSION);
 
     // Construct frames and export to PNG files
     int filenameCounter = 0;
-    bool gotHImage;
-    bool gotVImage;
 
     ImageStats statsH;
     statsH.cumulativePaCount = 0;
@@ -93,8 +126,6 @@ int main(int argc, char **argv)
     statsV.cumulativeMeaslesCount = 0;
 
     struct spng_plte colorTable = getColorTable();
-
-    int imagesRead = 0;
 
     for (long i = 0; i < nImages-1;)
     {

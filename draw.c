@@ -104,8 +104,17 @@ void drawImage(uint8_t * imageBuf, ImageAuxData *auxH, uint16_t *pixels1, bool g
     annotate(title, 9, xoff + cbarWidth + cbarSeparation + cbarWidth+3, yoff - MAX_COLOR_VALUE/2 - 2, imageBuf);
 
     // Aux data
-    int mo = (auxH->month-1)*3;
-    sprintf(title, "Swarm %c %2d %c%c%c %4d %02d:%02d:%02d UT", auxH->satellite, auxH->day, months[mo], months[mo+1], months[mo+2], auxH->year, auxH->hour, auxH->minute, auxH->second);
+    int mo = (auxH->dateTime.month-1)*3;
+    if (gotHImage)
+    {
+        mo = (auxH->dateTime.month-1)*3;
+        sprintf(title, "Swarm %c %2d %c%c%c %4d %02d:%02d:%02d UT", auxH->satellite, auxH->dateTime.day, months[mo], months[mo+1], months[mo+2], auxH->dateTime.year, auxH->dateTime.hour, auxH->dateTime.minute, auxH->dateTime.second);
+    }
+    else
+    {
+        mo = (auxV->dateTime.month-1)*3;
+        sprintf(title, "Swarm %c %2d %c%c%c %4d %02d:%02d:%02d UT", auxV->satellite, auxV->dateTime.day, months[mo], months[mo+1], months[mo+2], auxV->dateTime.year, auxV->dateTime.hour, auxV->dateTime.minute, auxV->dateTime.second);
+    }
     annotate(title, 15, IMAGE_WIDTH/2 - strlen(title)/2*10, 5, imageBuf);
 
     annotate("Raw H", 15, 85 - 8*2.5, IMAGE_OFFSET_Y + 200, imageBuf);
@@ -114,12 +123,12 @@ void drawImage(uint8_t * imageBuf, ImageAuxData *auxH, uint16_t *pixels1, bool g
     // Add times in images for montages
     if (gotHImage)
     {
-        sprintf(title, "%c %02d:%02d:%02d UT", auxH->sensor, auxH->hour, auxH->minute, auxH->second);
+        sprintf(title, "%c %02d:%02d:%02d UT", auxH->sensor, auxH->dateTime.hour, auxH->dateTime.minute, auxH->dateTime.second);
         annotate(title, 9, 30, 40, imageBuf);
     }
     if (gotVImage)
     {
-        sprintf(title, "%c %02d:%02d:%02d UT", auxV->sensor, auxV->hour, auxV->minute, auxV->second);
+        sprintf(title, "%c %02d:%02d:%02d UT", auxV->sensor, auxV->dateTime.hour, auxV->dateTime.minute, auxV->dateTime.second);
         annotate(title, 9, 165, 40, imageBuf);
     }
 

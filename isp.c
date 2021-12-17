@@ -45,13 +45,14 @@ void getImageData(FullImagePacket * fip, FullImageContinuedPacket * cip, ImageAu
     double secondsSince1970 = day * 86400. + ms / 1.0e3 + us / 1.0e6;
     time_t seconds = floor(secondsSince1970);
     struct tm *timeStruct = gmtime(&seconds);
-    aux->year = timeStruct->tm_year + 1900;
-    aux->month = timeStruct->tm_mon + 1;
-    aux->day = timeStruct->tm_mday;
-    aux->hour = timeStruct->tm_hour;
-    aux->minute = timeStruct->tm_min;
-    aux->second = timeStruct->tm_sec;
-    aux->millisecond = floor((secondsSince1970 - (double)seconds)*1000);
+    aux->dateTime.secondsSince1970 = secondsSince1970;
+    aux->dateTime.year = timeStruct->tm_year + 1900;
+    aux->dateTime.month = timeStruct->tm_mon + 1;
+    aux->dateTime.day = timeStruct->tm_mday;
+    aux->dateTime.hour = timeStruct->tm_hour;
+    aux->dateTime.minute = timeStruct->tm_min;
+    aux->dateTime.second = timeStruct->tm_sec;
+    aux->dateTime.millisecond = floor((secondsSince1970 - (double)seconds)*1000);
 
     uint8_t contSensor = (contBytes[0] >> 7) & 0x01;
     uint8_t contGainTableId = ((contBytes[0] & 0x03) << 2) | (contBytes[1] >> 6);
@@ -94,13 +95,13 @@ void getImageData(FullImagePacket * fip, FullImageContinuedPacket * cip, ImageAu
 }
 
 
-void getImagePair(uint8_t *fullImagePackets, uint8_t *continuedPackets, long packetIndex, long numberOfPackets, ImageAuxData * aux1, uint16_t *pixels1, ImageAuxData *aux2, uint16_t *pixels2)
+void getImagePair(uint8_t *fullImagePackets, uint8_t *continuedPackets, long packetIndex, long numberOfImages, ImageAuxData * aux1, uint16_t *pixels1, ImageAuxData *aux2, uint16_t *pixels2)
 {
 
     FullImagePacket *fip1, *fip2;
     FullImageContinuedPacket *cip1, *cip2;
 
-    if (packetIndex < numberOfPackets)
+    if (packetIndex < numberOfImages)
     {
         fip1 = (FullImagePacket*)(fullImagePackets + packetIndex*FULL_IMAGE_PACKET_SIZE);
         cip1 = (FullImageContinuedPacket*)(continuedPackets + packetIndex*FULL_IMAGE_CONT_PACKET_SIZE);
@@ -108,11 +109,10 @@ void getImagePair(uint8_t *fullImagePackets, uint8_t *continuedPackets, long pac
     }
     else
     {
-        memset(fip1, 0, FULL_IMAGE_PACKET_SIZE);
-        memset(cip1, 0, FULL_IMAGE_CONT_PACKET_SIZE);
+        memset(pixels1, 0, NUM_FULL_IMAGE_PIXELS * 2);
         aux1->EfiInstrumentId = UNIT_INVALID;
     }
-    if (packetIndex + 1 < numberOfPackets)
+    if (packetIndex + 1 < numberOfImages)
     {
         fip2 = (FullImagePacket*)(fullImagePackets + (packetIndex+1)*FULL_IMAGE_PACKET_SIZE);
         cip2 = (FullImageContinuedPacket*)(continuedPackets + (packetIndex+1)*FULL_IMAGE_CONT_PACKET_SIZE);
@@ -120,8 +120,7 @@ void getImagePair(uint8_t *fullImagePackets, uint8_t *continuedPackets, long pac
     }
     else
     {
-        memset(fip2, 0, FULL_IMAGE_PACKET_SIZE);
-        memset(cip2, 0, FULL_IMAGE_CONT_PACKET_SIZE);
+        memset(pixels2, 0, NUM_FULL_IMAGE_PIXELS * 2);
         aux2->EfiInstrumentId = UNIT_INVALID;
     }
 }
@@ -168,10 +167,10 @@ int alignImages(ImageAuxData *aux1, uint16_t *pixels1, ImageAuxData *aux2, uint1
     return status;
 }
 
-int getAlignedImagePair(uint8_t *fullImagePackets, uint8_t *continuedPackets, long packetIndex, long numberOfPackets, ImageAuxData * aux1, uint16_t *pixels1, ImageAuxData *aux2, uint16_t *pixels2, bool *gotHImage, bool *gotVImage, int *imagesRead)
+int getAlignedImagePair(uint8_t *fullImagePackets, uint8_t *continuedPackets, long packetIndex, long numberOfImages, ImageAuxData * aux1, uint16_t *pixels1, ImageAuxData *aux2, uint16_t *pixels2, bool *gotHImage, bool *gotVImage, int *imagesRead)
 {
     int status = 0;
-    getImagePair(fullImagePackets, continuedPackets, packetIndex, numberOfPackets, aux1, pixels1, aux2, pixels2);
+    getImagePair(fullImagePackets, continuedPackets, packetIndex, numberOfImages, aux1, pixels1, aux2, pixels2);
     status = alignImages(aux1, pixels1, aux2, pixels2, gotHImage, gotVImage);
 
     if (status == ISP_ALIGNED_IMAGE_PAIR)
