@@ -107,8 +107,6 @@ int main(int argc, char **argv)
         else
             i++;
 
-        sprintf(pngFile, "EFI%c_%05d.png", gotHImage ? aux1.satellite : aux2.satellite, filenameCounter);
-
         //analyze imagery
         analyzeImage(pixels1, gotHImage, max, &statsH);
         analyzeImage(pixels2, gotVImage, max, &statsV);
@@ -117,6 +115,7 @@ int main(int argc, char **argv)
         drawImage(imageBuf, &aux1, pixels1, gotHImage, &statsH, &aux2, pixels2, gotVImage, &statsV);
 
         // Write the frame to file
+        sprintf(pngFile, "EFI%c_%05d.png", gotHImage ? aux1.satellite : aux2.satellite, filenameCounter);
         if (!writePng(pngFile, imageBuf, IMAGE_WIDTH, IMAGE_HEIGHT, &colorTable))
         {
             filenameCounter++;
