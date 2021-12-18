@@ -165,7 +165,7 @@ int alignImages(ImagePair *imagePair)
         imagePair->gotImageV = false;
         // Zero out V pixels
         memset(imagePair->pixelsV, FOREGROUND_COLOR, NUM_FULL_IMAGE_PIXELS * sizeof(uint16_t));
-        memset(imagePair->auxH, 0, sizeof(ImageAuxData));
+        memset(imagePair->auxV, 0, sizeof(ImageAuxData));
         status = ISP_H_IMAGE;
     }
     return status;
