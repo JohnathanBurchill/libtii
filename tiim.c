@@ -35,6 +35,9 @@ int main(int argc, char **argv)
 
     // Data
     ImagePackets imagePackets;
+    imagePackets.fullImagePackets = NULL;
+    imagePackets.continuedPackets = NULL;
+    imagePackets.numberOfImages = 0;
     status = importImagery(hdr, &imagePackets);
     if (status)
     {
