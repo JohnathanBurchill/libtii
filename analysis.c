@@ -8,7 +8,7 @@
 
 void analyzeImage(uint16_t *pixels, bool gotImage, double requestedMaxValue, ImageStats *stats)
 {
-    double maxValueTmp = -1.0;
+    double maxValueTmp = 0.0;
     int paCounter = 0;
     int measlesCounter = 0;
 
@@ -44,7 +44,7 @@ void analyzeImage(uint16_t *pixels, bool gotImage, double requestedMaxValue, Ima
         }
     }
     else
-        maxValueTmp = 1;
+        maxValueTmp = 0;
 
     stats->maxValue = maxValueTmp;
     stats->paCount = paCounter;

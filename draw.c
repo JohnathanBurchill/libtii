@@ -26,7 +26,10 @@ void drawImage(uint8_t * imageBuf, ImagePair *imagePair, ImageStats *statsH, Ima
     {
         if (imagePair->gotImageH)
         {
-            v = floor((double)(imagePair->pixelsH[k]) / statsH->maxValue * MAX_COLOR_VALUE);
+            if (statsH->maxValue > 0)
+                v = floor((double)(imagePair->pixelsH[k]) / statsH->maxValue * MAX_COLOR_VALUE);
+            else
+                v = MIN_COLOR_VALUE;
             if (v > MAX_COLOR_VALUE) v = MAX_COLOR_VALUE;
             if (v < MIN_COLOR_VALUE) v = MIN_COLOR_VALUE;
         }
@@ -54,7 +57,10 @@ void drawImage(uint8_t * imageBuf, ImagePair *imagePair, ImageStats *statsH, Ima
     {
         if (imagePair->gotImageV)
         {
-            v = floor((double)(imagePair->pixelsV[k]) / statsV->maxValue * MAX_COLOR_VALUE);
+            if (statsV->maxValue > 0)
+                v = floor((double)(imagePair->pixelsV[k]) / statsV->maxValue * MAX_COLOR_VALUE);
+            else
+                v = MIN_COLOR_VALUE;
             if (v > MAX_COLOR_VALUE) v = MAX_COLOR_VALUE;
             if (v < MIN_COLOR_VALUE) v = MIN_COLOR_VALUE;
         }
@@ -195,7 +201,10 @@ void drawImage(uint8_t * imageBuf, ImagePair *imagePair, ImageStats *statsH, Ima
     {
         if (imagePair->gotImageH)
         {
-            v = floor((double)(imagePair->pixelsH[k]) / statsH->maxValue * MAX_COLOR_VALUE);
+            if (statsH->maxValue > 0)
+                v = floor((double)(imagePair->pixelsH[k]) / statsH->maxValue * MAX_COLOR_VALUE);
+            else
+                v = MIN_COLOR_VALUE;
             if (v > MAX_COLOR_VALUE) v = MAX_COLOR_VALUE;
             if (v < MIN_COLOR_VALUE) v = MIN_COLOR_VALUE;
         }
@@ -233,7 +242,9 @@ void drawImage(uint8_t * imageBuf, ImagePair *imagePair, ImageStats *statsH, Ima
     {
         if (imagePair->gotImageV)
         {
-            v = floor((double)(imagePair->pixelsV[k]) / statsV->maxValue * MAX_COLOR_VALUE);
+            if (statsV->maxValue > 0)
+                v = floor((double)(imagePair->pixelsV[k]) / statsV->maxValue * MAX_COLOR_VALUE);
+            else v = MIN_COLOR_VALUE;
             if (v > MAX_COLOR_VALUE) v = MAX_COLOR_VALUE;
             if (v < MIN_COLOR_VALUE) v = MIN_COLOR_VALUE;
         }
