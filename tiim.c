@@ -27,7 +27,7 @@ int main(int argc, char **argv)
     size_t len = strlen(hdr);
     if (strcmp(hdr + len - 4, ".HDR") != 0)
     {
-    	printf("usage: %s normalModeHeaderFile.HDR maxSignal.\n", argv[0]);
+    	printf("usage: %s <normalModeHeaderFile>.HDR maxSignal.\n", argv[0]);
 	    exit(1);
     }
 
