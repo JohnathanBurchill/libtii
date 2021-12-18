@@ -68,8 +68,9 @@ int writePng(const char * filename, uint8_t *pixels, int width, int height, stru
     if (status)
     {
         printf("spng_encode_image() error: %s\n", spng_strerror(status));
-        return status;
     }
     if (enc != NULL) spng_ctx_free(enc);
-    return 0;
+
+    fclose(pngFile);
+    return status;
 }
