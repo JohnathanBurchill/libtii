@@ -75,7 +75,7 @@ void getImageData(FullImagePacket * fip, FullImageContinuedPacket * cip, ImageAu
 
     // Need a measurement time
     // TODO compare times as well
-    if (contSensor != aux->SensorNumber || contGainTableId != aux->GainTableId || contEfiInstrumentId != aux->EfiInstrumentId)
+    if (contSensor != aux->SensorNumber || contGainTableId != aux->GainTableId || contEfiInstrumentId != aux->EfiInstrumentId || fip->StructureId !=12 && cip->StructureId != 15)
     {
         // printf("Problem here!: %d,%d  %d,%d  %d,%d\n", aux->SensorNumber, contSensor, aux->GainTableId, contGainTableId, aux->EfiInstrumentId, contEfiInstrumentId);
         aux->consistentImage = false;
