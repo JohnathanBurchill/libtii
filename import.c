@@ -131,14 +131,14 @@ void alignPackets(uint8_t* fullImagePackets, uint8_t *continuedPackets, long nIm
         cip = (FullImageContinuedPacket*)(continuedPackets + i*FULL_IMAGE_CONT_PACKET_SIZE);
         fdate = *((uint64_t*)(fip->DataFieldHeader+4));
         cdate = *((uint64_t*)(cip->DataFieldHeader+4));
-        if (fdate < cdate)
+        if (fdate < cdate && fdate != 0)
         {
             memcpy(cipbuf, continuedPackets + i*FULL_IMAGE_CONT_PACKET_SIZE, (nImages - i - 1)*FULL_IMAGE_CONT_PACKET_SIZE);
             memcpy(continuedPackets + (i+1)*FULL_IMAGE_CONT_PACKET_SIZE, cipbuf, (nImages - i - 1)*FULL_IMAGE_CONT_PACKET_SIZE);
             memset(continuedPackets + i*FULL_IMAGE_CONT_PACKET_SIZE, 0, FULL_IMAGE_CONT_PACKET_SIZE);
             correctedFaults++;
         }
-        else if (fdate > cdate)
+        else if (fdate > cdate && cdate != 0)
         {
             memcpy(fipbuf, fullImagePackets + i*FULL_IMAGE_PACKET_SIZE, (nImages - i - 1)*FULL_IMAGE_PACKET_SIZE);
             memcpy(fullImagePackets + (i+1)*FULL_IMAGE_PACKET_SIZE, fipbuf, (nImages - i - 1)*FULL_IMAGE_PACKET_SIZE);
