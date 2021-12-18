@@ -74,10 +74,6 @@ int importImagery(const char *hdr, ImagePackets *imagePackets)
         goto cleanup;
     }
     uint8_t * bufferStart = (uint8_t*)fullImagePackets;
-    if (fi.numRecords < ci.numRecords)
-    {
-        bufferStart += (ci.numRecords - fi.numRecords) * fi.recordSize;
-    }    
     if ((bytesRead = fread(bufferStart, sizeof(uint8_t), fullImageTotalBytes, dblFile)) != fullImageTotalBytes)
     {
         status = IMPORT_DBL_PACKET_READ;
@@ -91,14 +87,16 @@ int importImagery(const char *hdr, ImagePackets *imagePackets)
         goto cleanup;
     }
     bufferStart = (uint8_t*)continuedPackets;
-    if (ci.numRecords < fi.numRecords)
-    {
-        bufferStart += (fi.numRecords - ci.numRecords) * ci.recordSize;
-    }
     if ((bytesRead = fread((uint8_t*)bufferStart, sizeof(uint8_t), continuedTotalBytes, dblFile)) != continuedTotalBytes)
     {
         status = IMPORT_DBL_PACKET_READ;
         goto cleanup;
+    }
+
+    // Align packets if there aren't the same number of full image and full image continued packets
+    if (ci.numRecords != fi.numRecords)
+    {
+        alignPackets(fullImagePackets, continuedPackets, nImages, &fi, &ci);
     }
 
 
@@ -110,3 +108,47 @@ cleanup:
     if (dblFile != NULL) fclose(dblFile);
     return status; 
 }
+
+
+void alignPackets(uint8_t* fullImagePackets, uint8_t *continuedPackets, long nImages, HdrInfo *fi, HdrInfo *ci)
+{
+    FullImagePacket *fip;
+    FullImageContinuedPacket *cip;
+
+    uint8_t *fipbuf = malloc(nImages * FULL_IMAGE_PACKET_SIZE);
+    uint8_t *cipbuf = malloc(nImages * FULL_IMAGE_CONT_PACKET_SIZE);
+
+    uint64_t fdate;
+    uint64_t cdate;
+
+    long numFaults = fi->numRecords > ci->numRecords ? fi->numRecords - ci->numRecords : ci->numRecords - fi->numRecords;
+
+    long correctedFaults = 0;
+
+    for (long i = 0; i < nImages && correctedFaults < numFaults; i++)
+    {
+        fip = (FullImagePacket*)(fullImagePackets + i*FULL_IMAGE_PACKET_SIZE);
+        cip = (FullImageContinuedPacket*)(continuedPackets + i*FULL_IMAGE_CONT_PACKET_SIZE);
+        fdate = *((uint64_t*)(fip->DataFieldHeader+4));
+        cdate = *((uint64_t*)(cip->DataFieldHeader+4));
+        if (fdate < cdate)
+        {
+            memcpy(cipbuf, continuedPackets + i*FULL_IMAGE_CONT_PACKET_SIZE, (nImages - i - 1)*FULL_IMAGE_CONT_PACKET_SIZE);
+            memcpy(continuedPackets + (i+1)*FULL_IMAGE_CONT_PACKET_SIZE, cipbuf, (nImages - i - 1)*FULL_IMAGE_CONT_PACKET_SIZE);
+            memset(continuedPackets + i*FULL_IMAGE_CONT_PACKET_SIZE, 0, FULL_IMAGE_CONT_PACKET_SIZE);
+            correctedFaults++;
+        }
+        else if (fdate > cdate)
+        {
+            memcpy(fipbuf, fullImagePackets + i*FULL_IMAGE_PACKET_SIZE, (nImages - i - 1)*FULL_IMAGE_PACKET_SIZE);
+            memcpy(fullImagePackets + (i+1)*FULL_IMAGE_PACKET_SIZE, fipbuf, (nImages - i - 1)*FULL_IMAGE_PACKET_SIZE);
+            memset(fullImagePackets + i*FULL_IMAGE_PACKET_SIZE, 0, FULL_IMAGE_PACKET_SIZE);
+            correctedFaults++;
+        }
+    }
+
+    free(fipbuf);
+    free(cipbuf);
+}
+
+
