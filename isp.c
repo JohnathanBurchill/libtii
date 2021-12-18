@@ -11,86 +11,104 @@ void getImageData(FullImagePacket * fip, FullImageContinuedPacket * cip, ImageAu
 
     uint8_t * fullBytes = fip->AuxData;
     uint8_t * contBytes = cip->AuxData;
-
-    aux->consistentImage = true;
-    aux->CcdDarkCurrent = (fullBytes[0] << 4) | (fullBytes[1] >> 4);
-    aux->CcdTemperature = 259. * pow(aux->CcdDarkCurrent, 0.0383) - 273.15;
-    if (aux->CcdTemperature < -35.0) aux->CcdTemperature = -35.0;
-    if (aux->CcdTemperature > 50.0) aux->CcdTemperature = 50.0;
-
-    aux->FaceplateVoltageMonitorRaw = ((fullBytes[1] << 10) & 0xff) | ((fullBytes[2] << 2) & 0xff) | (fullBytes[3]>>6);
-    aux->FaceplateVoltageMonitor = -5.0 + (double)aux->FaceplateVoltageMonitorRaw / 255.0 * 5.0;
-
-    aux->BiasGridVoltageMonitorRaw = ((fullBytes[3] & 0x3f) << 6) | ((fullBytes[4] >> 2) & 0x3f);
-    aux->BiasGridVoltageMonitor = - (double) aux->BiasGridVoltageMonitorRaw / 4095.0 * 100.0 * 4.0 / 2.5;
-    aux->ShutterDutyCycleRaw = ((fullBytes[4] & 0x3) << 14) | (fullBytes[5] << 6) | ((fullBytes[6] >> 2) & 0x3f);
-    aux->ShutterDutyCycle = 1.0 - aux->ShutterDutyCycleRaw / (52031.0/0.999); // 52031 corresponds to 0.1% open
-    aux->McpVoltageMonitorRaw = ((fullBytes[6] & 0x3) << 10) | (fullBytes[7] << 2) | ((fullBytes[8] >> 6) & 0x3);
-    aux->McpVoltageMonitor = - (double) aux->McpVoltageMonitorRaw / 4095.0 * 2400.0 * 4.0 / 2.5;
-    aux->PhosphorVoltageMonitorRaw = ((fullBytes[8] & 0x3f) << 6) | ((fullBytes[9] >> 2) & 0x3f);
-    aux->PhosphorVoltageMonitor = aux->PhosphorVoltageMonitorRaw / 4095.0 * 8000.0 * 4.0 / 2.5;
-
-    aux->SensorNumber = (fullBytes[9] >> 1) & 0x01;
-    aux->GainTableId = ((fullBytes[11] & 0x01) << 3) | (fullBytes[12] >> 5);
-    aux->EfiInstrumentId = (fullBytes[12] >> 1) & 0x0f;
-
     char efiUnit[4] = {'X', 'C', 'B', 'A'};
-    aux->satellite = efiUnit[aux->EfiInstrumentId];
-    aux->sensor = aux->SensorNumber ? 'V' : 'H';
-    // ISP time (epoch 2000-01-01 00:00:00 UT)
-    uint8_t * cds = fip->DataFieldHeader+4;
-    double day = (double) (cds[0]*256 + cds[1] + 10957); // relative to 1970-01-01 00:00:00 UT
-    double ms = (double) (cds[2]*256*256*256 + cds[3]*256*256 + cds[4]*256 + cds[5]);
-    double us = (double) (cds[6]*256 + cds[7]);
-    double secondsSince1970 = day * 86400. + ms / 1.0e3 + us / 1.0e6;
-    time_t seconds = floor(secondsSince1970);
-    struct tm *timeStruct = gmtime(&seconds);
-    aux->dateTime.secondsSince1970 = secondsSince1970;
-    aux->dateTime.year = timeStruct->tm_year + 1900;
-    aux->dateTime.month = timeStruct->tm_mon + 1;
-    aux->dateTime.day = timeStruct->tm_mday;
-    aux->dateTime.hour = timeStruct->tm_hour;
-    aux->dateTime.minute = timeStruct->tm_min;
-    aux->dateTime.second = timeStruct->tm_sec;
-    aux->dateTime.millisecond = floor((secondsSince1970 - (double)seconds)*1000);
+
+    // Init pixels to zeros
+    memset((void*)pixels, 0, NUM_FULL_IMAGE_PIXELS * sizeof(uint16_t));
 
     uint8_t contSensor = (contBytes[0] >> 7) & 0x01;
     uint8_t contGainTableId = ((contBytes[0] & 0x03) << 2) | (contBytes[1] >> 6);
     uint8_t contEfiInstrumentId = ((contBytes[1] >> 2) & 0x0f);
-    // Init pixels to zeros
-    memset((void*)pixels, 0, NUM_FULL_IMAGE_PIXELS * sizeof(uint16_t));
 
-    // Populate full image packet pixels
-    // All this to extract packed 12 bit pixels
-    // Two pixels in three bytes
-    int b = 0;
-    int p = 0;
-    for (int i = 0; i < NUM_FULL_IMAGE_PACKET_PIXELS-1; i+=2)
+    aux->sensor = 0;
+    aux->GainTableId = 0;
+    aux->EfiInstrumentId = 'X';
+    uint8_t zeros[12] = {0};
+    setAuxDateTime(aux, zeros);
+
+    uint64_t fdate = *((uint64_t*)(fip->DataFieldHeader+4));
+    uint64_t cdate = *((uint64_t*)(cip->DataFieldHeader+4));
+
+    if (fip->StructureId == ISP_TYPE_FULL_IMAGE)
     {
+        aux->SensorNumber = (fullBytes[9] >> 1) & 0x01;
+        aux->sensor = aux->SensorNumber ? 'V' : 'H';
+        aux->GainTableId = ((fullBytes[11] & 0x01) << 3) | (fullBytes[12] >> 5);
+        aux->EfiInstrumentId = (fullBytes[12] >> 1) & 0x0f;
+        aux->satellite = efiUnit[aux->EfiInstrumentId];
+        setAuxDateTime(aux, fip->DataFieldHeader);
+
+        aux->CcdDarkCurrent = (fullBytes[0] << 4) | (fullBytes[1] >> 4);
+        aux->CcdTemperature = 259. * pow(aux->CcdDarkCurrent, 0.0383) - 273.15;
+        if (aux->CcdTemperature < -35.0) aux->CcdTemperature = -35.0;
+        if (aux->CcdTemperature > 50.0) aux->CcdTemperature = 50.0;
+        aux->FaceplateVoltageMonitorRaw = ((fullBytes[1] << 10) & 0xff) | ((fullBytes[2] << 2) & 0xff) | (fullBytes[3]>>6);
+        aux->FaceplateVoltageMonitor = -5.0 + (double)aux->FaceplateVoltageMonitorRaw / 255.0 * 5.0;
+        aux->BiasGridVoltageMonitorRaw = ((fullBytes[3] & 0x3f) << 6) | ((fullBytes[4] >> 2) & 0x3f);
+        aux->BiasGridVoltageMonitor = - (double) aux->BiasGridVoltageMonitorRaw / 4095.0 * 100.0 * 4.0 / 2.5;
+        aux->ShutterDutyCycleRaw = ((fullBytes[4] & 0x3) << 14) | (fullBytes[5] << 6) | ((fullBytes[6] >> 2) & 0x3f);
+        aux->ShutterDutyCycle = 1.0 - aux->ShutterDutyCycleRaw / (52031.0/0.999); // 52031 corresponds to 0.1% open
+        aux->McpVoltageMonitorRaw = ((fullBytes[6] & 0x3) << 10) | (fullBytes[7] << 2) | ((fullBytes[8] >> 6) & 0x3);
+        aux->McpVoltageMonitor = - (double) aux->McpVoltageMonitorRaw / 4095.0 * 2400.0 * 4.0 / 2.5;
+        aux->PhosphorVoltageMonitorRaw = ((fullBytes[8] & 0x3f) << 6) | ((fullBytes[9] >> 2) & 0x3f);
+        aux->PhosphorVoltageMonitor = aux->PhosphorVoltageMonitorRaw / 4095.0 * 8000.0 * 4.0 / 2.5;
+        // Populate full image packet pixels
+        // All this to extract packed 12 bit pixels
+        // Two pixels in three bytes
+        int b = 0;
+        int p = 0;
+        for (int i = 0; i < NUM_FULL_IMAGE_PACKET_PIXELS-1; i+=2)
+        {
+            pixels[p++] = (fip->PixelBytes[b] << 4) | ((fip->PixelBytes[b+1] >> 4) & 0x0f);
+            pixels[p++] = ((fip->PixelBytes[b+1] & 0x0f) << 8) | fip->PixelBytes[b+2];
+            b+=3;
+        }
         pixels[p++] = (fip->PixelBytes[b] << 4) | ((fip->PixelBytes[b+1] >> 4) & 0x0f);
-        pixels[p++] = ((fip->PixelBytes[b+1] & 0x0f) << 8) | fip->PixelBytes[b+2];
-        b+=3;
     }
-    pixels[p++] = (fip->PixelBytes[b] << 4) | ((fip->PixelBytes[b+1] >> 4) & 0x0f);
-
-    // Need a measurement time
-    // TODO compare times as well
-    if (contSensor != aux->SensorNumber || contGainTableId != aux->GainTableId || contEfiInstrumentId != aux->EfiInstrumentId || fip->StructureId !=12 && cip->StructureId != 15)
+    else
     {
-        // printf("Problem here!: %d,%d  %d,%d  %d,%d\n", aux->SensorNumber, contSensor, aux->GainTableId, contGainTableId, aux->EfiInstrumentId, contEfiInstrumentId);
-        aux->consistentImage = false;
-        // Return a partial image
-        return;
+        aux->CcdDarkCurrent = 0;
+        aux->CcdTemperature = 0;
+        aux->FaceplateVoltageMonitor = 0;
+        aux->FaceplateVoltageMonitorRaw = 0;
+        aux->BiasGridVoltageMonitor = 0;
+        aux->BiasGridVoltageMonitorRaw = 0;
+        aux->ShutterDutyCycle = 0;
+        aux->ShutterDutyCycleRaw = 0;
+        aux->McpVoltageMonitor = 0;
+        aux->McpVoltageMonitorRaw = 0;
+        aux->PhosphorVoltageMonitor = 0;
+        aux->PhosphorVoltageMonitorRaw = 0;
+        if (cip->StructureId == ISP_TYPE_FULL_IMAGE_CONTINUED) // Probably the case, unless both packets are bad
+        {
+            aux->SensorNumber = contSensor;
+            aux->sensor = aux->SensorNumber ? 'V' : 'H';
+            aux->GainTableId = contGainTableId;
+            aux->EfiInstrumentId = contEfiInstrumentId;
+            aux->satellite = efiUnit[aux->EfiInstrumentId];
+            // Set time to Full Image Continued time
+            fdate = *((uint64_t*)(cip->DataFieldHeader+4));
+            setAuxDateTime(aux, cip->DataFieldHeader);
+        }
     }
-    // Got the right continued packet, finish the image
-    b = 0;
-    for (int i = 0; i < NUM_FULL_IMAGE_CONT_PACKET_PIXELS-1; i+=2)
+    // Get Full Image Continued Image data if the continued packet is good and the times and sensors match (will match if there was a missing Full Image Packet)
+    if (cip->StructureId == ISP_TYPE_FULL_IMAGE_CONTINUED && fdate == cdate && aux->SensorNumber == contSensor)
     {
-        pixels[p++] = (cip->PixelBytes[b] << 4) | ((cip->PixelBytes[b+1] >> 4) & 0x0f);
-        pixels[p++] = ((cip->PixelBytes[b+1] & 0x0f) << 8) | cip->PixelBytes[b+2];
-        b+=3;
+        // Got the right continued packet, finish the image
+        int b = 0;
+        int p = 1341; // Known offset; needed in the Full Image data were not present
+        for (int i = 0; i < NUM_FULL_IMAGE_CONT_PACKET_PIXELS-1; i+=2)
+        {
+            pixels[p++] = (cip->PixelBytes[b] << 4) | ((cip->PixelBytes[b+1] >> 4) & 0x0f);
+            pixels[p++] = ((cip->PixelBytes[b+1] & 0x0f) << 8) | cip->PixelBytes[b+2];
+            b+=3;
+        }
+        pixels[p] = (cip->PixelBytes[b] << 4) | ((cip->PixelBytes[b+1] >> 4) & 0x0f);
+        // times and sensors match; we have a consistent image if the Full Image Packet was present
+        aux->consistentImage = fip->StructureId == ISP_TYPE_FULL_IMAGE;
     }
-    pixels[p] = (cip->PixelBytes[b] << 4) | ((cip->PixelBytes[b+1] >> 4) & 0x0f);
+ 
+    return;
 
 }
 
@@ -145,18 +163,19 @@ int alignImages(ImagePair *imagePair)
     {
         status = ISP_ALIGNED_IMAGE_PAIR;
     }
-    // Check that image 1 is an H image. If not, increase i by 1 and decrease numFullImageRecords by 1.
-    // Some won't like this :)
     else if (imagePair->auxH->SensorNumber == V_SENSOR)
     {
         imagePair->gotImageH = false;
         imagePair->gotImageV = true;
         // We got a V image first. Draw an empty H image.
         // Swap H and V and zero out H pixels
-        memcpy(imagePair->pixelsV, imagePair->pixelsH, NUM_FULL_IMAGE_PIXELS * sizeof(uint16_t));
+        uint16_t *buf = imagePair->pixelsV;
+        imagePair->pixelsV = imagePair->pixelsH;
+        imagePair->pixelsH = buf;
         memset(imagePair->pixelsH, FOREGROUND_COLOR, NUM_FULL_IMAGE_PIXELS * sizeof(uint16_t));
-        memcpy(imagePair->auxV, imagePair->auxH, sizeof(ImageAuxData));
-        memset(imagePair->auxH, 0, sizeof(ImageAuxData));
+        ImageAuxData *abuf = imagePair->auxV;
+        imagePair->auxV = imagePair->auxH;
+        imagePair->auxH = abuf;
         status = ISP_V_IMAGE;
     }
     else if (imagePair->auxH->SensorNumber == 0 && imagePair->auxV->SensorNumber == 0)
@@ -165,7 +184,6 @@ int alignImages(ImagePair *imagePair)
         imagePair->gotImageV = false;
         // Zero out V pixels
         memset(imagePair->pixelsV, FOREGROUND_COLOR, NUM_FULL_IMAGE_PIXELS * sizeof(uint16_t));
-        memset(imagePair->auxV, 0, sizeof(ImageAuxData));
         status = ISP_H_IMAGE;
     }
     return status;
@@ -242,4 +260,26 @@ void initializeImagePair(ImagePair *imagePair, ImageAuxData *auxH, uint16_t *pix
     imagePair->auxV = auxV;
     imagePair->pixelsH = pixelsH;
     imagePair->pixelsV = pixelsV;
+}
+
+
+void setAuxDateTime(ImageAuxData *aux, uint8_t *dataFieldHeader)
+{
+    // ISP time (epoch 2000-01-01 00:00:00 UT)
+    uint8_t * cds = dataFieldHeader+4;
+    double day = (double) (cds[0]*256 + cds[1] + 10957); // relative to 1970-01-01 00:00:00 UT
+    double ms = (double) (cds[2]*256*256*256 + cds[3]*256*256 + cds[4]*256 + cds[5]);
+    double us = (double) (cds[6]*256 + cds[7]);
+    double secondsSince1970 = day * 86400. + ms / 1.0e3 + us / 1.0e6;
+    time_t seconds = floor(secondsSince1970);
+    struct tm *timeStruct = gmtime(&seconds);
+    aux->dateTime.secondsSince1970 = secondsSince1970;
+    aux->dateTime.year = timeStruct->tm_year + 1900;
+    aux->dateTime.month = timeStruct->tm_mon + 1;
+    aux->dateTime.day = timeStruct->tm_mday;
+    aux->dateTime.hour = timeStruct->tm_hour;
+    aux->dateTime.minute = timeStruct->tm_min;
+    aux->dateTime.second = timeStruct->tm_sec;
+    aux->dateTime.millisecond = floor((secondsSince1970 - (double)seconds)*1000);
+
 }

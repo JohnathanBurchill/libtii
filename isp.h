@@ -108,6 +108,12 @@ enum TII_IMAGE {
     V_SENSOR = 1
 };
 
+enum ISP_TYPE {
+    ISP_TYPE_FULL_IMAGE = 12,
+    ISP_TYPE_FULL_IMAGE_CONTINUED = 15,
+    ISP_TYPE_LPTII = 13
+};
+
 enum ISP_STATUS
 {
     ISP_ALIGNED_IMAGE_PAIR = 0,
@@ -132,5 +138,7 @@ IspDateTime * getIspDateTime(ImagePair *imagePair);
 char getSatellite(ImagePair *imagePair);
 
 void initializeImagePair(ImagePair *imagePair, ImageAuxData *auxH, uint16_t *pixelsH, ImageAuxData *auxV, uint16_t *pixelsV);
+
+void setAuxDateTime(ImageAuxData *aux, uint8_t *dataFieldHeader);
 
 #endif // _ISP_H

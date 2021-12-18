@@ -80,8 +80,8 @@ int main(int argc, char **argv)
             continue;
 
         //analyze imagery
-        analyzeImage(pixelsH, imagePair.gotImageH, max, &statsH);
-        analyzeImage(pixelsV, imagePair.gotImageV, max, &statsV);
+        analyzeImage(imagePair.pixelsH, imagePair.gotImageH, max, &statsH);
+        analyzeImage(imagePair.pixelsV, imagePair.gotImageV, max, &statsV);
 
         // Prepare the PNG frame buffer
         drawImage(imageBuf, &imagePair, &statsH, &statsV);
