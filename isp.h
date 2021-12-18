@@ -131,5 +131,6 @@ int getLastImagePair(ImagePackets *imagePackets, ImagePair *imagePair);
 IspDateTime * getIspDateTime(ImagePair *imagePair);
 char getSatellite(ImagePair *imagePair);
 
+void initializeImagePair(ImagePair *imagePair, ImageAuxData *auxH, uint16_t *pixelsH, ImageAuxData *auxV, uint16_t *pixelsV);
 
 #endif // _ISP_H

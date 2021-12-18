@@ -235,3 +235,11 @@ char getSatellite(ImagePair *imagePair)
         return 'X';
 
 }
+
+void initializeImagePair(ImagePair *imagePair, ImageAuxData *auxH, uint16_t *pixelsH, ImageAuxData *auxV, uint16_t *pixelsV)
+{
+    imagePair->auxH = auxH;
+    imagePair->auxV = auxV;
+    imagePair->pixelsH = pixelsH;
+    imagePair->pixelsV = pixelsV;
+}

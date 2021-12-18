@@ -1,7 +1,6 @@
 #include "tiim.h"
 
 #include "isp.h"
-#include "xml.h"
 #include "import.h"
 #include "utility.h"
 #include "analysis.h"
@@ -10,14 +9,9 @@
 #include "fonts.h"
 
 #include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
-#include <assert.h>
-#include <unistd.h>
-#include <sys/errno.h>
 #include <stdint.h>
 #include <spng.h>
-#include <math.h>
 
 int main(int argc, char **argv)
 {
@@ -41,7 +35,6 @@ int main(int argc, char **argv)
 
     // Data
     ImagePackets imagePackets;
-
     status = importImagery(hdr, &imagePackets);
     if (status)
     {
@@ -56,10 +49,7 @@ int main(int argc, char **argv)
     FullImageContinuedPacket *cip1, *cip2;
     ImagePair imagePair;
     ImageAuxData auxH, auxV;
-    imagePair.auxH = &auxH;
-    imagePair.auxV = &auxV;
-    imagePair.pixelsH = pixelsH;
-    imagePair.pixelsV = pixelsV;
+    initializeImagePair(&imagePair, &auxH, pixelsH, &auxV, pixelsV);
     double maxValueH, maxValueV;
     int imagesRead = 0;
 
