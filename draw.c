@@ -13,8 +13,11 @@ void drawImage(uint8_t * imageBuf, ImagePair *imagePair, ImageStats *statsH, Ima
 {
     double v;
     int x, y;
-    double dx, dy, r, r1;
+    double dx, dy, r, r1, phi;
+    int paBin;
     int imageIndex;
+    int maxPaH = 0;
+    int maxPaV = 0;
 
     char months[36] = "JanFebMarAprMayJunJulAugSepOctNovDec";
 
@@ -142,15 +145,21 @@ void drawImage(uint8_t * imageBuf, ImagePair *imagePair, ImageStats *statsH, Ima
     annotate("H", 15, MONITOR_LABEL_OFFSET_X + 120, 30 + MONITOR_LABEL_OFFSET_Y, imageBuf);
     annotate("V", 15, MONITOR_LABEL_OFFSET_X + 120 + 70, 30 + MONITOR_LABEL_OFFSET_Y, imageBuf);
 
+
     annotate("      MCP:", 12, MONITOR_LABEL_OFFSET_X, 50 + MONITOR_LABEL_OFFSET_Y, imageBuf);
     annotate("     Phos:", 12, MONITOR_LABEL_OFFSET_X, 50 + LINE_SPACING + MONITOR_LABEL_OFFSET_Y, imageBuf);
     annotate("  ID Bias:", 12, MONITOR_LABEL_OFFSET_X, 50 + 2 * LINE_SPACING + MONITOR_LABEL_OFFSET_Y, imageBuf);
     annotate("Faceplate:", 12, MONITOR_LABEL_OFFSET_X, 50 + 3 * LINE_SPACING + MONITOR_LABEL_OFFSET_Y, imageBuf);
     annotate("CCD temp.:", 12, MONITOR_LABEL_OFFSET_X, 50 + 4 * LINE_SPACING + MONITOR_LABEL_OFFSET_Y, imageBuf);
-    annotate("       PA:", 12, MONITOR_LABEL_OFFSET_X, 50 + 5 * LINE_SPACING + MONITOR_LABEL_OFFSET_Y, imageBuf);
-    annotate(" Total PA:", 12, MONITOR_LABEL_OFFSET_X, 50 + 6 * LINE_SPACING + MONITOR_LABEL_OFFSET_Y, imageBuf);
-    annotate("  Measles:", 12, MONITOR_LABEL_OFFSET_X, 50 + 7 * LINE_SPACING + MONITOR_LABEL_OFFSET_Y, imageBuf);
-    annotate(" Tot. Msl:", 12, MONITOR_LABEL_OFFSET_X, 50 + 8 * LINE_SPACING + MONITOR_LABEL_OFFSET_Y, imageBuf);
+
+
+    int anomXOff = MONITOR_LABEL_OFFSET_X;
+    int anomYOff = 240;
+    annotate("       PA:", 12, anomXOff, anomYOff, imageBuf);
+    annotate(" Total PA:", 12, anomXOff, anomYOff + 1 * LINE_SPACING, imageBuf);
+    annotate("PA frames:", 12, anomXOff, anomYOff + 2 * LINE_SPACING, imageBuf);
+    annotate("  Measles:", 12, anomXOff, anomYOff + 3 * LINE_SPACING, imageBuf);
+    annotate(" Tot. Msl:", 12, anomXOff, anomYOff + 4 * LINE_SPACING, imageBuf);
 
     if (imagePair->gotImageH)
     {
@@ -164,14 +173,19 @@ void drawImage(uint8_t * imageBuf, ImagePair *imagePair, ImageStats *statsH, Ima
         annotate(title, 12, MONITOR_LABEL_OFFSET_X + 80, 50 + 3 * LINE_SPACING + MONITOR_LABEL_OFFSET_Y, imageBuf);
         sprintf(title, "  %6.1lf C", imagePair->auxH->CcdTemperature);
         annotate(title, 12, MONITOR_LABEL_OFFSET_X + 80, 50 + 4 * LINE_SPACING + MONITOR_LABEL_OFFSET_Y, imageBuf);
+
+
         sprintf(title, "  %6d", statsH->paCount);
-        annotate(title, 12, MONITOR_LABEL_OFFSET_X + 80, 50 + 5 * LINE_SPACING + MONITOR_LABEL_OFFSET_Y, imageBuf);
+        annotate(title, 12, anomXOff + 80, anomYOff, imageBuf);
         sprintf(title, "  %6d", statsH->cumulativePaCount);
-        annotate(title, 12, MONITOR_LABEL_OFFSET_X + 80, 50 + 6 * LINE_SPACING + MONITOR_LABEL_OFFSET_Y, imageBuf);
+        annotate(title, 12, anomXOff + 80, anomYOff + 1 * LINE_SPACING, imageBuf);
+        sprintf(title, "  %6d", statsH->paCumulativeFrameCount);
+        annotate(title, 12, anomXOff + 80, anomYOff + 2 * LINE_SPACING, imageBuf);
         sprintf(title, "  %6d", statsH->measlesCount);
-        annotate(title, 12, MONITOR_LABEL_OFFSET_X + 80, 50 + 7 * LINE_SPACING + MONITOR_LABEL_OFFSET_Y, imageBuf);
+        annotate(title, 12, anomXOff + 80, anomYOff + 3 * LINE_SPACING, imageBuf);
         sprintf(title, "  %6d", statsH->cumulativeMeaslesCount);
-        annotate(title, 12, MONITOR_LABEL_OFFSET_X + 80, 50 + 8 * LINE_SPACING + MONITOR_LABEL_OFFSET_Y, imageBuf);
+        annotate(title, 12, anomXOff + 80, anomYOff + 4 * LINE_SPACING, imageBuf);
+
     }
 
     if (imagePair->gotImageV)
@@ -186,38 +200,45 @@ void drawImage(uint8_t * imageBuf, ImagePair *imagePair, ImageStats *statsH, Ima
         annotate(title, 12, MONITOR_LABEL_OFFSET_X + 150, 50 + 3 * LINE_SPACING + MONITOR_LABEL_OFFSET_Y, imageBuf);
         sprintf(title, "  %6.1lf C", imagePair->auxV->CcdTemperature);
         annotate(title, 12, MONITOR_LABEL_OFFSET_X + 150, 50 + 4 * LINE_SPACING + MONITOR_LABEL_OFFSET_Y, imageBuf);
+
+
         sprintf(title, "  %6d", statsV->paCount);
-        annotate(title, 12, MONITOR_LABEL_OFFSET_X + 150, 50 + 5 * LINE_SPACING + MONITOR_LABEL_OFFSET_Y, imageBuf);
+        annotate(title, 12, anomXOff + 150, anomYOff, imageBuf);
         sprintf(title, "  %6d", statsV->cumulativePaCount);
-        annotate(title, 12, MONITOR_LABEL_OFFSET_X + 150, 50 + 6 * LINE_SPACING + MONITOR_LABEL_OFFSET_Y, imageBuf);
+        annotate(title, 12, anomXOff + 150, anomYOff + 1 * LINE_SPACING, imageBuf);
+        sprintf(title, "  %6d", statsV->paCumulativeFrameCount);
+        annotate(title, 12, anomXOff + 150, anomYOff + 2 * LINE_SPACING, imageBuf);
         sprintf(title, "  %6d", statsV->measlesCount);
-        annotate(title, 12, MONITOR_LABEL_OFFSET_X + 150, 50 + 7 * LINE_SPACING + MONITOR_LABEL_OFFSET_Y, imageBuf);
+        annotate(title, 12, anomXOff + 150, anomYOff + 3 * LINE_SPACING, imageBuf);
         sprintf(title, "  %6d", statsV->cumulativeMeaslesCount);
-        annotate(title, 12, MONITOR_LABEL_OFFSET_X + 150, 50 + 8 * LINE_SPACING + MONITOR_LABEL_OFFSET_Y, imageBuf);
+        annotate(title, 12, anomXOff + 150, anomYOff + 4 * LINE_SPACING, imageBuf);
    }
+
+    for (int b = 0; b < PA_ANGULAR_NUM_BINS; b++)
+    {
+        if (statsH->paAngularSpectrumCumulativeFrameCount[b] > maxPaH) maxPaH = statsH->paAngularSpectrumCumulativeFrameCount[b];
+        if (statsV->paAngularSpectrumCumulativeFrameCount[b] > maxPaV) maxPaV = statsV->paAngularSpectrumCumulativeFrameCount[b];
+    }
+    if (maxPaH < 100) maxPaH = 100;
+    if (maxPaV < 100) maxPaV = 100;
 
     // PA region H image
     for (int k = 0; k < NUM_FULL_IMAGE_PIXELS; k++ )
     {
-        if (imagePair->gotImageH)
-        {
-            if (statsH->maxValue > 0)
-                v = floor((double)(imagePair->pixelsH[k]) / statsH->maxValue * MAX_COLOR_VALUE);
-            else
-                v = MIN_COLOR_VALUE;
-            if (v > MAX_COLOR_VALUE) v = MAX_COLOR_VALUE;
-            if (v < MIN_COLOR_VALUE) v = MIN_COLOR_VALUE;
-        }
-        else
-        {
-            v = FOREGROUND_COLOR;
-        }
         x = k / 66;
         y = 65 - (k % 66);
         dx = (double) x - OPTICAL_CENTER_X;
         dy = OPTICAL_CENTER_Y - (double) y; // y increases downward, switch to match graphics in case needed for other analysis
-        r = sqrt(dx * dx + dy * dy);
-        r1 = sqrt(dx * dx + dy * dy / (PA_DY_FACTOR * PA_DY_FACTOR));
+        r = hypot(dx, dy);
+        r1 = hypot(dx, dy / PA_DY_FACTOR);
+        phi = atan2(dy, dx) * 180.0 / M_PI;
+        paBin = getPaBin(phi);
+        if (maxPaH > 0)
+            v = floor(((double)statsH->paAngularSpectrumCumulativeFrameCount[paBin]) / (double) maxPaH * MAX_COLOR_VALUE);
+        else
+            v = MIN_COLOR_VALUE;
+        if (v > MAX_COLOR_VALUE) v = MAX_COLOR_VALUE;
+        if (v < MIN_COLOR_VALUE) v = MIN_COLOR_VALUE;
         for (int sx = 0; sx < PA_REGION_IMAGE_SCALE; sx++)
         {
             for (int sy = 0; sy < PA_REGION_IMAGE_SCALE; sy++)
@@ -225,12 +246,8 @@ void drawImage(uint8_t * imageBuf, ImagePair *imagePair, ImageStats *statsH, Ima
                 imageIndex = (IMAGE_WIDTH*(PA_REGION_IMAGE_SCALE*(y)+sy+PA_REGION_IMAGE_OFFSET_Y)+(PA_REGION_IMAGE_SCALE*(x)+sx+PA_REGION_IMAGE_OFFSET_X));
                 if (imageIndex < IMAGE_BUFFER_SIZE)
                 {
-                    if (r1 >= PA_MINIMUM_RADIUS && r <= PA_MAXIMUM_RADIUS && imagePair->gotImageH)
-                        imageBuf[imageIndex] = v;
-                    else if (imagePair->gotImageH)
-                        imageBuf[imageIndex] = BACKGROUND_COLOR;
-                    else 
-                        imageBuf[imageIndex] = FOREGROUND_COLOR;
+                    if (r1 >= PA_MINIMUM_RADIUS && r <= PA_MAXIMUM_RADIUS && (paBin >=0 && paBin < PA_ANGULAR_NUM_BINS))
+                        imageBuf[imageIndex] = (uint8_t) v;
 
                 }
             }
@@ -258,6 +275,12 @@ void drawImage(uint8_t * imageBuf, ImagePair *imagePair, ImageStats *statsH, Ima
         dy = OPTICAL_CENTER_Y - (double) y; // y increases downward, switch to match graphics in case needed for other analysis
         r = sqrt(dx * dx + dy * dy);
         r1 = sqrt(dx * dx + dy * dy / (PA_DY_FACTOR * PA_DY_FACTOR));
+        phi = atan2(dy, dx) * 180.0 / M_PI;
+        paBin = getPaBin(phi);
+        if (maxPaV > 0)
+            v = floor(((double)statsV->paAngularSpectrumCumulativeFrameCount[paBin]) / (double) maxPaV * MAX_COLOR_VALUE);
+        else
+            v = MIN_COLOR_VALUE;
         for (int sx = 0; sx < PA_REGION_IMAGE_SCALE; sx++)
         {
             for (int sy = 0; sy < PA_REGION_IMAGE_SCALE; sy++)
@@ -265,17 +288,35 @@ void drawImage(uint8_t * imageBuf, ImagePair *imagePair, ImageStats *statsH, Ima
                 imageIndex = (IMAGE_WIDTH*(PA_REGION_IMAGE_SCALE*(y)+sy+PA_REGION_IMAGE_OFFSET_Y)+(PA_REGION_IMAGE_SCALE*(x)+sx + PA_REGION_IMAGE_SCALE*V_IMAGE_OFFSET_X + PA_REGION_IMAGE_OFFSET_X));
                 if (imageIndex < IMAGE_BUFFER_SIZE)
                 {
-                    if (r1 >= PA_MINIMUM_RADIUS && r <= PA_MAXIMUM_RADIUS && imagePair->gotImageV)
-                        imageBuf[imageIndex] = v;
-                    else if (imagePair->gotImageV)
-                        imageBuf[imageIndex] = BACKGROUND_COLOR;
-                    else 
-                        imageBuf[imageIndex] = FOREGROUND_COLOR;
-
+                    if (r1 >= PA_MINIMUM_RADIUS && r <= PA_MAXIMUM_RADIUS && (paBin >=0 && paBin < PA_ANGULAR_NUM_BINS))
+                        imageBuf[imageIndex] = (uint8_t) v;
                 }
             }
         }
     }
+    // PA color bars
+    int pxoff = PA_REGION_IMAGE_OFFSET_X + 180;
+    int pyoff = PA_REGION_IMAGE_OFFSET_Y + PA_REGION_IMAGE_SCALE * 66 - 30;
+    int pcbarWidth = 8;
+    int pcbarSeparation = 30;
+    for (int x = pxoff; x < pxoff+pcbarWidth; x++)
+    {
+        for (int y = MIN_COLOR_VALUE; y <= MAX_COLOR_VALUE; y+=2)
+        {
+            imageBuf[IMAGE_WIDTH * (pyoff - y/3) + x] = y;
+            imageBuf[IMAGE_WIDTH * (pyoff - y/3) + x + pcbarWidth + pcbarSeparation] = y;
+        }
+    }
+
+    annotate("# frames", 12, pxoff+pcbarWidth + pcbarSeparation/2 - 25, pyoff + 7, imageBuf);
+    annotate("H", 12, pxoff-1, pyoff - MAX_COLOR_VALUE / 3 - 20, imageBuf);
+    annotate("V", 12, pxoff-1 + pcbarWidth + cbarSeparation, pyoff - MAX_COLOR_VALUE / 3 - 20, imageBuf);
+    annotate("0", 9, pxoff+pcbarWidth+3, pyoff-10, imageBuf);
+    annotate("0", 9, pxoff + pcbarWidth + cbarSeparation + pcbarWidth+3, pyoff-10, imageBuf);
+    sprintf(title, "%d", maxPaH);
+    annotate(title, 9, pxoff+pcbarWidth+3, pyoff - MAX_COLOR_VALUE/3 - 2, imageBuf);
+    sprintf(title, "%d", maxPaV);
+    annotate(title, 9, pxoff + pcbarWidth + cbarSeparation + pcbarWidth+3, pyoff - MAX_COLOR_VALUE/3 - 2, imageBuf);
 
     // PA region annotations
     annotate("PA analysis", 12, 70, PA_REGION_IMAGE_OFFSET_Y-20, imageBuf);
