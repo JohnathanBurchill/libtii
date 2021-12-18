@@ -2,6 +2,7 @@
 
 #include "isp.h"
 
+#include <string.h>
 #include <libxml/xpath.h>
 
 int parseHdr(const char *hdr, HdrInfo *fi, HdrInfo *ci)
@@ -21,33 +22,54 @@ int parseHdr(const char *hdr, HdrInfo *fi, HdrInfo *ci)
         goto cleanup;                
     }
 
-
-    if (getLongValue(doc, "//DSD[Data_Set_Name=\"EFI TII Full Image Packet - Normal Mode\"]/Data_Set_Offset", &(fi->offset)))
+    char query[256];
+    memset(query, 0, 256);
+    int len = strlen(hdr);
+    char mode[20];
+    char bug;
+    memset(mode, 0, 20);
+    if (strncmp(hdr+len-47, "TIC", 3) == 0)
+    {
+        sprintf(mode, "%s", "TII-Calibration");
+        bug = '-';
+    }
+    else
+    {
+        sprintf(mode, "%s", "Normal");
+        bug = '\'';
+    }
+    sprintf(query, "//DSD[Data_Set_Name=\"EFI TII Full Image Packet - %s Mode\"]/Data_Set_Offset", mode);
+    if (getLongValue(doc, query, &(fi->offset)))
     {
         status = HDR_PARSE_ERR_FULL_IMAGE_OFFSET;
         goto cleanup;
     }
-    if (getLongValue(doc, "//DSD[Data_Set_Name=\"EFI TII Full Image Packet - Normal Mode\"]/Num_of_Records", &(fi->numRecords)))
+    sprintf(query, "//DSD[Data_Set_Name=\"EFI TII Full Image Packet - %s Mode\"]/Num_of_Records", mode);
+    if (getLongValue(doc, query, &(fi->numRecords)))
     {
         status = HDR_PARSE_ERR_FULL_IMAGE_NUM_RECORDS;
         goto cleanup;
     }
-    if (getLongValue(doc, "//DSD[Data_Set_Name=\"EFI TII Full Image Packet - Normal Mode\"]/Record_Size", &(fi->recordSize)))
+    sprintf(query, "//DSD[Data_Set_Name=\"EFI TII Full Image Packet - %s Mode\"]/Record_Size", mode);
+    if (getLongValue(doc, query, &(fi->recordSize)))
     {
         status = HDR_PARSE_ERR_FULL_IMAGE_RECORD_SIZE;
         goto cleanup;
     }
-    if (getLongValue(doc, "//DSD[Data_Set_Name=\"EFI TII Full Image Cont'd Packet - Normal Mode\"]/Data_Set_Offset", &(ci->offset)))
+    sprintf(query, "//DSD[Data_Set_Name=\"EFI TII Full Image Cont%cd Packet - %s Mode\"]/Data_Set_Offset", bug, mode);
+    if (getLongValue(doc, query, &(ci->offset)))
     {
         status = HDR_PARSE_ERR_FULL_IMAGE_CONT_OFFSET;
         goto cleanup;
     }
-    if (getLongValue(doc, "//DSD[Data_Set_Name=\"EFI TII Full Image Cont'd Packet - Normal Mode\"]/Num_of_Records", &(ci->numRecords)))
+    sprintf(query, "//DSD[Data_Set_Name=\"EFI TII Full Image Cont%cd Packet - %s Mode\"]/Num_of_Records", bug, mode);
+    if (getLongValue(doc, query, &(ci->numRecords)))
     {
         status = HDR_PARSE_ERR_FULL_IMAGE_CONT_NUM_RECORDS;
         goto cleanup;
     }
-    if (getLongValue(doc, "//DSD[Data_Set_Name=\"EFI TII Full Image Cont'd Packet - Normal Mode\"]/Record_Size", &(ci->recordSize)))
+    sprintf(query, "//DSD[Data_Set_Name=\"EFI TII Full Image Cont%cd Packet - %s Mode\"]/Record_Size", bug, mode);
+    if (getLongValue(doc, query, &(ci->recordSize)))
     {
         status = HDR_PARSE_ERR_FULL_IMAGE_CONT_RECORD_SIZE;
         goto cleanup;
