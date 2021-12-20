@@ -11,7 +11,7 @@ SCALE=$2
 
 MOVIEFILE=`tiim $1 $2`
 
-/usr/local/bin/ffmpeg -y -loglevel quiet -an -i EFI${SAT}_%05d.png  -s 640x480 -c:v libx264 -vf "fps=15,format=yuv420p" -profile:v baseline -level 3 /data/Movies/Swarm/${DATE}/${MOVIEFILE}
+/usr/local/bin/ffmpeg -y -loglevel quiet -an -i EFI${SAT}_%05d.png  -s 844x390 -c:v libx264 -vf "fps=15,format=yuv420p" -profile:v baseline -level 3 /data/Movies/Swarm/${DATE}/${MOVIEFILE}
 
 echo "tiim'd backup movie ${MOVIEFILE}"
 
