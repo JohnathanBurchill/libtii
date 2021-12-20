@@ -19,6 +19,8 @@ enum IMPORT_ERROR
 
 int importImagery(const char *hdr, ImagePackets *imagePackets);
 
-void alignPackets(uint8_t* fullImagePackets, uint8_t *continuedPackets, long nImages, HdrInfo *fi, HdrInfo *ci);
+void alignPackets(uint8_t* fullImagePackets, uint8_t *continuedPackets, long nImages, long nGaps, HdrInfo *fi, HdrInfo *ci);
+
+int numberOfPacketGaps(uint8_t* fullImagePackets, uint8_t *continuedPackets, long nImages);
 
 #endif // _IMPORT_H

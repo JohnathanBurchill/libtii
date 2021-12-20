@@ -82,7 +82,7 @@ int main(int argc, char **argv)
 
     struct spng_plte colorTable = getColorTable();
 
-    // for (long i = 0; i < 2;)
+    // for (long i = 0; i < 133;)
     for (long i = 0; i < imagePackets.numberOfImages-1;)
     {
         status = getAlignedImagePair(&imagePackets, i, &imagePair, &imagesRead);
