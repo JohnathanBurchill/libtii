@@ -9,6 +9,8 @@
 
 #define NUM_FULL_IMAGE_PACKET_PIXELS 1341
 #define NUM_FULL_IMAGE_CONT_PACKET_PIXELS 1299
+#define TII_ROWS 66
+#define TII_COLS 40
 #define NUM_FULL_IMAGE_PIXELS 2640
 
 typedef struct imagePackets

@@ -75,7 +75,8 @@ int main(int argc, char **argv)
 
     struct spng_plte colorTable = getColorTable();
 
-    for (long i = 0; i < imagePackets.numberOfImages-1;)
+    for (long i = 0; i < 2;)
+    // for (long i = 0; i < imagePackets.numberOfImages-1;)
     {
         status = getAlignedImagePair(&imagePackets, i, &imagePair, &imagesRead);
         i+=imagesRead;
@@ -85,9 +86,7 @@ int main(int argc, char **argv)
         //analyze imagery
         analyzeImage(imagePair.pixelsH, imagePair.gotImageH, max, &statsH);
         analyzeImage(imagePair.pixelsV, imagePair.gotImageV, max, &statsV);
-
-        // Prepare the PNG frame buffer
-        drawImage(imageBuf, &imagePair, &statsH, &statsV);
+        drawFrame(imageBuf, &imagePair, &statsH, &statsV);
 
         // Write the frame to file
         sprintf(pngFile, "EFI%c_%05d.png", getSatellite(&imagePair), filenameCounter);

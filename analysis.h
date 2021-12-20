@@ -9,6 +9,7 @@
 typedef struct imageStats
 {
     double maxValue;
+    double maxPaValue;
 
     // anomalies
     int paCount;
