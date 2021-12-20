@@ -72,6 +72,13 @@ int main(int argc, char **argv)
     ImageStats statsV;
     statsV.cumulativePaCount = 0;
     statsV.cumulativeMeaslesCount = 0;
+    for (int b = 0; b < PA_ANGULAR_NUM_BINS; b++)
+    {
+        statsH.paAngularSpectrumCumulativeFrameCount[b] = 0;
+        statsH.paAngularSpectrumTotal[b] = 0;
+        statsV.paAngularSpectrumCumulativeFrameCount[b] = 0;
+        statsV.paAngularSpectrumTotal[b] = 0;
+    }
 
     struct spng_plte colorTable = getColorTable();
 
