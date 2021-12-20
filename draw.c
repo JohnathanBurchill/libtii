@@ -54,9 +54,6 @@ void drawFrame(uint8_t * imageBuf, ImagePair *imagePair, ImageStats *statsH, Ima
         if (statsH->paAngularSpectrumCumulativeFrameCount[b] > maxPaH) maxPaH = statsH->paAngularSpectrumCumulativeFrameCount[b];
         if (statsV->paAngularSpectrumCumulativeFrameCount[b] > maxPaV) maxPaV = statsV->paAngularSpectrumCumulativeFrameCount[b];
     }
-    if (maxPaH < 100) maxPaH = 100;
-    if (maxPaV < 100) maxPaV = 100;
-
 
     drawImagePair(imageBuf, imagePair, maxPaH, maxPaV, PA_REGION_IMAGE_OFFSET_X, PA_REGION_IMAGE_OFFSET_Y, PA_REGION_IMAGE_SCALE, 28, "", "", false, paAngularSpectrumFilter, statsH->paAngularSpectrumCumulativeFrameCount, statsV->paAngularSpectrumCumulativeFrameCount);
 
