@@ -26,6 +26,8 @@ typedef struct imageStats
 
 void analyzeImage(uint16_t *pixels, bool gotImage, double requestedMaxValue, ImageStats *stats);
 
+double getMaxValue(uint16_t *pixels, double requestedMaxValue);
+
 int getPaBin(double phi);
 
 #endif // _ANALYSIS_H

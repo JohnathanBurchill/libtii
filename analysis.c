@@ -19,18 +19,7 @@ void analyzeImage(uint16_t *pixels, bool gotImage, double requestedMaxValue, Ima
     int paBin;
     if (gotImage)
     {
-        if (requestedMaxValue < 0.0)
-        {
-            for (int k = 0; k < NUM_FULL_IMAGE_PIXELS; k++)
-            {
-                if ((double)pixels[k] > maxValueTmp && pixels[k] < MAX_PIXEL_VALUE_FOR_MAX_CALCULATION) // Ignore measles pixels in max calculation
-                    maxValueTmp = pixels[k];
-            }
-        }
-        else
-        {
-            maxValueTmp = requestedMaxValue;
-        }
+        maxValueTmp = getMaxValue(pixels, requestedMaxValue);
         // Anomaly analysis
         for (int k = 0; k < NUM_FULL_IMAGE_PIXELS; k++)
         {
@@ -78,9 +67,29 @@ void analyzeImage(uint16_t *pixels, bool gotImage, double requestedMaxValue, Ima
 
 }
 
+double getMaxValue(uint16_t *pixels, double requestedMaxValue)
+{
+    double maxValueTmp = 0.0;
+    if (requestedMaxValue < 0.0)
+    {
+        // autoscale
+        for (int k = 0; k < NUM_FULL_IMAGE_PIXELS; k++)
+        {
+            if ((double)pixels[k] > maxValueTmp && pixels[k] < MAX_PIXEL_VALUE_FOR_MAX_CALCULATION) // Ignore measles pixels in max calculation
+                maxValueTmp = pixels[k];
+        }
+    }
+    else
+    {
+        maxValueTmp = requestedMaxValue;
+    }
+
+    return maxValueTmp;
+}
 
 int getPaBin(double phi)
 {
     int paBin = (int)(floor(fmod(phi - PA_ANGULAR_BIN_WIDTH/2.0 + 360.0, 360.0) / PA_ANGULAR_BIN_WIDTH)) - 1;
     return paBin;
 }
+

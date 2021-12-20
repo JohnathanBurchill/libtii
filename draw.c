@@ -3,6 +3,7 @@
 #include "tiim.h"
 #include "analysis.h"
 #include "isp.h"
+#include "gainmap.h"
 #include "fonts.h"
 #include "filters.h"
 
@@ -19,6 +20,24 @@ void drawFrame(uint8_t * imageBuf, ImagePair *imagePair, ImageStats *statsH, Ima
     int imageIndex;
     int maxPaH = 0;
     int maxPaV = 0;
+
+    double *gainmap;
+    int threshold;
+    switch (imagePair->auxH->satellite)
+    {
+        case 'A':
+            threshold = 100;
+            break;
+        case 'B':
+            threshold = 100;
+            break;
+        case 'C':
+            threshold = 25;
+            break;
+        default:
+            threshold = 0;
+            break;
+    }
 
     char title[255];
 
@@ -46,6 +65,18 @@ void drawFrame(uint8_t * imageBuf, ImagePair *imagePair, ImageStats *statsH, Ima
 
     // Gain corrected
     // adjust pixel values first...
+    gainmap = getGainMap(imagePair->auxH->EfiInstrumentId, imagePair->auxH->SensorNumber, imagePair->auxH->dateTime.secondsSince1970);
+    if (gainmap != NULL)
+    {
+        applyGainMap(imagePair->pixelsH, gainmap, threshold, &(statsH->maxValue));
+    }
+
+    gainmap = getGainMap(imagePair->auxV->EfiInstrumentId, imagePair->auxV->SensorNumber, imagePair->auxV->dateTime.secondsSince1970);
+    if (gainmap != NULL)
+    {
+        applyGainMap(imagePair->pixelsV, gainmap, threshold, &(statsV->maxValue));
+    }
+
     drawImagePair(imageBuf, imagePair, statsH->maxValue, statsV->maxValue, x0 + GAIN_CORRECTED_OFFSET_X, y0, GAIN_CORRECTED_IMAGE_SCALE, RAW_IMAGE_SEPARATION_X, "GC H", "GC V", false, &identityFilter, NULL, NULL);
 
     // Intensity scaling for PA region imagery
