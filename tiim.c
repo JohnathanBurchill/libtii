@@ -43,7 +43,11 @@ int main(int argc, char **argv)
     status = importImagery(hdr, &imagePackets);
     if (status)
     {
-        printf("Could not import image data.\n");
+        fprintf(stderr, "Could not import image data.\n");
+        goto cleanup;
+    }
+    if (imagePackets.numberOfImages == 0)
+    {
         goto cleanup;
     }
 
