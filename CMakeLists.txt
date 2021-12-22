@@ -17,20 +17,20 @@ endif(CMAKE_BUILD_TYPE STREQUAL Debug)
 
 # requires -lm on linux
 FIND_LIBRARY(MATH m)
-FIND_LIBRARY(SPNG spng)
+FIND_LIBRARY(Z z)
 FIND_PACKAGE(LibXml2)
 FIND_PATH(SPNG_INCLUDE spng.h)
 
-SET(LIBS ${LIBS} ${MATH} ${LIBXML2_LIBRARIES} ${SPNG} )
+SET(LIBS ${LIBS} ${MATH} ${LIBXML2_LIBRARIES} ${Z})
 
 
 INCLUDE_DIRECTORIES(${INCLUDE_DIRS} ${SPNG_INCLUDE} ${LIBXML2_INCLUDE_DIR})
 
-ADD_EXECUTABLE(tiim tiim.c isp.c xml.c png.c fonts.c analysis.c draw.c import.c utility.c filters.c gainmap.c)
+ADD_EXECUTABLE(tiim tiim.c isp.c xml.c png.c fonts.c analysis.c draw.c import.c utility.c filters.c gainmap.c spng.c)
 TARGET_LINK_LIBRARIES(tiim ${LIBS})
 
 
-ADD_EXECUTABLE(tiim_stats tiim.c isp.c xml.c png.c fonts.c analysis.c draw.c import.c utility.c filters.c gainmap.c)
+ADD_EXECUTABLE(tiim_stats tiim.c isp.c xml.c analysis.c import.c utility.c filters.c)
 TARGET_COMPILE_DEFINITIONS(tiim_stats PRIVATE ANALYSIS_ONLY)
 TARGET_LINK_LIBRARIES(tiim_stats ${LIBS})
 

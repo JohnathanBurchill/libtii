@@ -1,8 +1,9 @@
 #ifndef _PNG_H
 #define _PNG_H
 
+#include "spng.h"
+
 #include <stdint.h>
-#include <spng.h>
 
 struct spng_plte getColorTable();
 

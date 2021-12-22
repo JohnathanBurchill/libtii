@@ -4,14 +4,17 @@
 #include "import.h"
 #include "utility.h"
 #include "analysis.h"
+
+#ifndef ANALYSIS_ONLY
 #include "draw.h"
 #include "png.h"
+#include "spng.h"
 #include "fonts.h"
+#endif
 
 #include <stdio.h>
 #include <string.h>
 #include <stdint.h>
-#include <spng.h>
 #include <time.h>
 #include <math.h>
 
@@ -62,6 +65,7 @@ int main(int argc, char **argv)
     double maxValueH, maxValueV;
     int imagesRead = 0;
 
+#ifndef ANALYSIS_ONLY
     char movieFilename[FILENAME_MAX];
     status = constructMovieFilename(&imagePackets, &imagePair, movieFilename);
     if (status != UTIL_OK)
@@ -69,6 +73,8 @@ int main(int argc, char **argv)
         printf("Could not construct movie filename.\n");
         goto cleanup;
     }
+#endif
+
     // Construct frames and export to PNG files
     int filenameCounter = 0;
 
@@ -90,7 +96,9 @@ int main(int argc, char **argv)
         statsV.paAngularSpectrumTotal[b] = 0;
     }
 
+#ifndef ANALYSIS_ONLY
     struct spng_plte colorTable = getColorTable();
+#endif
 
     for (long i = 0; i < imagePackets.numberOfImages-1;)
     {
@@ -102,6 +110,7 @@ int main(int argc, char **argv)
         //analyze imagery
         analyzeImage(imagePair.pixelsH, imagePair.gotImageH, max, &statsH);
         analyzeImage(imagePair.pixelsV, imagePair.gotImageV, max, &statsV);
+
 #ifndef ANALYSIS_ONLY
         drawFrame(imageBuf, &imagePair, &statsH, &statsV);
         // Write the frame to file
@@ -111,6 +120,7 @@ int main(int argc, char **argv)
             filenameCounter++;
         }
 #endif
+
     }
 
     // TODO
