@@ -30,8 +30,8 @@ ADD_EXECUTABLE(tiim tiim.c isp.c xml.c png.c fonts.c analysis.c draw.c import.c 
 TARGET_LINK_LIBRARIES(tiim ${LIBS})
 
 
-ADD_DEFINITIONS(-DHAVE_GETOPT_H -DANALYSIS_ONLY)
 ADD_EXECUTABLE(tiim_stats tiim.c isp.c xml.c png.c fonts.c analysis.c draw.c import.c utility.c filters.c gainmap.c)
+TARGET_COMPILE_DEFINITIONS(tiim_stats PRIVATE ANALYSIS_ONLY)
 TARGET_LINK_LIBRARIES(tiim_stats ${LIBS})
 
 install(TARGETS tiim DESTINATION $ENV{HOME}/bin)
