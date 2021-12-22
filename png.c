@@ -3,8 +3,8 @@
 #include "tiim.h"
 #include "colortable.h"
 #include "fonts.h"
+#include "spng.h"
 
-#include <spng.h>
 #include <errno.h>
 
 struct spng_plte getColorTable()
