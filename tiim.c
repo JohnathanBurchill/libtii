@@ -96,23 +96,30 @@ int main(int argc, char **argv)
         drawFrame(imageBuf, &imagePair, &statsH, &statsV);
 
         // Write the frame to file
+#ifndef ANALYSIS_ONLY
         sprintf(pngFile, "EFI%c_%05d.png", getSatellite(&imagePair), filenameCounter);
         if (!writePng(pngFile, imageBuf, IMAGE_WIDTH, IMAGE_HEIGHT, &colorTable))
         {
             filenameCounter++;
         }
-
+#endif
     }
 
     // TODO
     // Get the ion admittance from LP&TII packets and convert to density
     // Get config packet info as needed.
 
+    // Summary
+#ifdef ANALYSIS_ONLY
+    printf("%c PA frames: %ld %d %d\n", getSatellite(&imagePair), imagePackets.numberOfImages, statsH.paCumulativeFrameCount, statsV.paCumulativeFrameCount);
+#else
+
     if (filenameCounter > 0)
         printf("%s\n", movieFilename);
     else
         printf("No-Frames-For-This-Date\n");
 
+#endif
 
 cleanup:
     if (imagePackets.fullImagePackets != NULL) free(imagePackets.fullImagePackets);
