@@ -24,6 +24,8 @@ typedef struct imageStats
 
 } ImageStats;
 
+void initializeImageStats(ImageStats *stats);
+
 void analyzeImage(uint16_t *pixels, bool gotImage, double requestedMaxValue, ImageStats *stats);
 
 double getMaxValue(uint16_t *pixels, double requestedMaxValue);

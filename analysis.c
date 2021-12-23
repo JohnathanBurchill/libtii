@@ -5,6 +5,20 @@
 
 #include <math.h>
 
+void initializeImageStats(ImageStats *stats)
+{
+    stats->cumulativePaCount = 0;
+    stats->cumulativeMeaslesCount = 0;
+    stats->paCumulativeFrameCount = 0;
+    stats->maxPaValue =0;
+    for (int b = 0; b < PA_ANGULAR_NUM_BINS; b++)
+    {
+        stats->paAngularSpectrumCumulativeFrameCount[b] = 0;
+        stats->paAngularSpectrumTotal[b] = 0;
+    }
+
+}
+
 
 void analyzeImage(uint16_t *pixels, bool gotImage, double requestedMaxValue, ImageStats *stats)
 {

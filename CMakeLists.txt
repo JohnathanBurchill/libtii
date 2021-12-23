@@ -25,7 +25,11 @@ SET(LIBS ${LIBS} ${MATH} ${LIBXML2_LIBRARIES} ${ZLIB_LIBRARIES})
 
 INCLUDE_DIRECTORIES(${INCLUDE_DIRS} ${LIBXML2_INCLUDE_DIR})
 
+ADD_LIBRARY(efitii SHARED isp.c xml.c png.c fonts.c analysis.c draw.c import.c utility.c filters.c gainmap.c spng.c)
+TARGET_LINK_LIBRARIES(efitii ${LIBS})
+
 ADD_EXECUTABLE(tiim tiim.c isp.c xml.c png.c fonts.c analysis.c draw.c import.c utility.c filters.c gainmap.c spng.c)
+
 TARGET_LINK_LIBRARIES(tiim ${LIBS})
 
 

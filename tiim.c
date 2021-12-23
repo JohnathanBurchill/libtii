@@ -78,24 +78,10 @@ int main(int argc, char **argv)
     // Construct frames and export to PNG files
     int filenameCounter = 0;
 
-    ImageStats statsH;
-    statsH.cumulativePaCount = 0;
-    statsH.cumulativeMeaslesCount = 0;
-    statsH.paCumulativeFrameCount = 0;
-    statsH.maxPaValue =0;
-    ImageStats statsV;
-    statsV.cumulativePaCount = 0;
-    statsV.cumulativeMeaslesCount = 0;
-    statsV.paCumulativeFrameCount = 0;
-    statsV.maxPaValue =0;
-    for (int b = 0; b < PA_ANGULAR_NUM_BINS; b++)
-    {
-        statsH.paAngularSpectrumCumulativeFrameCount[b] = 0;
-        statsH.paAngularSpectrumTotal[b] = 0;
-        statsV.paAngularSpectrumCumulativeFrameCount[b] = 0;
-        statsV.paAngularSpectrumTotal[b] = 0;
-    }
-
+    ImageStats statsH, statsV;
+    initializeImageStats(&statsH);
+    initializeImageStats(&statsV);
+    
 #ifndef ANALYSIS_ONLY
     struct spng_plte colorTable = getColorTable();
 #endif
