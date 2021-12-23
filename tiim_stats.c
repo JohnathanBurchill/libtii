@@ -5,11 +5,6 @@
 #include "utility.h"
 #include "analysis.h"
 
-#include "draw.h"
-#include "png.h"
-#include "spng.h"
-#include "fonts.h"
-
 #include <stdio.h>
 #include <string.h>
 #include <stdint.h>
@@ -35,6 +30,8 @@ int main(int argc, char **argv)
     }
 
     double max = atof(argv[2]);
+    int imagesRead = 0;
+    IspDateTime * dt = NULL;
 
     // Data
     ImagePackets imagePackets;
@@ -52,7 +49,6 @@ int main(int argc, char **argv)
         goto cleanup;
     }
 
-    char pngFile[FILENAME_MAX];
     uint16_t pixelsH[NUM_FULL_IMAGE_PIXELS], pixelsV[NUM_FULL_IMAGE_PIXELS];
     uint8_t imageBuf[IMAGE_BUFFER_SIZE];
     FullImagePacket * fip1, *fip2;
@@ -61,25 +57,11 @@ int main(int argc, char **argv)
     ImageAuxData auxH, auxV;
     initializeImagePair(&imagePair, &auxH, pixelsH, &auxV, pixelsV);
     double maxValueH, maxValueV;
-    int imagesRead = 0;
-
-    char movieFilename[FILENAME_MAX];
-    status = constructMovieFilename(&imagePackets, &imagePair, movieFilename);
-    if (status != UTIL_OK)
-    {
-        printf("Could not construct movie filename.\n");
-        goto cleanup;
-    }
-
-    // Construct frames and export to PNG files
-    int filenameCounter = 0;
 
     ImageStats statsH, statsV;
     initializeImageStats(&statsH);
     initializeImageStats(&statsV);
-
-    struct spng_plte colorTable = getColorTable();
-
+    
     for (long i = 0; i < imagePackets.numberOfImages-1;)
     {
         status = getAlignedImagePair(&imagePackets, i, &imagePair, &imagesRead);
@@ -91,24 +73,23 @@ int main(int argc, char **argv)
         analyzeImage(imagePair.pixelsH, imagePair.gotImageH, max, &statsH);
         analyzeImage(imagePair.pixelsV, imagePair.gotImageV, max, &statsV);
 
-        drawFrame(imageBuf, &imagePair, &statsH, &statsV);
-        // Write the frame to file
-        sprintf(pngFile, "EFI%c_%05d.png", getSatellite(&imagePair), filenameCounter);
-        if (!writePng(pngFile, imageBuf, IMAGE_WIDTH, IMAGE_HEIGHT, &colorTable))
-        {
-            filenameCounter++;
-        }
 
     }
 
-    // TODO
-    // Get the ion admittance from LP&TII packets and convert to density
-    // Get config packet info as needed.
-
-    if (filenameCounter > 0)
-        printf("%s\n", movieFilename);
-    else
-        printf("No-Frames-For-This-Date\n");
+    // Summary
+    dt = getIspDateTime(&imagePair);
+    // time (sec from 1970), satLetter, imagePairs, measlesCountH, measlesCountV, paCumulativeFrameCountH, paCumulativeFrameCountV, paAngularFrameCountsH... paAngularFramecountsV...
+    printf("%ld %c %ld %d %d %d %d", (time_t)floor(dt->secondsSince1970), getSatellite(&imagePair), imagePackets.numberOfImages, statsH.cumulativeMeaslesCount, statsV.cumulativeMeaslesCount, statsH.paCumulativeFrameCount, statsV.paCumulativeFrameCount);
+    printf(" %d", PA_ANGULAR_NUM_BINS);
+    for (int i = 0; i < PA_ANGULAR_NUM_BINS; i++)
+    {
+        printf(" %d", statsH.paAngularSpectrumCumulativeFrameCount[i]);
+    }
+    for (int i = 0; i < PA_ANGULAR_NUM_BINS; i++)
+    {
+        printf(" %d", statsV.paAngularSpectrumCumulativeFrameCount[i]);
+    }
+    printf("\n");
 
 cleanup:
     if (imagePackets.fullImagePackets != NULL) free(imagePackets.fullImagePackets);
