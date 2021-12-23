@@ -105,6 +105,12 @@ enum EFI_UNIT {
     UNIT_EFI_A = 3
 };
 
+enum EFI_MODE {
+    EFI_MODE_INVALID = 0,
+    EFI_MODE_NORMAL = 1,
+    EFI_MODE_TIICAL = 2
+};
+
 enum TII_IMAGE {
     H_SENSOR = 0,
     V_SENSOR = 1
