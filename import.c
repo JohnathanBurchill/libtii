@@ -13,6 +13,11 @@ int importImagery(const char *hdr, ImagePackets *imagePackets)
 {
     int status = IMPORT_OK;
 
+    if (strlen(hdr) >= FILENAME_MAX)
+    {
+        return IMPORT_HDR_FILENAME_TOO_LONG;
+    }
+
     PacketFileContents pfc;
     status = parseHdr(hdr, &pfc);
     if (status)

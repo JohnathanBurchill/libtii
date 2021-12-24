@@ -13,8 +13,8 @@ enum IMPORT_ERROR
     IMPORT_DBL_FILE_READ_PERMISION = -2,
     IMPORT_DBL_BUFFER_ALLOCATION = -3,
     IMPORT_DBL_FILE_SEEK = -4,
-    IMPORT_DBL_PACKET_READ = -5
-
+    IMPORT_DBL_PACKET_READ = -5,
+    IMPORT_HDR_FILENAME_TOO_LONG = -6
 };
 
 int importImagery(const char *hdr, ImagePackets *imagePackets);
