@@ -12,15 +12,22 @@ RUN apt -y install libxml2-dev
 RUN apt -y install zlib1g
 RUN apt -y install zlib1g-dev
 RUN apt -y install libavutil-dev
+RUN apt -y install libavcodec-dev
+RUN apt -y install libswscale-dev
+RUN apt -y install libavformat-dev
+RUN apt -y install libswresample-dev
+RUN apt -y install libx264-dev
+RUN apt -y install pkg-config
 RUN addgroup science
 RUN useradd -G science dataflow
 USER dataflow
-#SHELL ["/usr/bin/bash", ""]
 WORKDIR /home/dataflow/src
-COPY . .
-RUN mkdir build && \
-cd build && \
-cmake .. && \
-make install 
+#RUN mkdir build && \
+#cd build && \
+#cmake .. && \
+#make install 
+VOLUME ["/home/dataflow/src"]
+ENTRYPOINT ["/bin/bash"]
+
 
 
