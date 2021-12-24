@@ -23,7 +23,7 @@ int importImagery(const char *hdr, ImagePackets *imagePackets)
     // get DBL filename and check that we can open it.
     char dbl[FILENAME_MAX];
     snprintf(dbl, strlen(hdr)-3, "%s", hdr);
-    sprintf(dbl, "%s.DBL", dbl);
+    sprintf(dbl + strlen(dbl), ".DBL");
 
     uint8_t *fullImagePackets = NULL;
     uint8_t *continuedPackets = NULL;
