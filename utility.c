@@ -6,7 +6,7 @@
 #include <stdio.h>
 #include <string.h>
 
-int constructMovieFilename(ImagePackets *imagePackets, ImagePair *imagePair, char *movieFilename)
+int constructMovieFilename(ImagePackets *imagePackets, ImagePair *imagePair, const char *outputDir, char *movieFilename)
 {
 
     char satellite;
@@ -33,7 +33,7 @@ int constructMovieFilename(ImagePackets *imagePackets, ImagePair *imagePair, cha
     date = getIspDateTime(imagePair);
     sprintf(stopDate, "%04d%02d%02dT%02d%02d%02d", date->year, date->month, date->day, date->hour, date->minute, date->second);
 
-    sprintf(movieFilename, "SW_OPER_EFI%cTIIMOV_%s_%s_%s.mp4", satellite, startDate, stopDate, TIIM_VERSION);
+    sprintf(movieFilename, "%s/SW_OPER_EFI%cTIIMOV_%s_%s_%s.mp4", outputDir, satellite, startDate, stopDate, TIIM_VERSION);
 
     return UTIL_OK;
 

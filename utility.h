@@ -10,6 +10,6 @@ enum UTIL_CODES
     UTIL_MOVIE_NAME_NO_SATELLITE = -2
 };
 
-int constructMovieFilename(ImagePackets *imagePackets, ImagePair *imagePair, char *movieFilename);
+int constructMovieFilename(ImagePackets *imagePackets, ImagePair *imagePair, const char *outputDir, char *movieFilename);
 
 #endif // _UTILITY_H

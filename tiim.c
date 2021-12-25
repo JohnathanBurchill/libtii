@@ -7,7 +7,8 @@
 
 #include "draw.h"
 #include "png.h"
-#include "spng.h"
+//#include "spng.h"
+#include "libavutil.h"
 #include "fonts.h"
 
 #include <stdio.h>
@@ -18,9 +19,9 @@
 
 int main(int argc, char **argv)
 {
-    if (argc != 3)
+    if (argc != 4)
     {
-        printf("usage: %s normalModeHeaderFile.HDR maxSignal (pass -1 for autoscaling)\n", argv[0]);
+        printf("usage: %s normalModeHeaderFile.HDR maxSignal (pass -1 for autoscaling) outputDir\n", argv[0]);
         exit(1);
     }
 
@@ -30,11 +31,13 @@ int main(int argc, char **argv)
     size_t len = strlen(hdr);
     if (strcmp(hdr + len - 4, ".HDR") != 0)
     {
-    	printf("usage: %s <normalModeHeaderFile>.HDR maxSignal.\n", argv[0]);
+    	printf("usage: %s <normalModeHeaderFile>.HDR maxSignal outputDir\n", argv[0]);
 	    exit(1);
     }
 
     double max = atof(argv[2]);
+
+    char *outputDir = argv[3];
 
     // Data
     ImagePackets imagePackets;
@@ -64,25 +67,26 @@ int main(int argc, char **argv)
     int imagesRead = 0;
 
     char movieFilename[FILENAME_MAX];
-    status = constructMovieFilename(&imagePackets, &imagePair, movieFilename);
+    status = constructMovieFilename(&imagePackets, &imagePair, outputDir, movieFilename);
     if (status != UTIL_OK)
     {
         printf("Could not construct movie filename.\n");
         goto cleanup;
     }
 
+    ffmpeg_encoder_start(movieFilename, AV_CODEC_ID_H264, 15, IMAGE_WIDTH, IMAGE_HEIGHT, 1.0);
+
     // Construct frames and export to PNG files
-    int filenameCounter = 0;
+    int frameCounter = 0;
 
     ImageStats statsH, statsV;
     initializeImageStats(&statsH);
     initializeImageStats(&statsV);
 
-    struct spng_plte colorTable = getColorTable();
-
     for (long i = 0; i < imagePackets.numberOfImages-1;)
     {
         status = getAlignedImagePair(&imagePackets, i, &imagePair, &imagesRead);
+
         i+=imagesRead;
         if (status == ISP_NO_IMAGE_PAIR)
             continue;
@@ -92,20 +96,23 @@ int main(int argc, char **argv)
         analyzeImage(imagePair.pixelsV, imagePair.gotImageV, max, &statsV);
 
         drawFrame(imageBuf, &imagePair, &statsH, &statsV);
-        // Write the frame to file
-        sprintf(pngFile, "EFI%c_%05d.png", getSatellite(&imagePair), filenameCounter);
-        if (!writePng(pngFile, imageBuf, IMAGE_WIDTH, IMAGE_HEIGHT, &colorTable))
-        {
-            filenameCounter++;
-        }
+        // generate_rgb(width, height, pts, &rgb);
+        ffmpeg_encoder_encode_frame(imageBuf, frameCounter);
+        frameCounter++;
+
+        // if (!writePng(pngFile, imageBuf, IMAGE_WIDTH, IMAGE_HEIGHT, &colorTable))
+        // {
+        //     frameCounter++;
+        // }
 
     }
+    ffmpeg_encoder_finish();
 
     // TODO
     // Get the ion admittance from LP&TII packets and convert to density
     // Get config packet info as needed.
 
-    if (filenameCounter > 0)
+    if (frameCounter > 0)
         printf("%s\n", movieFilename);
     else
         printf("No-Frames-For-This-Date\n");
