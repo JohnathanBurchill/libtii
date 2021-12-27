@@ -17,6 +17,10 @@ RUN apt -y install libswscale-dev
 RUN apt -y install libavformat-dev
 RUN apt -y install libswresample-dev
 RUN apt -y install libx264-dev
+RUN apt -y install git
+RUN apt -y install gdb
+RUN apt -y install cgdb
+RUN apt -y install vim
 RUN apt -y install pkg-config
 RUN addgroup science
 RUN useradd -G science dataflow
