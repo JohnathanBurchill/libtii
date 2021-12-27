@@ -29,7 +29,7 @@ static AVPacket *videoPacket = NULL;
 static AVCodec *codec = NULL;
 static AVCodecContext *codecContext = NULL;
 
-static struct SwsContext *sws_context = NULL;
+static struct SwsContext *colorConversionContext = NULL;
 static uint8_t frameBuffer[3*IMAGE_BUFFER_SIZE];
 
 int initVideo(const char * videofilename)
@@ -54,10 +54,6 @@ int initVideo(const char * videofilename)
         fprintf(stderr, "Problem initializing output context\n");
         return VIDEO_OUTPUT_CONTEXT;
     }
-    // printf(" output format: %s\n mime type: %s\n extensions: %s\n default codec ID: %d\n flags: %d\n", videoContext->oformat->name, videoContext->oformat->mime_type, videoContext->oformat->extensions, videoContext->oformat->video_codec, videoContext->oformat->flags);
-    // printf(" GLOBALHEADER: %d\n", videoContext->oformat->flags & AVFMT_GLOBALHEADER);
-    // printf(" NOFILE: %d\n", videoContext->oformat->flags & AVFMT_NOFILE);
-    // printf(" nb_streams: %d\n", videoContext->nb_streams);
 
     // Get the encoder
     codec = avcodec_find_encoder(AV_CODEC_ID_H264);
@@ -169,11 +165,11 @@ int initVideo(const char * videofilename)
 
 static void rgbToYuv(uint8_t *rgb) {
     const int in_linesize[1] = { 3 * videoFrame->width };
-    sws_context = sws_getCachedContext(sws_context,
+    colorConversionContext = sws_getCachedContext(colorConversionContext,
             videoFrame->width, videoFrame->height, AV_PIX_FMT_RGB24,
             videoFrame->width, videoFrame->height, AV_PIX_FMT_YUV420P,
             0, NULL, NULL, NULL);
-    sws_scale(sws_context, (const uint8_t * const *)&rgb, in_linesize, 0,
+    sws_scale(colorConversionContext, (const uint8_t * const *)&rgb, in_linesize, 0,
             videoFrame->height, videoFrame->data, videoFrame->linesize);
 }
 
@@ -236,7 +232,7 @@ void cleanupVideo(void)
     avcodec_free_context(&codecContext);
     av_frame_free(&videoFrame);
     av_packet_free(&videoPacket);
-    sws_freeContext(sws_context);
+    sws_freeContext(colorConversionContext);
     avio_closep(&videoContext->pb);
     avformat_free_context(videoContext);
     return;
