@@ -41,15 +41,12 @@ int initVideo(const char * videofilename)
 
     videoFrame = av_frame_alloc();
     videoPacket = av_packet_alloc();
-    av_dict_set(&dict, "profile", "main", 0);
-    av_dict_set(&dict, "preset", "slow", 0);
+    av_dict_set(&dict, "profile", "baseline", 0);
+    av_dict_set(&dict, "preset", "medium", 0);
     av_dict_set(&dict, "level", "3", 0);
-    av_dict_set(&dict, "crf", "18", 0);
+    av_dict_set(&dict, "crf", "23", 0);
+    av_dict_set(&dict, "tune", "grain", 0);
     av_dict_set(&dict, "loglevel", "quiet", 0);
-    av_dict_set(&dict, "g", "250", 0);
-    // av_dict_set(&dict, "keyint_min", "25", 0);
-    // av_dict_set(&dict, "sc_threshold", "40", 0);
-    // av_dict_set(&dict, "bf", "16", 0);
 
     avformat_alloc_output_context2(&videoContext, NULL, NULL, videofilename);
     if (!videoContext)
