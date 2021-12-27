@@ -37,7 +37,8 @@ SET(LIBS ${LIBS} ${MATH} ${LIBXML2_LIBRARIES} ${ZLIB_LIBRARIES} PkgConfig::LIBAV
 
 INCLUDE_DIRECTORIES(${INCLUDE_DIRS} ${LIBXML2_INCLUDE_DIR})
 
-ADD_EXECUTABLE(tiim tiim.c isp.c xml.c fonts.c analysis.c draw.c import.c utility.c filters.c gainmap.c libavutil.c)
+#ADD_EXECUTABLE(tiim tiim.c isp.c xml.c fonts.c analysis.c draw.c import.c utility.c filters.c gainmap.c libavutil.c video.c)
+ADD_EXECUTABLE(tiim tiim.c isp.c xml.c fonts.c analysis.c draw.c import.c utility.c filters.c gainmap.c video.c)
 
 TARGET_LINK_LIBRARIES(tiim ${LIBS})
 

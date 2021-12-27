@@ -10,6 +10,7 @@
 //#include "spng.h"
 #include "libavutil.h"
 #include "fonts.h"
+#include "video.h"
 
 #include <stdio.h>
 #include <string.h>
@@ -74,7 +75,7 @@ int main(int argc, char **argv)
         goto cleanup;
     }
 
-    ffmpeg_encoder_start(movieFilename, AV_CODEC_ID_H264, 15, IMAGE_WIDTH, IMAGE_HEIGHT, 1.0);
+    // ffmpeg_encoder_start(movieFilename, AV_CODEC_ID_H264, 15, IMAGE_WIDTH, IMAGE_HEIGHT, 1.0);
 
     // Construct frames and export to PNG files
     int frameCounter = 0;
@@ -82,6 +83,13 @@ int main(int argc, char **argv)
     ImageStats statsH, statsV;
     initializeImageStats(&statsH);
     initializeImageStats(&statsV);
+
+    status = initVideo(movieFilename);
+    if (status < 0)
+    {
+        fprintf(stderr, "Problem intializing video: got status %d.\n", status);
+        goto cleanup;
+    }
 
     for (long i = 0; i < imagePackets.numberOfImages-1;)
     {
@@ -97,7 +105,8 @@ int main(int argc, char **argv)
 
         drawFrame(imageBuf, &imagePair, &statsH, &statsV);
         // generate_rgb(width, height, pts, &rgb);
-        ffmpeg_encoder_encode_frame(imageBuf, frameCounter);
+        // ffmpeg_encoder_encode_frame(imageBuf, frameCounter);
+        generateFrame(imageBuf, frameCounter);
         frameCounter++;
 
         // if (!writePng(pngFile, imageBuf, IMAGE_WIDTH, IMAGE_HEIGHT, &colorTable))
@@ -106,7 +115,10 @@ int main(int argc, char **argv)
         // }
 
     }
-    ffmpeg_encoder_finish();
+    // ffmpeg_encoder_finish();
+
+    finishVideo();
+    cleanupVideo();
 
     // TODO
     // Get the ion admittance from LP&TII packets and convert to density
@@ -116,6 +128,8 @@ int main(int argc, char **argv)
         printf("%s\n", movieFilename);
     else
         printf("No-Frames-For-This-Date\n");
+
+
 
 cleanup:
     if (imagePackets.fullImagePackets != NULL) free(imagePackets.fullImagePackets);
