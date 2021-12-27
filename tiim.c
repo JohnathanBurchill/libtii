@@ -81,7 +81,7 @@ int main(int argc, char **argv)
     initializeImageStats(&statsH);
     initializeImageStats(&statsV);
 
-    for (long i = 0; i < imagePackets.numberOfImages-1;)
+    for (int i = 0; i < imagePackets.numberOfImages-1;)
     {
         status = getAlignedImagePair(&imagePackets, i, &imagePair, &imagesRead);
 
@@ -93,7 +93,7 @@ int main(int argc, char **argv)
         analyzeImage(imagePair.pixelsH, imagePair.gotImageH, max, &statsH);
         analyzeImage(imagePair.pixelsV, imagePair.gotImageV, max, &statsV);
 
-        drawFrame(imageBuf, &imagePair, &statsH, &statsV);
+        drawFrame(imageBuf, &imagePair, &statsH, &statsV, frameCounter);
         generateFrame(imageBuf, frameCounter);
         frameCounter++;
 

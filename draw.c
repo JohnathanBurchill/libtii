@@ -11,7 +11,7 @@
 #include <string.h>
 #include <math.h>
 
-void drawFrame(uint8_t * imageBuf, ImagePair *imagePair, ImageStats *statsH, ImageStats *statsV)
+void drawFrame(uint8_t * imageBuf, ImagePair *imagePair, ImageStats *statsH, ImageStats *statsV, int frameCounter)
 {
     double v;
     int x, y;
@@ -55,13 +55,16 @@ void drawFrame(uint8_t * imageBuf, ImagePair *imagePair, ImageStats *statsH, Ima
         date = &(imagePair->auxV->dateTime);
     mo = (imagePair->auxH->dateTime.month-1)*3;
     sprintf(title, "Swarm %c %2d %c%c%c %4d", imagePair->auxH->satellite, imagePair->auxH->dateTime.day, months[mo], months[mo+1], months[mo+2], imagePair->auxH->dateTime.year);
-    annotate(title, 12, IMAGE_WIDTH/2 - strlen(title)/2*8 - 30, 5, imageBuf);
+    annotate(title, 18, 400, 10, imageBuf);
 
     sprintf(title, "%02d:%02d:%02d UT", imagePair->auxH->dateTime.hour, imagePair->auxH->dateTime.minute, imagePair->auxH->dateTime.second);
-    annotate(title, 12, IMAGE_WIDTH/2 - strlen(title)/2*8 + 2, 5 + 20, imageBuf);
+    annotate(title, 15, 460, 38, imageBuf);
+
+    sprintf(title, "Image pair %d", frameCounter+1);
+    annotate(title, 15, 100, 490, imageBuf);
 
     // Raw image
-    drawImagePair(imageBuf, imagePair, statsH->maxValue, statsV->maxValue, x0, y0, RAW_IMAGE_SCALE, RAW_IMAGE_SEPARATION_X, "Raw H", "Raw V", true, &identityFilter, NULL, NULL);
+    drawImagePair(imageBuf, imagePair, statsH->maxValue, statsV->maxValue, x0, y0, RAW_IMAGE_SCALE, RAW_IMAGE_SEPARATION_X, "Raw H", "Raw V", false, &identityFilter, NULL, NULL);
 
     // Gain corrected
     // adjust pixel values first...
@@ -77,7 +80,7 @@ void drawFrame(uint8_t * imageBuf, ImagePair *imagePair, ImageStats *statsH, Ima
         applyGainMap(imagePair->pixelsV, gainmap, threshold, &(statsV->maxValue));
     }
 
-    drawImagePair(imageBuf, imagePair, statsH->maxValue, statsV->maxValue, x0 + GAIN_CORRECTED_OFFSET_X, y0, GAIN_CORRECTED_IMAGE_SCALE, RAW_IMAGE_SEPARATION_X, "GC H", "GC V", false, &identityFilter, NULL, NULL);
+    drawImagePair(imageBuf, imagePair, statsH->maxValue, statsV->maxValue, GAIN_CORRECTED_OFFSET_X, GAIN_CORRECTED_OFFSET_Y, GAIN_CORRECTED_IMAGE_SCALE, RAW_IMAGE_SEPARATION_X, "GC H", "GC V", false, &identityFilter, NULL, NULL);
 
     // Intensity scaling for PA region imagery
     for (int b = 0; b < PA_ANGULAR_NUM_BINS; b++)
@@ -92,7 +95,7 @@ void drawFrame(uint8_t * imageBuf, ImagePair *imagePair, ImageStats *statsH, Ima
 
 
     // Aux data
-    drawMonitors(imageBuf, imagePair, 20, 220);
+    drawMonitors(imageBuf, imagePair, MONITOR_LABEL_OFFSET_X, MONITOR_LABEL_OFFSET_Y);
 
 
     // annotate("# frames", 12, pxoff+pcbarWidth + pcbarSeparation/2 - 25, pyoff + 7, imageBuf);

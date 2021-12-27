@@ -176,26 +176,33 @@ static void rgbToYuv(uint8_t *rgb) {
 
 int generateFrame(uint8_t *pixels, int frameNumber)
 {
-
     int status;
     int got_output;
     int color;
-    for (int i = 0; i < IMAGE_BUFFER_SIZE; i++)
+    if (pixels != NULL)
     {
-        color = pixels[i];
-        frameBuffer[3*i + 0] = colorsrgbrgb[3*color];
-        frameBuffer[3*i + 1] = colorsrgbrgb[3*color+1];
-        frameBuffer[3*i + 2] = colorsrgbrgb[3*color+2];
+        for (int i = 0; i < IMAGE_BUFFER_SIZE; i++)
+        {
+            color = pixels[i];
+            frameBuffer[3*i + 0] = colorsrgbrgb[3*color];
+            frameBuffer[3*i + 1] = colorsrgbrgb[3*color+1];
+            frameBuffer[3*i + 2] = colorsrgbrgb[3*color+2];
+        }
+        rgbToYuv(frameBuffer);
+        videoFrame->pts = frameNumber;
+        status = avcodec_send_frame(codecContext, videoFrame);
     }
-    rgbToYuv(frameBuffer);
-    videoFrame->pts = frameNumber;
-    status = avcodec_send_frame(codecContext, videoFrame);
+    else 
+    {
+        status = avcodec_send_frame(codecContext, NULL);
+    }
+
     if (status < 0)
     {
         fprintf(stderr, "Problem sending frame to encoder: %s\n", av_err2str(status));
         return VIDEO_FRAME_SEND;
     }
-    while (status >= 0 || status == AVERROR(EAGAIN))
+    while (status >= 0)
     {
         status = avcodec_receive_packet(codecContext, videoPacket);
         if (status == AVERROR(EAGAIN) || status == AVERROR_EOF)
@@ -222,6 +229,7 @@ int generateFrame(uint8_t *pixels, int frameNumber)
 
 int finishVideo(void)
 {
+    generateFrame(NULL, 0);
     av_write_trailer(videoContext);
     cleanupVideo();
     return VIDEO_OK;

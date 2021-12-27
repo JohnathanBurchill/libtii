@@ -5,24 +5,25 @@
 
 #define TIIM_VERSION "0101"
 
-// iphone 13 aspect 
+// 1920/1080 1/2 scale, correct proportion
 #define IMAGE_WIDTH 960
 #define IMAGE_HEIGHT 540
 #define IMAGE_BUFFER_SIZE ((size_t)(IMAGE_WIDTH*IMAGE_HEIGHT))
 #define VIDEO_FPS 15
 
-#define RAW_IMAGE_OFFSET_X 10
-#define RAW_IMAGE_OFFSET_Y 10
+#define RAW_IMAGE_OFFSET_X 15
+#define RAW_IMAGE_OFFSET_Y 30
 #define RAW_IMAGE_SCALE 3
 #define RAW_IMAGE_SEPARATION_X 18
 
-#define PA_REGION_IMAGE_OFFSET_X ((IMAGE_WIDTH / 2) - 125)
-#define PA_REGION_IMAGE_OFFSET_Y 220
+#define PA_REGION_IMAGE_OFFSET_X 670
+#define PA_REGION_IMAGE_OFFSET_Y 40
 
 #define PA_REGION_IMAGE_SCALE 2
 
 #define GAIN_CORRECTED_IMAGE_SCALE 3
-#define GAIN_CORRECTED_OFFSET_X ((IMAGE_WIDTH / 2 + 67))
+#define GAIN_CORRECTED_OFFSET_X RAW_IMAGE_OFFSET_X
+#define GAIN_CORRECTED_OFFSET_Y RAW_IMAGE_OFFSET_Y + 235
 
 #define FOREGROUND_COLOR 252 // three font colors, with index 252 being the darkest
 #define BACKGROUND_COLOR 255
@@ -47,8 +48,8 @@
 #define PA_TEXT_X 0
 #define PA_TEXT_Y 100
 
-#define MONITOR_LABEL_OFFSET_X 390
-#define MONITOR_LABEL_OFFSET_Y 30
+#define MONITOR_LABEL_OFFSET_X 400
+#define MONITOR_LABEL_OFFSET_Y 35
 
 int getLongValue(xmlDocPtr doc, const char * xpath, long *value);
 
