@@ -47,6 +47,7 @@ int initVideo(const char * videofilename)
     av_dict_set(&dict, "crf", "23", 0);
     av_dict_set(&dict, "tune", "grain", 0);
     av_dict_set(&dict, "loglevel", "quiet", 0);
+    av_dict_set(&dict, "movflags", "faststart", 0);
 
     avformat_alloc_output_context2(&videoContext, NULL, NULL, videofilename);
     if (!videoContext)
@@ -136,7 +137,7 @@ int initVideo(const char * videofilename)
         return status;
     }
 
-    status = avformat_write_header(videoContext, NULL);
+    status = avformat_write_header(videoContext, &dict);
     if (status < 0)
     {
         fprintf(stderr, "Problem writing video header.\n");
