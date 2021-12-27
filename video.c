@@ -36,6 +36,9 @@ int initVideo(const char * videofilename)
 {
     int status;
 
+    // Try to be quiet
+    av_log_set_level(AV_LOG_FATAL);
+
     videoFrame = av_frame_alloc();
     videoPacket = av_packet_alloc();
     av_dict_set(&dict, "profile", "main", 0);
@@ -73,7 +76,7 @@ int initVideo(const char * videofilename)
         fprintf(stderr, "Problem initializing output stream\n");
         return VIDEO_OUTPUT_STREAM;
     }
-    videoStream->id = 0;
+    videoStream->id = 0;    
 
     // Get packet
     videoPacket = av_packet_alloc();
@@ -236,6 +239,8 @@ void cleanupVideo(void)
     avcodec_free_context(&codecContext);
     av_frame_free(&videoFrame);
     av_packet_free(&videoPacket);
+    sws_freeContext(sws_context);
     avio_closep(&videoContext->pb);
-    // avformat_free_context(videoContext);
+    avformat_free_context(videoContext);
+    return;
 }
