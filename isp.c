@@ -289,20 +289,19 @@ void getLpTiiScienceData(LpTiiSciencePacket * pkt, LpTiiScience * science)
     char efiUnit[4] = {'X', 'C', 'B', 'A'};
     uint8_t *bytes = pkt->LpTiiData;
     double di;
-
+    uint8_t b[2];
+    
     // 2nd y moment
-    science->Y2H[0] = (double)(bytes[228]*256 + bytes[229]) / 1000.0;
-    science->Y2H[1] = (double)(bytes[460]*256 + bytes[461]) / 1000.0;
-
-    science->Y2V[0] = (double)(bytes[344]*256 + bytes[345]) / 1000.0;
-    science->Y2V[1] = (double)(bytes[576]*256 + bytes[577]) / 1000.0;
+    science->Y2H[0] = (double) getu16(bytes, 228)/ 1000.0;
+    science->Y2H[1] = (double) getu16(bytes, 460)/ 1000.0;
+    science->Y2V[0] = (double) getu16(bytes, 344)/ 1000.0;
+    science->Y2V[1] = (double) getu16(bytes, 576)/ 1000.0;
 
     // Ion admittance
-    science->IonAdmittanceProbe1[0] = (double)(*((float*)(&bytes[48])));
-    science->IonAdmittanceProbe1[1] = (double)(*((float*)(&bytes[130])));
-
-    science->IonAdmittanceProbe2[0] = (double)(*((float*)(&bytes[109])));
-    science->IonAdmittanceProbe2[1] = (double)(*((float*)(&bytes[166]));
+    science->IonAdmittanceProbe1[0] = (double)getfloat(bytes, 48);
+    science->IonAdmittanceProbe1[1] = (double)getfloat(bytes, 130);
+    science->IonAdmittanceProbe2[0] = (double)getfloat(bytes, 84);
+    science->IonAdmittanceProbe2[1] = (double)getfloat(bytes, 166);
 
     di = science->IonAdmittanceProbe1[0] - 1e-10;
     if (di < 0.0) di = 0.0;
@@ -318,7 +317,8 @@ void getLpTiiScienceData(LpTiiSciencePacket * pkt, LpTiiScience * science)
     if (di < 0.0) di = 0.0;
     science->IonDensityL1aProbe2[1] = 2.0 * M_PI * 1.0e6 * di * 7600.0 * 2.67e-26 / (2 * M_PI * 0.004 * 0.004 * 1.602e-19 / 1e6); // cm^-3
 
-    setDateTime(&(science->dateTime), pkt->DataFieldHeader);
+    // setDateTime(&(science->dateTime), pkt->DataFieldHeader);
+    // printf("2 Hz time: %04d%02d%02dT%02d%02d%02d Y2H {0, 1}: %.2lf %.2lf\n", science->dateTime.year, science->dateTime.month, science->dateTime.day, science->dateTime.hour, science->dateTime.minute, science->dateTime.second, science->Y2H[0], science->Y2H[1]);
 
     // science->EfiInstrumentId = (fullBytes[12] >> 1) & 0x0f;
     // aux->satellite = efiUnit[aux->EfiInstrumentId];
@@ -345,4 +345,48 @@ void getLpTiiScienceData(LpTiiSciencePacket * pkt, LpTiiScience * science)
 
 }
 
+uint16_t getu16(uint8_t *bytes, int offset)
+{
+    uint8_t b[2];
+    b[0] = bytes[offset+1];
+    b[1] = bytes[offset];
+    return *(uint16_t*)b;
+}
 
+int16_t gets16(uint8_t *bytes, int offset)
+{
+    uint8_t b[2];
+    b[0] = bytes[offset+1];
+    b[1] = bytes[offset];
+    return *(int16_t*)b;
+}
+
+uint32_t getu32(uint8_t *bytes, int offset)
+{
+    uint8_t b[4];
+    b[0] = bytes[offset+3];
+    b[1] = bytes[offset+2];
+    b[2] = bytes[offset+1];
+    b[3] = bytes[offset];
+    return *(uint32_t*)b;
+}
+
+int32_t gets32(uint8_t *bytes, int offset)
+{
+    uint8_t b[4];
+    b[0] = bytes[offset+3];
+    b[1] = bytes[offset+2];
+    b[2] = bytes[offset+1];
+    b[3] = bytes[offset];
+    return *(int32_t*)b;
+}
+
+float getfloat(uint8_t *bytes, int offset)
+{
+    uint8_t b[4];
+    b[0] = bytes[offset+3];
+    b[1] = bytes[offset+2];
+    b[2] = bytes[offset+1];
+    b[3] = bytes[offset];
+    return *(float*)b;
+}

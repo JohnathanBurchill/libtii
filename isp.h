@@ -304,4 +304,10 @@ void setDateTime(IspDateTime * dateTime, uint8_t *dataFieldHeader);
 
 void getLpTiiScienceData(LpTiiSciencePacket * pkt, LpTiiScience * science);
 
+uint16_t getu16(uint8_t *bytes, int offset);
+int16_t gets16(uint8_t *bytes, int offset);
+uint32_t getu32(uint8_t *bytes, int offset);
+int32_t gets32(uint8_t *bytes, int offset);
+float getfloat(uint8_t *bytes, int offset);
+
 #endif // _ISP_H
