@@ -302,7 +302,7 @@ void getLpTiiScienceData(LpTiiSciencePacket * pkt, LpTiiScience * science)
     science->IonAdmittanceProbe1[1] = (double)(*((float*)(&bytes[130])));
 
     science->IonAdmittanceProbe2[0] = (double)(*((float*)(&bytes[109])));
-    science->IonAdmittanceProbe2[1] = (double)(*((float*)(&bytes[166])));
+    science->IonAdmittanceProbe2[1] = (double)(*((float*)(&bytes[166]));
 
     di = science->IonAdmittanceProbe1[0] - 1e-10;
     if (di < 0.0) di = 0.0;

@@ -23,4 +23,6 @@ void alignPackets(uint8_t* fullImagePackets, uint8_t *continuedPackets, long nIm
 
 int numberOfPacketGaps(uint8_t* fullImagePackets, uint8_t *continuedPackets, long nImages);
 
+int importScience(const char *hdr, SciencePackets *sciencePackets);
+
 #endif // _IMPORT_H

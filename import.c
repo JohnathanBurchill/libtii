@@ -12,6 +12,9 @@
 int importImagery(const char *hdr, ImagePackets *imagePackets)
 {
     int status = IMPORT_OK;
+    imagePackets->fullImagePackets = NULL;
+    imagePackets->continuedPackets = NULL;
+    imagePackets->numberOfImages = 0;
 
     if (strlen(hdr) >= FILENAME_MAX)
     {
@@ -214,4 +217,144 @@ int numberOfPacketGaps(uint8_t* fullImagePackets, uint8_t *continuedPackets, lon
         }
     }
     return nGaps;
+}
+
+
+int importScience(const char *hdr, SciencePackets *sciencePackets)
+{
+    int status = IMPORT_OK;
+    size_t bufSize = 0;
+    size_t bytesRead = 0;
+
+    // Init structure
+    sciencePackets->lpTiiSciencePackets = NULL;
+    sciencePackets->numberOfLpTiiSciencePackets = 0;
+    sciencePackets->lpSweepPackets = NULL;
+    sciencePackets->numberOfLpSweepPackets = 0;
+    sciencePackets->configPackets = NULL;
+    sciencePackets->numberOfConfigPackets = 0;
+    sciencePackets->offsetPackets = NULL;
+    sciencePackets->numberOfOffsetPackets = 0;
+
+
+
+    if (strlen(hdr) >= FILENAME_MAX)
+    {
+        return IMPORT_HDR_FILENAME_TOO_LONG;
+    }
+
+    PacketFileContents pfc;
+    status = parseHdr(hdr, &pfc);
+    if (status)
+    {
+        return status;
+    }
+
+    // get DBL filename and check that we can open it.
+    char dbl[FILENAME_MAX];
+    snprintf(dbl, strlen(hdr)-3, "%s", hdr);
+    sprintf(dbl + strlen(dbl), ".DBL");
+
+    if (access(dbl, R_OK))
+    {
+        status = IMPORT_DBL_FILE_ACCESS;
+        goto cleanup;
+    }
+
+    FILE *dblFile = fopen(dbl, "r");
+    if (dblFile == NULL)
+    {
+        status = IMPORT_DBL_FILE_READ_PERMISION;
+        goto cleanup;
+    }
+    uint8_t *packets = NULL;
+    sciencePackets->numberOfLpTiiSciencePackets = pfc.lpTiiScience.numRecords;
+    sciencePackets->numberOfLpSweepPackets = pfc.lpSweep.numRecords;
+    sciencePackets->numberOfOffsetPackets = pfc.lpOffset.numRecords;
+    sciencePackets->numberOfConfigPackets = pfc.config.numRecords;
+
+    // Import LP&TII science packet bytes
+    bufSize = (size_t) sciencePackets->numberOfLpTiiSciencePackets * (size_t) pfc.lpTiiScience.recordSize;
+    sciencePackets->lpTiiSciencePackets = (uint8_t*) malloc(bufSize * sizeof(uint8_t));
+    if (sciencePackets->lpTiiSciencePackets == NULL)
+    {
+        status = IMPORT_DBL_BUFFER_ALLOCATION;
+        goto cleanup;
+    }
+    bytesRead = 0;
+    if (fseek(dblFile, pfc.lpTiiScience.offset, SEEK_SET))
+    {
+        status = IMPORT_DBL_FILE_SEEK;
+        goto cleanup;
+    }
+    if ((bytesRead = fread(sciencePackets->lpTiiSciencePackets, sizeof(uint8_t), bufSize, dblFile)) != bufSize)
+    {
+        status = IMPORT_DBL_PACKET_READ;
+        goto cleanup;
+    }
+
+    // LP Sweep
+    bufSize = (size_t) sciencePackets->numberOfLpSweepPackets * (size_t) pfc.lpSweep.recordSize;
+    sciencePackets->lpSweepPackets = (uint8_t*) malloc(bufSize * sizeof(uint8_t));
+    if (sciencePackets->lpSweepPackets == NULL)
+    {
+        status = IMPORT_DBL_BUFFER_ALLOCATION;
+        goto cleanup;
+    }
+    bytesRead = 0;
+    if (fseek(dblFile, pfc.lpSweep.offset, SEEK_SET))
+    {
+        status = IMPORT_DBL_FILE_SEEK;
+        goto cleanup;
+    }
+    if ((bytesRead = fread(sciencePackets->lpSweepPackets, sizeof(uint8_t), bufSize, dblFile)) != bufSize)
+    {
+        status = IMPORT_DBL_PACKET_READ;
+        goto cleanup;
+    }
+
+    // LP Offset
+    bufSize = (size_t) sciencePackets->numberOfOffsetPackets * (size_t) pfc.lpOffset.recordSize;
+    sciencePackets->offsetPackets = (uint8_t*) malloc(bufSize * sizeof(uint8_t));
+    if (sciencePackets->offsetPackets == NULL)
+    {
+        status = IMPORT_DBL_BUFFER_ALLOCATION;
+        goto cleanup;
+    }
+    bytesRead = 0;
+    if (fseek(dblFile, pfc.lpOffset.offset, SEEK_SET))
+    {
+        status = IMPORT_DBL_FILE_SEEK;
+        goto cleanup;
+    }
+    if ((bytesRead = fread(sciencePackets->offsetPackets, sizeof(uint8_t), bufSize, dblFile)) != bufSize)
+    {
+        status = IMPORT_DBL_PACKET_READ;
+        goto cleanup;
+    }
+
+    // Config
+    bufSize = (size_t) sciencePackets->numberOfConfigPackets * (size_t) pfc.lpOffset.recordSize;
+    sciencePackets->offsetPackets = (uint8_t*) malloc(bufSize * sizeof(uint8_t));
+    if (sciencePackets->offsetPackets == NULL)
+    {
+        status = IMPORT_DBL_BUFFER_ALLOCATION;
+        goto cleanup;
+    }
+    bytesRead = 0;
+    if (fseek(dblFile, pfc.lpOffset.offset, SEEK_SET))
+    {
+        status = IMPORT_DBL_FILE_SEEK;
+        goto cleanup;
+    }
+    if ((bytesRead = fread(sciencePackets->offsetPackets, sizeof(uint8_t), bufSize, dblFile)) != bufSize)
+    {
+        status = IMPORT_DBL_PACKET_READ;
+        goto cleanup;
+    }
+
+
+cleanup:
+    if (dblFile != NULL) fclose(dblFile);
+    return status; 
 }

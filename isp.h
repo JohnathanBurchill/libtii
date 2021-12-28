@@ -6,6 +6,10 @@
 
 #define FULL_IMAGE_PACKET_SIZE 2068
 #define FULL_IMAGE_CONT_PACKET_SIZE 1996
+#define LP_TII_SCIENCE_PACKET_SIZE 724
+#define LP_SWEEP_PACKET_SIZE 1108
+#define LP_OFFSET_PACKET_SIZE 720
+#define CONFIG_PACKET_SIZE 116
 
 #define NUM_FULL_IMAGE_PACKET_PIXELS 1341
 #define NUM_FULL_IMAGE_CONT_PACKET_PIXELS 1299
@@ -297,5 +301,7 @@ char getSatellite(ImagePair *imagePair);
 void initializeImagePair(ImagePair *imagePair, ImageAuxData *auxH, uint16_t *pixelsH, ImageAuxData *auxV, uint16_t *pixelsV);
 
 void setDateTime(IspDateTime * dateTime, uint8_t *dataFieldHeader);
+
+void getLpTiiScienceData(LpTiiSciencePacket * pkt, LpTiiScience * science);
 
 #endif // _ISP_H

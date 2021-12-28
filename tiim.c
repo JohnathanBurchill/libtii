@@ -4,6 +4,7 @@
 #include "import.h"
 #include "utility.h"
 #include "analysis.h"
+#include "timeseries.h"
 
 #include "draw.h"
 #include "video.h"
@@ -34,9 +35,6 @@ int main(int argc, char **argv)
 
     // Data
     ImagePackets imagePackets;
-    imagePackets.fullImagePackets = NULL;
-    imagePackets.continuedPackets = NULL;
-    imagePackets.numberOfImages = 0;
     status = importImagery(hdr, &imagePackets);
     if (status)
     {
@@ -47,7 +45,16 @@ int main(int argc, char **argv)
         goto cleanup;
 
     SciencePackets sciencePackets;
-    // importScience(hdr, &sciencePackets);
+    // Continue even if we could not import science packets
+    importScience(hdr, &sciencePackets);
+    LpTiiTimeSeries timeSeries;
+    getTimeSeries(&sciencePackets, &timeSeries);
+    
+    printf("2Hz samples: %ld\n", timeSeries.n2Hz);
+    for (long i = 0; i < timeSeries.n2Hz; i+=1000)
+    {
+        printf("time: %lf y2H: %.2lf y2V: %.2lf  Ni1: %lf  Ni2: %lf\n", timeSeries.lpTiiTime2Hz[i] - timeSeries.lpTiiTime2Hz[0], timeSeries.y2H[i], timeSeries.y2V[i], timeSeries.ionDensity1[i], timeSeries.ionDensity2[i]);
+    }
 
     char pngFile[FILENAME_MAX];
     uint16_t pixelsH[NUM_FULL_IMAGE_PIXELS], pixelsV[NUM_FULL_IMAGE_PIXELS];
