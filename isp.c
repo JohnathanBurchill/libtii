@@ -24,7 +24,7 @@ void getImageData(FullImagePacket * fip, FullImageContinuedPacket * cip, ImageAu
     aux->GainTableId = 0;
     aux->EfiInstrumentId = 'X';
     uint8_t zeros[12] = {0};
-    setAuxDateTime(aux, zeros);
+    setDateTime(&(aux->dateTime), zeros);
 
     uint64_t fdate = *((uint64_t*)(fip->DataFieldHeader+4));
     uint64_t cdate = *((uint64_t*)(cip->DataFieldHeader+4));
@@ -36,7 +36,7 @@ void getImageData(FullImagePacket * fip, FullImageContinuedPacket * cip, ImageAu
         aux->GainTableId = ((fullBytes[11] & 0x01) << 3) | (fullBytes[12] >> 5);
         aux->EfiInstrumentId = (fullBytes[12] >> 1) & 0x0f;
         aux->satellite = efiUnit[aux->EfiInstrumentId];
-        setAuxDateTime(aux, fip->DataFieldHeader);
+        setDateTime(&(aux->dateTime), fip->DataFieldHeader);
 
         aux->CcdDarkCurrent = (fullBytes[0] << 4) | (fullBytes[1] >> 4);
         aux->CcdTemperature = 259. * pow(aux->CcdDarkCurrent, 0.0383) - 273.15;
@@ -88,7 +88,7 @@ void getImageData(FullImagePacket * fip, FullImageContinuedPacket * cip, ImageAu
             aux->satellite = efiUnit[aux->EfiInstrumentId];
             // Set time to Full Image Continued time
             fdate = *((uint64_t*)(cip->DataFieldHeader+4));
-            setAuxDateTime(aux, cip->DataFieldHeader);
+            setDateTime(&(aux->dateTime), cip->DataFieldHeader);
         }
     }
     // Get Full Image Continued Image data if the continued packet is good and the times and sensors match (will match if there was a missing Full Image Packet)
@@ -262,8 +262,7 @@ void initializeImagePair(ImagePair *imagePair, ImageAuxData *auxH, uint16_t *pix
     imagePair->pixelsV = pixelsV;
 }
 
-
-void setAuxDateTime(ImageAuxData *aux, uint8_t *dataFieldHeader)
+void setDateTime(IspDateTime *dateTime, uint8_t *dataFieldHeader)
 {
     // ISP time (epoch 2000-01-01 00:00:00 UT)
     uint8_t * cds = dataFieldHeader+4;
@@ -273,13 +272,77 @@ void setAuxDateTime(ImageAuxData *aux, uint8_t *dataFieldHeader)
     double secondsSince1970 = day * 86400. + ms / 1.0e3 + us / 1.0e6;
     time_t seconds = floor(secondsSince1970);
     struct tm *timeStruct = gmtime(&seconds);
-    aux->dateTime.secondsSince1970 = secondsSince1970;
-    aux->dateTime.year = timeStruct->tm_year + 1900;
-    aux->dateTime.month = timeStruct->tm_mon + 1;
-    aux->dateTime.day = timeStruct->tm_mday;
-    aux->dateTime.hour = timeStruct->tm_hour;
-    aux->dateTime.minute = timeStruct->tm_min;
-    aux->dateTime.second = timeStruct->tm_sec;
-    aux->dateTime.millisecond = floor((secondsSince1970 - (double)seconds)*1000);
+    dateTime->secondsSince1970 = secondsSince1970;
+    dateTime->year = timeStruct->tm_year + 1900;
+    dateTime->month = timeStruct->tm_mon + 1;
+    dateTime->day = timeStruct->tm_mday;
+    dateTime->hour = timeStruct->tm_hour;
+    dateTime->minute = timeStruct->tm_min;
+    dateTime->second = timeStruct->tm_sec;
+    dateTime->millisecond = floor((secondsSince1970 - (double)seconds)*1000);
 
 }
+
+void getLpTiiScienceData(LpTiiSciencePacket * pkt, LpTiiScience * science)
+{
+
+    char efiUnit[4] = {'X', 'C', 'B', 'A'};
+    uint8_t *bytes = pkt->LpTiiData;
+    double di;
+
+    // 2nd y moment
+    science->Y2H[0] = (double)(bytes[228]*256 + bytes[229]) / 1000.0;
+    science->Y2H[1] = (double)(bytes[460]*256 + bytes[461]) / 1000.0;
+
+    science->Y2V[0] = (double)(bytes[344]*256 + bytes[345]) / 1000.0;
+    science->Y2V[1] = (double)(bytes[576]*256 + bytes[577]) / 1000.0;
+
+    // Ion admittance
+    science->IonAdmittanceProbe1[0] = (double)(*((float*)(&bytes[48])));
+    science->IonAdmittanceProbe1[1] = (double)(*((float*)(&bytes[130])));
+
+    science->IonAdmittanceProbe2[0] = (double)(*((float*)(&bytes[109])));
+    science->IonAdmittanceProbe2[1] = (double)(*((float*)(&bytes[166])));
+
+    di = science->IonAdmittanceProbe1[0] - 1e-10;
+    if (di < 0.0) di = 0.0;
+    science->IonDensityL1aProbe1[0] = 2.0 * M_PI * 1.0e6 * di * 7600.0 * 2.67e-26 / (2 * M_PI * 0.004 * 0.004 * 1.602e-19 / 1e6); // cm^-3
+    di = science->IonAdmittanceProbe1[1] - 1e-10;
+    if (di < 0.0) di = 0.0;
+    science->IonDensityL1aProbe1[1] = 2.0 * M_PI * 1.0e6 * di * 7600.0 * 2.67e-26 / (2 * M_PI * 0.004 * 0.004 * 1.602e-19 / 1e6); // cm^-3
+
+    di = science->IonAdmittanceProbe2[0] - 1e-10;
+    if (di < 0.0) di = 0.0;
+    science->IonDensityL1aProbe2[0] = 2.0 * M_PI * 1.0e6 * di * 7600.0 * 2.67e-26 / (2 * M_PI * 0.004 * 0.004 * 1.602e-19 / 1e6); // cm^-3
+    di = science->IonAdmittanceProbe2[1] - 1e-10;
+    if (di < 0.0) di = 0.0;
+    science->IonDensityL1aProbe2[1] = 2.0 * M_PI * 1.0e6 * di * 7600.0 * 2.67e-26 / (2 * M_PI * 0.004 * 0.004 * 1.602e-19 / 1e6); // cm^-3
+
+    setDateTime(&(science->dateTime), pkt->DataFieldHeader);
+
+    // science->EfiInstrumentId = (fullBytes[12] >> 1) & 0x0f;
+    // aux->satellite = efiUnit[aux->EfiInstrumentId];
+
+        // aux->CcdDarkCurrent = (fullBytes[0] << 4) | (fullBytes[1] >> 4);
+        // aux->CcdTemperature = 259. * pow(aux->CcdDarkCurrent, 0.0383) - 273.15;
+        // if (aux->CcdTemperature < -35.0) aux->CcdTemperature = -35.0;
+        // if (aux->CcdTemperature > 50.0) aux->CcdTemperature = 50.0;
+        // aux->FaceplateVoltageMonitorRaw = ((fullBytes[1] << 10) & 0xff) | ((fullBytes[2] << 2) & 0xff) | (fullBytes[3]>>6);
+        // aux->FaceplateVoltageMonitor = -5.0 + (double)aux->FaceplateVoltageMonitorRaw / 255.0 * 5.0;
+        // aux->BiasGridVoltageMonitorRaw = ((fullBytes[3] & 0x3f) << 6) | ((fullBytes[4] >> 2) & 0x3f);
+        // aux->BiasGridVoltageMonitor = - (double) aux->BiasGridVoltageMonitorRaw / 4095.0 * 100.0 * 4.0 / 2.5;
+        // aux->ShutterDutyCycleRaw = ((fullBytes[4] & 0x3) << 14) | (fullBytes[5] << 6) | ((fullBytes[6] >> 2) & 0x3f);
+        // aux->ShutterDutyCycle = 1.0 - aux->ShutterDutyCycleRaw / (52031.0/0.999); // 52031 corresponds to 0.1% open
+        // aux->McpVoltageMonitorRaw = ((fullBytes[6] & 0x3) << 10) | (fullBytes[7] << 2) | ((fullBytes[8] >> 6) & 0x3);
+        // aux->McpVoltageMonitor = - (double) aux->McpVoltageMonitorRaw / 4095.0 * 2400.0 * 4.0 / 2.5;
+        // aux->PhosphorVoltageMonitorRaw = ((fullBytes[8] & 0x3f) << 6) | ((fullBytes[9] >> 2) & 0x3f);
+        // aux->PhosphorVoltageMonitor = aux->PhosphorVoltageMonitorRaw / 4095.0 * 8000.0 * 4.0 / 2.5;
+        // Populate full image packet pixels
+        // All this to extract packed 12 bit pixels
+        // Two pixels in three bytes
+ 
+    return;
+
+}
+
+

@@ -44,9 +44,10 @@ int main(int argc, char **argv)
         goto cleanup;
     }
     if (imagePackets.numberOfImages == 0)
-    {
         goto cleanup;
-    }
+
+    SciencePackets sciencePackets;
+    // importScience(hdr, &sciencePackets);
 
     char pngFile[FILENAME_MAX];
     uint16_t pixelsH[NUM_FULL_IMAGE_PIXELS], pixelsV[NUM_FULL_IMAGE_PIXELS];

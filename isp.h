@@ -21,6 +21,19 @@ typedef struct imagePackets
 
 } ImagePackets;
 
+typedef struct SciencePackets
+{
+    uint8_t *lpTiiSciencePackets;
+    long numberOfLpTiiSciencePackets;
+    uint8_t *lpSweepPackets;
+    long numberOfLpSweepPackets;
+    uint8_t *configPackets;
+    long numberOfConfigPackets;
+    uint8_t *offsetPackets;
+    long numberOfOffsetPackets;
+} SciencePackets;
+
+
 typedef struct fullImagePacket
 {
     uint8_t IspHeader[20];
@@ -49,6 +62,66 @@ typedef struct fullImageContinuedPacket
 
 } FullImageContinuedPacket;
 
+typedef struct LpTiiSciencePacket
+{
+    uint8_t IspHeader[20];
+    uint8_t SourcePacketHeader[6];
+    uint8_t DataFieldHeader[12];
+    uint8_t StructureId; // 37 bytes
+
+    uint8_t AuxData[4];
+    uint8_t AuxDataH[8];
+    uint8_t AuxDataV[8];
+    uint8_t LpAuxData[1];
+    uint8_t MeasurementTimestamp[2];
+    uint8_t LpTiiData[660];    
+    uint8_t ErrorControlField[2];
+
+} LpTiiSciencePacket;
+
+typedef struct LpSweepPacket
+{
+    uint8_t IspHeader[20];
+    uint8_t SourcePacketHeader[6];
+    uint8_t DataFieldHeader[12];
+    uint8_t StructureId; // 37 bytes
+
+    uint8_t AuxData[25];
+    uint8_t MeasurementTimestamp[2];
+    uint8_t LpSweepData[1040];
+    uint8_t ErrorControlField[2];
+
+} LpSweepPacket;
+
+typedef struct LpOffsetPacket
+{
+    uint8_t IspHeader[20];
+    uint8_t SourcePacketHeader[6];
+    uint8_t DataFieldHeader[12];
+    uint8_t StructureId; // 37 bytes
+
+    uint8_t AuxData[10];
+    uint8_t MeasurementTimestamp[2];
+    uint8_t LpTiiData[667];
+    uint8_t ErrorControlField[2];
+
+} LpOffsetPacket;
+
+typedef struct ConfigPacket
+{
+    uint8_t IspHeader[20];
+    uint8_t SourcePacketHeader[6];
+    uint8_t DataFieldHeader[12];
+    uint8_t StructureId;
+
+    uint8_t TiiAuxDataCommon[12];
+    uint8_t TiiAuxDataH[9];
+    uint8_t TiiAuxDataV[9];
+    uint8_t LpAuxData[43];
+    uint8_t MeasurementTimestamp[2];
+    uint8_t ErrorControlField[2];
+
+} ConfigPacket;
 
 typedef struct ispDateTime {
     double secondsSince1970;
@@ -97,6 +170,82 @@ typedef struct imagePair
     uint16_t *pixelsV;
     bool gotImageV;
 } ImagePair;
+
+typedef struct LpTiiScience
+{
+    char satellite;
+    IspDateTime dateTime;
+
+    uint16_t FaceplateVoltageMonitorRaw;
+    double FaceplateVoltageMonitor;
+
+    uint16_t CcdDarkCurrentH;
+    double CcdTemperatureH;
+    uint16_t HvpsTemperatureMonitorRawH;
+    double HvpsTemperatureH;
+    uint8_t BiasGridVoltageSettingRawH;
+    double BiasGridVoltageSettingH;
+    uint8_t McpVoltageSettingRawH;
+    double McpVoltageSettingH;
+    uint8_t PhosphorVoltageSettingRawH;
+    double PhosphorVoltageSettingH;
+    uint16_t ShutterDutyCycleRawH;
+    double ShutterDutyCycleH;
+
+    uint16_t CcdDarkCurrentV;
+    double CcdTemperatureV;
+    uint16_t HvpsTemperatureMonitorRawV;
+    double HvpsTemperatureV;
+    uint8_t BiasGridVoltageSettingRawV;
+    double BiasGridVoltageSettingV;
+    uint8_t McpVoltageSettingRawV;
+    double McpVoltageSettingV;
+    uint8_t PhosphorVoltageSettingRawV;
+    double PhosphorVoltageSettingV;
+    uint16_t ShutterDutyCycleRawV;
+    double ShutterDutyCycleV;
+
+    uint8_t LpInstrumentId;
+
+    int16_t faceplateCurrentRaw[16];
+
+    double IonAdmittanceProbe1[2]; // 2 samples
+    double IonAdmittanceProbe2[2];
+
+    double IonDensityL1aProbe1[2];
+    double IonDensityL1aProbe2[2];
+
+    double X1H[16];
+    double Y1H[16];
+    double X1V[16];
+    double Y1V[16];
+    double Y2H[2];
+    double Y2V[2];
+
+    uint16_t ColumnSumH[2][32];
+    uint16_t ColumnSumV[2][32];
+
+    double Y18MB[2][8];
+
+    uint16_t Y1SumAllColumnsH[2];
+    uint16_t Y1SumAllColumnsV[2];
+
+} LpTiiScience;
+
+typedef struct LpSweep {
+    char satellite;
+    IspDateTime dateTime;
+
+} LpSweep;
+
+typedef struct Config {
+    char satellite;
+    IspDateTime dateTime;
+
+
+} Config;
+
+
 
 enum EFI_UNIT {
     UNIT_INVALID = 0,
@@ -147,6 +296,6 @@ char getSatellite(ImagePair *imagePair);
 
 void initializeImagePair(ImagePair *imagePair, ImageAuxData *auxH, uint16_t *pixelsH, ImageAuxData *auxV, uint16_t *pixelsV);
 
-void setAuxDateTime(ImageAuxData *aux, uint8_t *dataFieldHeader);
+void setDateTime(IspDateTime * dateTime, uint8_t *dataFieldHeader);
 
 #endif // _ISP_H

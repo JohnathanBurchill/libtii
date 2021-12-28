@@ -150,9 +150,9 @@ void alignPackets(uint8_t* fullImagePackets, uint8_t *continuedPackets, long nIm
     {
         fip = (FullImagePacket*)(fullImagePackets + i*FULL_IMAGE_PACKET_SIZE);
         cip = (FullImageContinuedPacket*)(continuedPackets + i*FULL_IMAGE_CONT_PACKET_SIZE);
-        setAuxDateTime(&aux, fip->DataFieldHeader);
+        setDateTime(&(aux.dateTime), fip->DataFieldHeader);
         fdate = aux.dateTime.secondsSince1970;
-        setAuxDateTime(&aux, cip->DataFieldHeader);
+        setDateTime(&(aux.dateTime), cip->DataFieldHeader);
         cdate = aux.dateTime.secondsSince1970;
         fdateInt = *((uint64_t*)(fip->DataFieldHeader+4));
         cdateInt = *((uint64_t*)(cip->DataFieldHeader+4));
@@ -196,9 +196,9 @@ int numberOfPacketGaps(uint8_t* fullImagePackets, uint8_t *continuedPackets, lon
     {
         fip = (FullImagePacket*)(fullImagePackets + i*FULL_IMAGE_PACKET_SIZE);
         cip = (FullImageContinuedPacket*)(continuedPackets + (i+gapOffset)*FULL_IMAGE_CONT_PACKET_SIZE);
-        setAuxDateTime(&aux, fip->DataFieldHeader);
+        setDateTime(&(aux.dateTime), fip->DataFieldHeader);
         fdate = aux.dateTime.secondsSince1970;
-        setAuxDateTime(&aux, cip->DataFieldHeader);
+        setDateTime(&(aux.dateTime), cip->DataFieldHeader);
         cdate = aux.dateTime.secondsSince1970;
         fdateInt = *((uint64_t*)(fip->DataFieldHeader+4));
         cdateInt = *((uint64_t*)(cip->DataFieldHeader+4));
