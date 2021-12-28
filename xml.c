@@ -80,19 +80,19 @@ int parseHdr(const char *hdr, PacketFileContents *packetInfo)
 
     // EFI config packet
     sprintf(query, "//DSD[Data_Set_Name=\"EFI Configuration Packet - %s Mode\"]/Data_Set_Offset", mode);
-    if (getLongValue(doc, query, &(packetInfo->efiConfig.offset)))
+    if (getLongValue(doc, query, &(packetInfo->config.offset)))
     {
         status = HDR_PARSE_ERR_EFI_CONFIG_OFFSET;
         goto cleanup;
     }
     sprintf(query, "//DSD[Data_Set_Name=\"EFI Configuration Packet - %s Mode\"]/Num_of_Records", mode);
-    if (getLongValue(doc, query, &(packetInfo->efiConfig.numRecords)))
+    if (getLongValue(doc, query, &(packetInfo->config.numRecords)))
     {
         status = HDR_PARSE_ERR_EFI_CONFIG_NUM_RECORDS;
         goto cleanup;
     }
     sprintf(query, "//DSD[Data_Set_Name=\"EFI Configuration Packet - %s Mode\"]/Record_Size", mode);
-    if (getLongValue(doc, query, &(packetInfo->efiConfig.recordSize)))
+    if (getLongValue(doc, query, &(packetInfo->config.recordSize)))
     {
         status = HDR_PARSE_ERR_EFI_CONFIG_RECORD_SIZE;
         goto cleanup;
@@ -163,9 +163,9 @@ int parseHdr(const char *hdr, PacketFileContents *packetInfo)
     }
     else
     {
-        packetInfo->efiConfig.offset = 0;
-        packetInfo->efiConfig.numRecords = 0;
-        packetInfo->efiConfig.recordSize = 0;
+        packetInfo->config.offset = 0;
+        packetInfo->config.numRecords = 0;
+        packetInfo->config.recordSize = 0;
         packetInfo->lpTiiScience.offset = 0;
         packetInfo->lpTiiScience.numRecords = 0;
         packetInfo->lpTiiScience.recordSize = 0;

@@ -16,7 +16,7 @@ typedef struct packetFileContents
 {
     HdrInfo fullImage;
     HdrInfo fullImageContinued;
-    HdrInfo efiConfig;
+    HdrInfo config;
     HdrInfo lpTiiScience;
     HdrInfo lpSweep;
     HdrInfo lpOffset;
