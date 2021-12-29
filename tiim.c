@@ -8,6 +8,7 @@
 
 #include "draw.h"
 #include "video.h"
+#include "filters.h"
 
 #include <string.h>
 
@@ -111,6 +112,77 @@ int main(int argc, char **argv)
         frameCounter++;
 
     }
+
+    int nAcross = 20;
+    int nDown = 8;
+    int dx = 42;
+    int dy = 67;
+
+    // Frame-by-frame H
+    int xoffset = 0;
+    int yoffset = 0;
+    int xborder = 5;
+    int yborder=3;
+    memset(imageBuf, BACKGROUND_COLOR, IMAGE_BUFFER_SIZE);
+    for (int i = 0; i < imagePackets.numberOfImages-1;)
+    {
+        status = getAlignedImagePair(&imagePackets, i, &imagePair, &imagesRead);
+
+        i+=imagesRead;
+        if (status == ISP_NO_IMAGE_PAIR)
+            continue;
+
+        analyzeImage(imagePair.pixelsH, imagePair.gotImageH, max, &statsH);
+
+        drawImage(imageBuf, imagePair.pixelsH, imagePair.gotImageH, statsH.maxValue, xborder+(xoffset++)*dx, yborder+yoffset*dy, 1, &identityFilter, NULL);
+        xoffset %= nAcross;
+        if (xoffset == 0) yoffset++;
+        // Show for 3 seconds each
+        if (xoffset == 0 && yoffset == nDown)
+        {
+            for (int c = 0; c < 3 * VIDEO_FPS; c++)
+                generateFrame(imageBuf, frameCounter++);
+            xoffset = 0;
+            yoffset = 0;
+            memset(imageBuf, BACKGROUND_COLOR, IMAGE_BUFFER_SIZE);
+        }
+    }
+    for (int c = 0; c < 3 * VIDEO_FPS; c++)
+        generateFrame(imageBuf, frameCounter++);
+    memset(imageBuf, BACKGROUND_COLOR, IMAGE_BUFFER_SIZE);
+    for (int c = 0; c < 1*VIDEO_FPS; c++)
+    {
+        generateFrame(imageBuf, frameCounter++);
+    }
+
+    // Frame-by-frame V
+    xoffset = 0;
+    yoffset = 0;
+    for (int i = 0; i < imagePackets.numberOfImages-1;)
+    {
+        status = getAlignedImagePair(&imagePackets, i, &imagePair, &imagesRead);
+
+        i+=imagesRead;
+        if (status == ISP_NO_IMAGE_PAIR)
+            continue;
+
+        analyzeImage(imagePair.pixelsV, imagePair.gotImageV, max, &statsV);
+
+        drawImage(imageBuf, imagePair.pixelsV, imagePair.gotImageV, statsV.maxValue, xborder+(xoffset++)*dx, yborder+yoffset*dy, 1, &identityFilter, NULL);
+        xoffset %= nAcross;
+        if (xoffset == 0) yoffset++;
+        // Show for 3 seconds each
+        if (xoffset == 0 && yoffset == nDown)
+        {
+            for (int c = 0; c < 3 * VIDEO_FPS; c++)
+                generateFrame(imageBuf, frameCounter++);
+            xoffset = 0;
+            yoffset = 0;
+            memset(imageBuf, BACKGROUND_COLOR, IMAGE_BUFFER_SIZE);
+        }
+    }
+    for (int c = 0; c < 3 * VIDEO_FPS; c++)
+        generateFrame(imageBuf, frameCounter++);
 
     finishVideo();
 
