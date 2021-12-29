@@ -104,83 +104,23 @@ void drawFrame(uint8_t * imageBuf, uint8_t *templateBuf, ImagePair *imagePair, I
     // annotate(title, 9, pxoff+pcbarWidth+3, pyoff - MAX_COLOR_VALUE/3 - 2, imageBuf);
     // sprintf(title, "%d", maxPaV);
     // annotate(title, 9, pxoff + pcbarWidth + cbarSeparation + pcbarWidth+3, pyoff - MAX_COLOR_VALUE/3 - 2, imageBuf);
-
-
-    // Time series
-    int plotWidth = 450;
-    int plotHeight0 = 70;
+    int plotWidth = 430;
+    int plotHeight0 = 50;
     int plotHeight1 = 50;
     
     int plotX0 = 400;
-    int plotY0 = 280;
-    int plotY1 = 370;
-
-    if (false)
-    {
-
-        int x0, y0;
-        int x, y;
-        double t0 = timeSeries->minTime2Hz;
-        double timeRange = timeSeries->maxTime2Hz - t0;
-        size_t index;
-        double time;
-        bool gotImageTime = false;
-        // printf("t0: %lf, timerange: %lf\n", t0, timeRange);
-        double imageTime;
-        if (imagePair->gotImageH)
-            imageTime = imagePair->auxH->dateTime.secondsSince1970 - t0;
-        else
-            imageTime = imagePair->auxV->dateTime.secondsSince1970 - t0;
-        if (timeRange > 0)
-        {
-
-            for (int i = 0; i < timeSeries->n2Hz; i+=4)
-            {
-                if (imageTime <= time && !gotImageTime)
-                {
-                    gotImageTime = true;
-                    for (int j = 0; j < plotHeight0; j++)
-                    {
-                        if (j/5 % 2 == 0)
-                        {
-                            y0 = plotY0 - j;
-                            index = IMAGE_WIDTH * y0 + x0;
-                            if (index >=0 && index <= IMAGE_BUFFER_SIZE)
-                            {
-                                imageBuf[index] = MAX_COLOR_VALUE + 3;
-                            }
-                            index = IMAGE_WIDTH * y0 + x0+1;
-                            if (index >=0 && index <= IMAGE_BUFFER_SIZE)
-                            {
-                                imageBuf[index] = MAX_COLOR_VALUE + 3;
-                            }
-                        }
-                    }
-                }
-                if (imageTime <= time && !gotImageTime)
-                {
-                    for (int j = 0; j < plotHeight0; j++)
-                    {
-                        if (j/5 % 2 == 0)
-                        {
-                            y0 = plotY1 - j;
-                            index = IMAGE_WIDTH * y0 + x0;
-                            if (index >=0 && index <= IMAGE_BUFFER_SIZE)
-                            {
-                                imageBuf[index] = MAX_COLOR_VALUE + 3;
-                            }
-                            index = IMAGE_WIDTH * y0 + x0+1;
-                            if (index >=0 && index <= IMAGE_BUFFER_SIZE)
-                            {
-                                imageBuf[index] = MAX_COLOR_VALUE + 3;
-                            }
-                        }
-                    }
-                    gotImageTime = true;
-                }
-            }             
-        }
-   }
+    int plotY0 = 250;
+    int plotY1 = 315;
+    int plotY2 = 380;
+    int plotY3 = 445;
+    int plotY4 = 510;
+    
+    x = rescaleAsInteger(imagePair->secondsSince1970, timeSeries->minTime2Hz, timeSeries->maxTime2Hz, plotX0, plotX0 + plotWidth);
+    drawIndicatorLine(imageBuf, x, plotY0, plotY0 - plotHeight1);
+    drawIndicatorLine(imageBuf, x, plotY1, plotY1 - plotHeight1);
+    drawIndicatorLine(imageBuf, x, plotY2, plotY1 - plotHeight1);
+    drawIndicatorLine(imageBuf, x, plotY3, plotY3 - plotHeight1);
+    drawIndicatorLine(imageBuf, x, plotY4, plotY4 - plotHeight1);
 
     return;
     
@@ -480,4 +420,16 @@ int rescaleAsInteger(double x, double minX, double maxX, int minScale, int maxSc
     }
 
     return scaled;
+}
+
+void drawIndicatorLine(uint8_t *imageBuf, int x, int y0, int y1)
+{
+    for (int y = y0; y > y1; y--)
+    {
+        if (y/5 % 2 == 0)
+        {
+            setBufferColorIndex(imageBuf, x, y, MAX_COLOR_VALUE + 3);
+            setBufferColorIndex(imageBuf, x + 1, y, MAX_COLOR_VALUE + 3);
+        }
+    }
 }

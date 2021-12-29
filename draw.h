@@ -27,4 +27,6 @@ void drawTimeSeries(uint8_t *imageBuf, double *times, double *values, size_t nVa
 void setBufferColorIndex(uint8_t *imageBuf, int x, int y, int colorIndex);
 int rescaleAsInteger(double x, double minX, double maxX, int minScale, int maxScale);
 
+void drawIndicatorLine(uint8_t *imageBuf, int x, int y0, int y1);
+
 #endif // _DRAW_H

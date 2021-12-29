@@ -200,6 +200,11 @@ int getAlignedImagePair(ImagePackets *imagePackets, long packetIndex, ImagePair 
     else
         *imagesRead = 1;
 
+    if (imagePair->gotImageH)
+        imagePair->secondsSince1970 = imagePair->auxH->dateTime.secondsSince1970;
+    else
+        imagePair->secondsSince1970 = imagePair->auxV->dateTime.secondsSince1970;
+
     return status;
 }
 
@@ -260,6 +265,7 @@ void initializeImagePair(ImagePair *imagePair, ImageAuxData *auxH, uint16_t *pix
     imagePair->auxV = auxV;
     imagePair->pixelsH = pixelsH;
     imagePair->pixelsV = pixelsV;
+    imagePair->secondsSince1970 = 0;
 }
 
 void setDateTime(IspDateTime *dateTime, uint8_t *dataFieldHeader)

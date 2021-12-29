@@ -173,6 +173,8 @@ typedef struct imagePair
     ImageAuxData *auxV;
     uint16_t *pixelsV;
     bool gotImageV;
+    double secondsSince1970;
+    
 } ImagePair;
 
 typedef struct LpTiiScience
