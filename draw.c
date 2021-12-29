@@ -339,7 +339,7 @@ void drawTemplate(uint8_t * templateBuf, LpTiiTimeSeries *timeSeries)
 
     // VBIASGRID
     drawTimeSeries(templateBuf, timeSeries->lpTiiTime2Hz, timeSeries->biasGridVoltageSettingH, timeSeries->n2Hz, plotX0, plotY4, plotWidth, plotHeight1, timeSeries->minTime2Hz, timeSeries->maxTime2Hz, -100.0, 0.0, "", "", 4, MAX_COLOR_VALUE+1, "-100", "0", false);
-    drawTimeSeries(templateBuf, timeSeries->lpTiiTime2Hz, timeSeries->biasGridVoltageSettingV, timeSeries->n2Hz, plotX0, plotY4, plotWidth, plotHeight1, timeSeries->minTime2Hz, timeSeries->maxTime2Hz, -100.0, 0.0, "Hours from start of file", "VPhos (V)", 4, 13, "-100", "0", false);
+    drawTimeSeries(templateBuf, timeSeries->lpTiiTime2Hz, timeSeries->biasGridVoltageSettingV, timeSeries->n2Hz, plotX0, plotY4, plotWidth, plotHeight1, timeSeries->minTime2Hz, timeSeries->maxTime2Hz, -100.0, 0.0, "Hours from start of file", "VBias (V)", 4, 13, "-100", "0", false);
 
 }
 
