@@ -65,13 +65,13 @@ void drawFrame(uint8_t * imageBuf, uint8_t *templateBuf, ImagePair *imagePair, I
     drawImagePair(imageBuf, imagePair, statsH->maxValue, statsV->maxValue, x0, y0, RAW_IMAGE_SCALE, RAW_IMAGE_SEPARATION_X, "Raw H", "Raw V", false, &identityFilter, NULL, NULL);
 
     // Gain corrected
-    gainmap = getGainMap(imagePair->auxH->EfiInstrumentId, imagePair->auxH->SensorNumber, imagePair->auxH->dateTime.secondsSince1970);
+    gainmap = getGainMap(imagePair->auxH->EfiInstrumentId, H_SENSOR, imagePair->auxH->dateTime.secondsSince1970);
     if (gainmap != NULL)
     {
         applyGainMap(imagePair->pixelsH, gainmap, threshold, &(statsH->maxValue));
     }
 
-    gainmap = getGainMap(imagePair->auxV->EfiInstrumentId, imagePair->auxV->SensorNumber, imagePair->auxV->dateTime.secondsSince1970);
+    gainmap = getGainMap(imagePair->auxV->EfiInstrumentId, V_SENSOR, imagePair->auxV->dateTime.secondsSince1970);
     if (gainmap != NULL)
     {
         applyGainMap(imagePair->pixelsV, gainmap, threshold, &(statsV->maxValue));
