@@ -20,4 +20,6 @@ void drawImagePair(uint8_t *imageBuf, ImagePair *imagePair, double maxH, double 
 
 void drawMonitors(uint8_t *imageBuf, ImagePair *imagePair, int x0, int y0);
 
+void drawTimeSeries(uint8_t *imageBuf, double *times, double *values, size_t nValues, int plotX0, int plotY0, int plotWidth, int plotHeight, double t0, double t1, double minValue, double maxValue, const char *xLabel, const char *yLabel, int stride, int colorIndex);
+
 #endif // _DRAW_H

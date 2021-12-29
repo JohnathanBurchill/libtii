@@ -94,6 +94,8 @@ int getTimeSeries(SciencePackets *packets, LpTiiTimeSeries * timeSeries)
         timeSeries->ionDensity2 = NULL;
         timeSeries->y2H = NULL;
         timeSeries->y2V = NULL;
+        timeSeries->minTime2Hz = 0.0;
+        timeSeries->maxTime2Hz = 0.0;
     }
 
     return TIME_SERIES_OK;
