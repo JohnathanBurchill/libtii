@@ -38,7 +38,7 @@ double * getGainMap(int efiUnit, int efiSensor, double time)
         if (time >= gainmapUploadTimes[i])
         {
             // Use this map
-            return (gainmaps + ((i * 2 * NUM_FULL_IMAGE_PIXELS + efiSensor * NUM_FULL_IMAGE_PIXELS) * sizeof(double)));
+            return (gainmaps + (i * 2 * NUM_FULL_IMAGE_PIXELS + efiSensor * NUM_FULL_IMAGE_PIXELS));
         }
     }
     // requested time is before launch
