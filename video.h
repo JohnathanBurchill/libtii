@@ -24,4 +24,7 @@ int generateFrame(uint8_t *pixels, int frameNumber);
 int finishVideo(void);
 void cleanupVideo(void);
 
+// Video transitions
+void insertTransition(uint8_t *imageBuf, const char *text, int x0, int y0, int fontSize, double durationSeconds, int *frameCounter);
+
 #endif // _VIDEO_H

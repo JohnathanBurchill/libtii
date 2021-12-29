@@ -3,6 +3,7 @@
 #include "tiim.h"
 #include "colortable.h"
 #include "fonts.h"
+#include "draw.h"
 
 #include <libavformat/avformat.h>
 #include <libavcodec/avcodec.h>
@@ -245,4 +246,17 @@ void cleanupVideo(void)
     avio_closep(&videoContext->pb);
     avformat_free_context(videoContext);
     return;
+}
+
+
+// Transitions
+void insertTransition(uint8_t *imageBuf, const char *text, int x0, int y0, int fontSize, double durationSeconds, int *frameCounter)
+{
+    drawFill(imageBuf, BACKGROUND_COLOR);
+    annotate(text, fontSize, x0 - (int)((double)strlen(text)/2.*(double)fontSize/12.*8.), y0, imageBuf);
+    for (int c = 0; c < (int)(durationSeconds*VIDEO_FPS); c++)
+    {
+        generateFrame(imageBuf, (*frameCounter)++);
+    }
+    drawFill(imageBuf, BACKGROUND_COLOR);
 }

@@ -113,17 +113,17 @@ int main(int argc, char **argv)
 
     }
 
-    int nAcross = 20;
+    int nAcross = 16;
     int nDown = 8;
     int dx = 42;
     int dy = 67;
+    int xborder = IMAGE_WIDTH / 2 - nAcross / 2 * dx;
+    int yborder=3;
 
     // Frame-by-frame H
     int xoffset = 0;
     int yoffset = 0;
-    int xborder = 5;
-    int yborder=3;
-    memset(imageBuf, BACKGROUND_COLOR, IMAGE_BUFFER_SIZE);
+    insertTransition(imageBuf, "Frame-by-frame Horizontal sensor", IMAGE_WIDTH/2, IMAGE_HEIGHT/2-16, 24, 2.0, &frameCounter);
     for (int i = 0; i < imagePackets.numberOfImages-1;)
     {
         status = getAlignedImagePair(&imagePackets, i, &imagePair, &imagesRead);
@@ -144,20 +144,16 @@ int main(int argc, char **argv)
                 generateFrame(imageBuf, frameCounter++);
             xoffset = 0;
             yoffset = 0;
-            memset(imageBuf, BACKGROUND_COLOR, IMAGE_BUFFER_SIZE);
+            drawFill(imageBuf, BACKGROUND_COLOR);
         }
     }
     for (int c = 0; c < 3 * VIDEO_FPS; c++)
         generateFrame(imageBuf, frameCounter++);
-    memset(imageBuf, BACKGROUND_COLOR, IMAGE_BUFFER_SIZE);
-    for (int c = 0; c < 1*VIDEO_FPS; c++)
-    {
-        generateFrame(imageBuf, frameCounter++);
-    }
 
     // Frame-by-frame V
     xoffset = 0;
     yoffset = 0;
+    insertTransition(imageBuf, "Frame-by-frame Vertical sensor", IMAGE_WIDTH/2, IMAGE_HEIGHT/2-16, 24, 2.0, &frameCounter);
     for (int i = 0; i < imagePackets.numberOfImages-1;)
     {
         status = getAlignedImagePair(&imagePackets, i, &imagePair, &imagesRead);
@@ -178,7 +174,7 @@ int main(int argc, char **argv)
                 generateFrame(imageBuf, frameCounter++);
             xoffset = 0;
             yoffset = 0;
-            memset(imageBuf, BACKGROUND_COLOR, IMAGE_BUFFER_SIZE);
+            drawFill(imageBuf, BACKGROUND_COLOR);
         }
     }
     for (int c = 0; c < 3 * VIDEO_FPS; c++)

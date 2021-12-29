@@ -29,4 +29,6 @@ int rescaleAsInteger(double x, double minX, double maxX, int minScale, int maxSc
 
 void drawIndicatorLine(uint8_t *imageBuf, int x, int y0, int y1);
 
+void drawFill(uint8_t *imageBuf, int colorIndex);
+
 #endif // _DRAW_H
