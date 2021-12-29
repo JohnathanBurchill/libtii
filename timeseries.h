@@ -18,11 +18,17 @@ typedef struct LpTiiTimeSeries
     double *lpTiiTime2Hz;
     double minTime2Hz;
     double maxTime2Hz;
-    
+
     double *ionDensity1;
     double *ionDensity2;
     double *y2H;
     double *y2V;
+    double *biasGridVoltageSettingH;
+    double *biasGridVoltageSettingV;
+    double *mcpVoltageSettingH;
+    double *mcpVoltageSettingV;
+    double *phosphorVoltageSettingH;
+    double *phosphorVoltageSettingV;
 
     size_t n16Hz;
     double *lpTiiTime16Hz;

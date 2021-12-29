@@ -48,6 +48,26 @@ int getTimeSeries(SciencePackets *packets, LpTiiTimeSeries * timeSeries)
         timeSeries->y2V = (double*) malloc(timeSeries->n2Hz * sizeof(double));
         if (timeSeries->y2V == NULL)
             return TIME_SERIES_MALLOC;
+        timeSeries->biasGridVoltageSettingH = (double*) malloc(timeSeries->n2Hz * sizeof(double));
+        if (timeSeries->biasGridVoltageSettingH == NULL)
+            return TIME_SERIES_MALLOC;
+        timeSeries->biasGridVoltageSettingV= (double*) malloc(timeSeries->n2Hz * sizeof(double));
+        if (timeSeries->biasGridVoltageSettingV == NULL)
+            return TIME_SERIES_MALLOC;
+        timeSeries->mcpVoltageSettingH = (double*) malloc(timeSeries->n2Hz * sizeof(double));
+        if (timeSeries->mcpVoltageSettingH == NULL)
+            return TIME_SERIES_MALLOC;
+        timeSeries->mcpVoltageSettingV = (double*) malloc(timeSeries->n2Hz * sizeof(double));
+        if (timeSeries->mcpVoltageSettingV == NULL)
+            return TIME_SERIES_MALLOC;
+        timeSeries->phosphorVoltageSettingH = (double*) malloc(timeSeries->n2Hz * sizeof(double));
+        if (timeSeries->phosphorVoltageSettingH == NULL)
+            return TIME_SERIES_MALLOC;
+        timeSeries->phosphorVoltageSettingV = (double*) malloc(timeSeries->n2Hz * sizeof(double));
+        if (timeSeries->phosphorVoltageSettingV == NULL)
+            return TIME_SERIES_MALLOC;
+
+
 
         for (long i = 0; i < packets->numberOfLpTiiSciencePackets; i++)
         {
@@ -64,6 +84,12 @@ int getTimeSeries(SciencePackets *packets, LpTiiTimeSeries * timeSeries)
                 timeSeries->ionDensity2[2*i+s] = science.IonDensityL1aProbe2[s];
                 timeSeries->y2H[2*i+s] = science.Y2H[s];
                 timeSeries->y2V[2*i+s] = science.Y2V[s];
+                timeSeries->biasGridVoltageSettingH[2*i + s] = science.BiasGridVoltageSettingH;
+                timeSeries->biasGridVoltageSettingV[2*i + s] = science.BiasGridVoltageSettingV;
+                timeSeries->mcpVoltageSettingH[2*i + s] = science.McpVoltageSettingH;
+                timeSeries->mcpVoltageSettingV[2*i + s] = science.McpVoltageSettingV;
+                timeSeries->phosphorVoltageSettingH[2*i + s] = science.PhosphorVoltageSettingH;
+                timeSeries->phosphorVoltageSettingV[2*i + s] = science.PhosphorVoltageSettingV;
             }            
         }
         timeSeries->minTime2Hz = minTime;

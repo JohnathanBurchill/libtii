@@ -290,7 +290,22 @@ void getLpTiiScienceData(LpTiiSciencePacket * pkt, LpTiiScience * science)
     uint8_t *bytes = pkt->LpTiiData;
     double di;
     uint8_t b[2];
+
+    // Aux data
+    science->BiasGridVoltageSettingRawH = pkt->AuxDataH[3];
+    science->BiasGridVoltageSettingH = ((double)science->BiasGridVoltageSettingRawH) / 255. * -100.0;
+    science->McpVoltageSettingRawH = pkt->AuxDataH[4];
+    science->McpVoltageSettingH = ((double)science->McpVoltageSettingRawH) / 255. * (-2400.0);
+    science->PhosphorVoltageSettingRawH = pkt->AuxDataH[5];
+    science->PhosphorVoltageSettingH = ((double)science->PhosphorVoltageSettingRawH) / 255. * 8000.0;
     
+    science->BiasGridVoltageSettingRawV = pkt->AuxDataV[3];
+    science->BiasGridVoltageSettingV = ((double)science->BiasGridVoltageSettingRawV) / 255. * -100.0;
+    science->McpVoltageSettingRawV = pkt->AuxDataV[4];
+    science->McpVoltageSettingV = ((double)science->McpVoltageSettingRawV) / 255. * (-2400.0);
+    science->PhosphorVoltageSettingRawV = pkt->AuxDataV[5];
+    science->PhosphorVoltageSettingV = ((double)science->PhosphorVoltageSettingRawV) / 255. * 8000.0;
+
     // 2nd y moment
     science->Y2H[0] = (double) getu16(bytes, 228)/ 1000.0;
     science->Y2H[1] = (double) getu16(bytes, 460)/ 1000.0;

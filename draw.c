@@ -371,21 +371,35 @@ void drawTemplate(uint8_t * templateBuf, LpTiiTimeSeries *timeSeries)
 
     // Time series
     int plotWidth = 430;
-    int plotHeight0 = 70;
+    int plotHeight0 = 50;
     int plotHeight1 = 50;
     
     int plotX0 = 400;
-    int plotY0 = 280;
-    int plotY1 = 350;
+    int plotY0 = 250;
+    int plotY1 = 315;
+    int plotY2 = 380;
+    int plotY3 = 445;
+    int plotY4 = 510;
 
     memset(templateBuf, BACKGROUND_COLOR, IMAGE_BUFFER_SIZE);
+    // y2
+    drawTimeSeries(templateBuf, timeSeries->lpTiiTime2Hz, timeSeries->y2H, timeSeries->n2Hz, plotX0, plotY0, plotWidth, plotHeight1, timeSeries->minTime2Hz, timeSeries->maxTime2Hz, 0, 10.0, "", "", 4, MAX_COLOR_VALUE+1, "0", "10", false);
+    drawTimeSeries(templateBuf, timeSeries->lpTiiTime2Hz, timeSeries->y2V, timeSeries->n2Hz, plotX0, plotY0, plotWidth, plotHeight1, timeSeries->minTime2Hz, timeSeries->maxTime2Hz, 0, 10.0, "", "y2 (pix^2)", 4, 13, "0", "10", false);
 
     // Log 10 density
-    drawTimeSeries(templateBuf, timeSeries->lpTiiTime2Hz, timeSeries->ionDensity2, timeSeries->n2Hz, plotX0, plotY0, plotWidth, plotHeight0, timeSeries->minTime2Hz, timeSeries->maxTime2Hz, 3.0, 7.0, "", "log(Ni/cm^-3)", 4, MAX_COLOR_VALUE+1, "3", "7", true);
+    drawTimeSeries(templateBuf, timeSeries->lpTiiTime2Hz, timeSeries->ionDensity2, timeSeries->n2Hz, plotX0, plotY1, plotWidth, plotHeight0, timeSeries->minTime2Hz, timeSeries->maxTime2Hz, 3.0, 7.0, "", "log(Ni/cm^-3)", 4, MAX_COLOR_VALUE+1, "3", "7", true);
 
-    drawTimeSeries(templateBuf, timeSeries->lpTiiTime2Hz, timeSeries->y2H, timeSeries->n2Hz, plotX0, plotY1, plotWidth, plotHeight1, timeSeries->minTime2Hz, timeSeries->maxTime2Hz, 0, 10.0, "Hours from start of file", "y2 (pix^2)", 4, MAX_COLOR_VALUE+1, "0", "10", false);
+    // VMCP
+    drawTimeSeries(templateBuf, timeSeries->lpTiiTime2Hz, timeSeries->mcpVoltageSettingH, timeSeries->n2Hz, plotX0, plotY2, plotWidth, plotHeight1, timeSeries->minTime2Hz, timeSeries->maxTime2Hz, -2400, -1800.0, "", "", 4, MAX_COLOR_VALUE+1, "-2400", "-1800", false);
+    drawTimeSeries(templateBuf, timeSeries->lpTiiTime2Hz, timeSeries->mcpVoltageSettingV, timeSeries->n2Hz, plotX0, plotY2, plotWidth, plotHeight1, timeSeries->minTime2Hz, timeSeries->maxTime2Hz, -2400, -1800.0, "", "VMCP (V)", 4, 13, "-2400", "-1800", false);
 
-    drawTimeSeries(templateBuf, timeSeries->lpTiiTime2Hz, timeSeries->y2V, timeSeries->n2Hz, plotX0, plotY1, plotWidth, plotHeight1, timeSeries->minTime2Hz, timeSeries->maxTime2Hz, 0, 10.0, "Hours from start of file", "y2 (pix^2)", 4, 13, "0", "10", false);
+    // VPHOS
+    drawTimeSeries(templateBuf, timeSeries->lpTiiTime2Hz, timeSeries->phosphorVoltageSettingH, timeSeries->n2Hz, plotX0, plotY3, plotWidth, plotHeight1, timeSeries->minTime2Hz, timeSeries->maxTime2Hz, 0, 7000.0, "", "", 4, MAX_COLOR_VALUE+1, "0", "7000", false);
+    drawTimeSeries(templateBuf, timeSeries->lpTiiTime2Hz, timeSeries->phosphorVoltageSettingV, timeSeries->n2Hz, plotX0, plotY3, plotWidth, plotHeight1, timeSeries->minTime2Hz, timeSeries->maxTime2Hz, 0, 7000.0, "", "VPhos (V)", 4, 13, "0", "7000", false);
+
+    // VBIASGRID
+    drawTimeSeries(templateBuf, timeSeries->lpTiiTime2Hz, timeSeries->biasGridVoltageSettingH, timeSeries->n2Hz, plotX0, plotY4, plotWidth, plotHeight1, timeSeries->minTime2Hz, timeSeries->maxTime2Hz, -100.0, 0.0, "", "", 4, MAX_COLOR_VALUE+1, "-100", "0", false);
+    drawTimeSeries(templateBuf, timeSeries->lpTiiTime2Hz, timeSeries->biasGridVoltageSettingV, timeSeries->n2Hz, plotX0, plotY4, plotWidth, plotHeight1, timeSeries->minTime2Hz, timeSeries->maxTime2Hz, -100.0, 0.0, "Hours from start of file", "VPhos (V)", 4, 13, "-100", "0", false);
 
 }
 
@@ -400,20 +414,20 @@ void drawTimeSeries(uint8_t *imageBuf, double *times, double *values, size_t nVa
     double tmpVal;
     char label[255];
 
-    int fontSize = 12;
+    int fontSize = 9;
     if (timeRange > 0 && nValues > 0)
     {
         // Abscissa
         for (int s = 0; s <= timeRange; s+=60*60)
         {
             sprintf(label, "%d", (int)(s / 3600.));
-            annotate(label, 12, plotX0 + (int)(s / timeRange * plotWidth)-3, plotY0, imageBuf);
+            annotate(label, fontSize, plotX0 + (int)(s / timeRange * plotWidth)-3, plotY0, imageBuf);
         }
-        annotate(xLabel, 12, plotX0 + plotWidth/2 - (strlen(xLabel)*(8*fontSize))/24, plotY0+12, imageBuf);
+        annotate(xLabel, fontSize, plotX0 + plotWidth/2 - (strlen(xLabel)*(8*fontSize))/24, plotY0+12, imageBuf);
         // Ordinate
-        annotate(yLabel, 12, plotX0 + plotWidth + 5, plotY0 - plotHeight/2 - 6, imageBuf);
-        annotate(minValueStr, 12, plotX0 + plotWidth+3, plotY0 - 8, imageBuf);
-        annotate(maxValueStr, 12, plotX0 + plotWidth+3, plotY0 - plotHeight - 8, imageBuf);
+        annotate(yLabel, fontSize, plotX0 + plotWidth + 5, plotY0 - plotHeight/2 - 6, imageBuf);
+        annotate(minValueStr, fontSize, plotX0 + plotWidth+3, plotY0 - 8, imageBuf);
+        annotate(maxValueStr, fontSize, plotX0 + plotWidth+3, plotY0 - plotHeight - 8, imageBuf);
         for (int o = plotY0; o >= plotY0 - plotHeight; o--)
         {
             setBufferColorIndex(imageBuf, plotX0 + plotWidth+1, o, FOREGROUND_COLOR);
