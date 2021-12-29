@@ -11,7 +11,7 @@
 #include <string.h>
 #include <math.h>
 
-void drawFrame(uint8_t * imageBuf, ImagePair *imagePair, ImageStats *statsH, ImageStats *statsV, int frameCounter)
+void drawFrame(uint8_t * imageBuf, ImagePair *imagePair, ImageStats *statsH, ImageStats *statsV, LpTiiTimeSeries *timeSeries, int frameCounter)
 {
     double v;
     int x, y;
@@ -107,6 +107,132 @@ void drawFrame(uint8_t * imageBuf, ImagePair *imagePair, ImageStats *statsH, Ima
     // annotate(title, 9, pxoff+pcbarWidth+3, pyoff - MAX_COLOR_VALUE/3 - 2, imageBuf);
     // sprintf(title, "%d", maxPaV);
     // annotate(title, 9, pxoff + pcbarWidth + cbarSeparation + pcbarWidth+3, pyoff - MAX_COLOR_VALUE/3 - 2, imageBuf);
+
+    // Time series
+    if (timeSeries->n2Hz > 0)
+    {
+
+        int x0, y0;
+        int x, y;
+        int plotHeight = 50;
+        int plotWidth = 450;
+        int plotX0 = 400;
+        int plotY0 = 270;
+        int plotY1 = 370;
+
+        double t0 = timeSeries->minTime2Hz;
+        double timeRange = timeSeries->maxTime2Hz - t0;
+        size_t index;
+        double time;
+        bool gotImageTime = false;
+        // printf("t0: %lf, timerange: %lf\n", t0, timeRange);
+        double imageTime;
+        if (imagePair->gotImageH)
+            imageTime = imagePair->auxH->dateTime.secondsSince1970 - t0;
+        else
+            imageTime = imagePair->auxV->dateTime.secondsSince1970 - t0;
+        if (timeRange > 0)
+        {
+            annotate("Ion density", 9, plotX0 + plotWidth + 5, plotY0 - plotHeight/2 - 6, imageBuf);
+            annotate("Hours from start of file", 9, plotX0 + plotWidth/2 - 11*6, plotY0+12, imageBuf);
+            char timeStr[255];
+            for (int s = 0; s <= timeRange; s+=60*60)
+            {
+                sprintf(timeStr, "%d", (int)(s / 3600.));
+                annotate(timeStr, 9, plotX0 + (int)(s / timeRange * plotWidth)-3, plotY0, imageBuf);
+            }
+
+            annotate("Y2", 9, plotX0 + plotWidth + 5, plotY1 - plotHeight/2 - 6, imageBuf);
+            annotate("Hours from start of file", 9, plotX0 + plotWidth/2 - 11*6, plotY1+12, imageBuf);
+            for (int s = 0; s <= timeRange; s+=60*60)
+            {
+                sprintf(timeStr, "%d", (int)(s / 3600.));
+                annotate(timeStr, 9, plotX0 + (int)(s / timeRange * plotWidth)-3, plotY1, imageBuf);
+            }
+
+            for (int i = 0; i < timeSeries->n2Hz; i+=4)
+            {
+                time = timeSeries->lpTiiTime2Hz[i] - t0;
+                y = (int)(timeSeries->ionDensity2[i]/1e6*(double)plotHeight);
+                if (y > plotHeight) y = plotHeight;
+                y0 = plotY0 - y;
+                x = (int)(time / timeRange * plotWidth);
+                if (x > plotWidth) x = plotWidth;
+                x0 = plotX0 + x;
+                index = IMAGE_WIDTH * y0 + x0;
+                if (index >=0 && index <= IMAGE_BUFFER_SIZE)
+                {
+                    imageBuf[index] = MAX_COLOR_VALUE+1;
+                }
+                if (imageTime <= time && !gotImageTime)
+                {
+                    gotImageTime = true;
+                    for (int j = 0; j < plotHeight; j++)
+                    {
+                        if (j/5 % 2 == 0)
+                        {
+                            y0 = plotY0 - j;
+                            index = IMAGE_WIDTH * y0 + x0;
+                            if (index >=0 && index <= IMAGE_BUFFER_SIZE)
+                            {
+                                imageBuf[index] = MAX_COLOR_VALUE + 3;
+                            }
+                            index = IMAGE_WIDTH * y0 + x0+1;
+                            if (index >=0 && index <= IMAGE_BUFFER_SIZE)
+                            {
+                                imageBuf[index] = MAX_COLOR_VALUE + 3;
+                            }
+                        }
+                    }
+                }
+                // y2 H
+                y = (int)(timeSeries->y2H[i]/10.0*(double)plotHeight);
+                if (y > plotHeight) y = plotHeight;
+                y0 = plotY1 - y;
+                x = (int)(time / timeRange * plotWidth);
+                if (x > plotWidth) x = plotWidth;
+                x0 = plotX0 + x;
+                index = IMAGE_WIDTH * y0 + x0;
+                if (index >=0 && index <= IMAGE_BUFFER_SIZE)
+                {
+                    imageBuf[index] = MAX_COLOR_VALUE+1;
+                }
+                if (imageTime <= time && !gotImageTime)
+                {
+                    for (int j = 0; j < plotHeight; j++)
+                    {
+                        if (j/5 % 2 == 0)
+                        {
+                            y0 = plotY1 - j;
+                            index = IMAGE_WIDTH * y0 + x0;
+                            if (index >=0 && index <= IMAGE_BUFFER_SIZE)
+                            {
+                                imageBuf[index] = MAX_COLOR_VALUE + 3;
+                            }
+                            index = IMAGE_WIDTH * y0 + x0+1;
+                            if (index >=0 && index <= IMAGE_BUFFER_SIZE)
+                            {
+                                imageBuf[index] = MAX_COLOR_VALUE + 3;
+                            }
+                        }
+                    }
+                    gotImageTime = true;
+                }
+                // y2 V
+                y = (int)(timeSeries->y2V[i]/10.0*(double)plotHeight);
+                if (y > plotHeight) y = plotHeight;
+                y0 = plotY1 - y;
+                x = (int)(time / timeRange * plotWidth);
+                if (x > plotWidth) x = plotWidth;
+                x0 = plotX0 + x;
+                index = IMAGE_WIDTH * y0 + x0;
+                if (index >=0 && index <= IMAGE_BUFFER_SIZE)
+                {
+                    imageBuf[index] = 15;
+                }
+            }             
+        }
+   }
 
     return;
     

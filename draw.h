@@ -3,11 +3,12 @@
 
 #include "isp.h"
 #include "analysis.h"
+#include "timeseries.h"
 
 #include <stdint.h>
 #include <stdbool.h>
 
-void drawFrame(uint8_t * imageBuf, ImagePair *imagePair, ImageStats *statsH, ImageStats *statsV, int frameCounter);
+void drawFrame(uint8_t * imageBuf, ImagePair *imagePair, ImageStats *statsH, ImageStats *statsV, LpTiiTimeSeries *timeSeries, int frameCounter);
 
 void drawImage(uint8_t *imageBuf, uint16_t * pixels, bool gotImage, double maxValue, int xoff, int yoff, int scale, double (*pixelFilter)(int, void*, bool*, void *), void* filterArgs);
 

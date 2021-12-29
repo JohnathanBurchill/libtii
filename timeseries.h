@@ -16,6 +16,9 @@ typedef struct LpTiiTimeSeries
 
     size_t n2Hz;
     double *lpTiiTime2Hz;
+    double minTime2Hz;
+    double maxTime2Hz;
+    
     double *ionDensity1;
     double *ionDensity2;
     double *y2H;

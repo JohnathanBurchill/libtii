@@ -317,8 +317,7 @@ void getLpTiiScienceData(LpTiiSciencePacket * pkt, LpTiiScience * science)
     if (di < 0.0) di = 0.0;
     science->IonDensityL1aProbe2[1] = 2.0 * M_PI * 1.0e6 * di * 7600.0 * 2.67e-26 / (2 * M_PI * 0.004 * 0.004 * 1.602e-19 / 1e6); // cm^-3
 
-    // setDateTime(&(science->dateTime), pkt->DataFieldHeader);
-    // printf("2 Hz time: %04d%02d%02dT%02d%02d%02d Y2H {0, 1}: %.2lf %.2lf\n", science->dateTime.year, science->dateTime.month, science->dateTime.day, science->dateTime.hour, science->dateTime.minute, science->dateTime.second, science->Y2H[0], science->Y2H[1]);
+    setDateTime(&(science->dateTime), pkt->DataFieldHeader);
 
     // science->EfiInstrumentId = (fullBytes[12] >> 1) & 0x0f;
     // aux->satellite = efiUnit[aux->EfiInstrumentId];
@@ -347,46 +346,31 @@ void getLpTiiScienceData(LpTiiSciencePacket * pkt, LpTiiScience * science)
 
 uint16_t getu16(uint8_t *bytes, int offset)
 {
-    uint8_t b[2];
-    b[0] = bytes[offset+1];
-    b[1] = bytes[offset];
-    return *(uint16_t*)b;
+    uint16_t tmp = bytes[offset]*256 + bytes[offset+1];
+    return tmp;
 }
 
 int16_t gets16(uint8_t *bytes, int offset)
 {
-    uint8_t b[2];
-    b[0] = bytes[offset+1];
-    b[1] = bytes[offset];
-    return *(int16_t*)b;
+    uint16_t tmp = bytes[offset]*256 + bytes[offset+1];
+    return *(int16_t*)&tmp;
 }
 
 uint32_t getu32(uint8_t *bytes, int offset)
 {
-    uint8_t b[4];
-    b[0] = bytes[offset+3];
-    b[1] = bytes[offset+2];
-    b[2] = bytes[offset+1];
-    b[3] = bytes[offset];
-    return *(uint32_t*)b;
+    uint32_t tmp = bytes[offset]*256*256*256 + bytes[offset+1]*256*256 + bytes[offset+2] * 256 + bytes[offset+3];
+    return tmp;
 }
 
 int32_t gets32(uint8_t *bytes, int offset)
 {
-    uint8_t b[4];
-    b[0] = bytes[offset+3];
-    b[1] = bytes[offset+2];
-    b[2] = bytes[offset+1];
-    b[3] = bytes[offset];
-    return *(int32_t*)b;
+    uint32_t tmp = bytes[offset]*256*256*256 + bytes[offset+1]*256*256 + bytes[offset+2] * 256 + bytes[offset+3];
+    return tmp;
+    return *(int32_t*)&tmp;
 }
 
 float getfloat(uint8_t *bytes, int offset)
 {
-    uint8_t b[4];
-    b[0] = bytes[offset+3];
-    b[1] = bytes[offset+2];
-    b[2] = bytes[offset+1];
-    b[3] = bytes[offset];
-    return *(float*)b;
+    uint32_t tmp = bytes[offset]*256*256*256 + bytes[offset+1]*256*256 + bytes[offset+2] * 256 + bytes[offset+3];
+    return *(float*)&tmp;
 }

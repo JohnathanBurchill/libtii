@@ -1,6 +1,8 @@
 #include "timeseries.h"
 #include "isp.h"
 
+#include <stdio.h>
+
 
 int getTimeSeries(SciencePackets *packets, LpTiiTimeSeries * timeSeries)
 {
@@ -22,6 +24,9 @@ int getTimeSeries(SciencePackets *packets, LpTiiTimeSeries * timeSeries)
 
     LpTiiSciencePacket *pkt;
     LpTiiScience science;
+
+    double minTime = 1e20;
+    double maxTime = -1;
 
     // LP&TII Science
     if (packets->numberOfLpTiiSciencePackets > 0)
@@ -51,6 +56,8 @@ int getTimeSeries(SciencePackets *packets, LpTiiTimeSeries * timeSeries)
             // TODO set accurate times
             timeSeries->lpTiiTime2Hz[2*i] = science.dateTime.secondsSince1970;
             timeSeries->lpTiiTime2Hz[2*i+1] = timeSeries->lpTiiTime2Hz[i] + 0.5;
+            if (timeSeries->lpTiiTime2Hz[2*i] > maxTime) maxTime = timeSeries->lpTiiTime2Hz[2*i] + 0.5;
+            if (timeSeries->lpTiiTime2Hz[2*i] < minTime) minTime = timeSeries->lpTiiTime2Hz[2*i];
             for (int s = 0; s < 2; s++)
             {
                 timeSeries->ionDensity1[2*i+s] = science.IonDensityL1aProbe1[s];
@@ -59,6 +66,8 @@ int getTimeSeries(SciencePackets *packets, LpTiiTimeSeries * timeSeries)
                 timeSeries->y2V[2*i+s] = science.Y2V[s];
             }            
         }
+        timeSeries->minTime2Hz = minTime;
+        timeSeries->maxTime2Hz = maxTime;
 
         // 16 Hz
         timeSeries->n16Hz = 16 * packets->numberOfLpTiiSciencePackets;
