@@ -11,7 +11,7 @@
 #include <string.h>
 #include <math.h>
 
-void drawFrame(uint8_t * imageBuf, ImagePair *imagePair, ImageStats *statsH, ImageStats *statsV, LpTiiTimeSeries *timeSeries, int frameCounter)
+void drawFrame(uint8_t * imageBuf, uint8_t *templateBuf, ImagePair *imagePair, ImageStats *statsH, ImageStats *statsV, LpTiiTimeSeries *timeSeries, int frameCounter)
 {
     double v;
     int x, y;
@@ -41,13 +41,11 @@ void drawFrame(uint8_t * imageBuf, ImagePair *imagePair, ImageStats *statsH, Ima
 
     char title[255];
 
-    memset(imageBuf, BACKGROUND_COLOR, IMAGE_BUFFER_SIZE);
-
     int s = RAW_IMAGE_SCALE;
     int x0 = RAW_IMAGE_OFFSET_X;
     int y0 = RAW_IMAGE_OFFSET_Y;
 
-    // Title (satellite and date, time)
+    // Title (date, time)
     char months[36] = "JanFebMarAprMayJunJulAugSepOctNovDec";
     int mo = (imagePair->auxH->dateTime.month-1)*3;
     IspDateTime *date = &(imagePair->auxH->dateTime);
@@ -67,7 +65,6 @@ void drawFrame(uint8_t * imageBuf, ImagePair *imagePair, ImageStats *statsH, Ima
     drawImagePair(imageBuf, imagePair, statsH->maxValue, statsV->maxValue, x0, y0, RAW_IMAGE_SCALE, RAW_IMAGE_SEPARATION_X, "Raw H", "Raw V", false, &identityFilter, NULL, NULL);
 
     // Gain corrected
-    // adjust pixel values first...
     gainmap = getGainMap(imagePair->auxH->EfiInstrumentId, imagePair->auxH->SensorNumber, imagePair->auxH->dateTime.secondsSince1970);
     if (gainmap != NULL)
     {
@@ -117,12 +114,6 @@ void drawFrame(uint8_t * imageBuf, ImagePair *imagePair, ImageStats *statsH, Ima
     int plotX0 = 400;
     int plotY0 = 280;
     int plotY1 = 370;
-
-    drawTimeSeries(imageBuf, timeSeries->lpTiiTime2Hz, timeSeries->ionDensity2, timeSeries->n2Hz, plotX0, plotY0, plotWidth, plotHeight0, timeSeries->minTime2Hz, timeSeries->maxTime2Hz, 0, 2e6, "Hours from start of file", "Ni (cm^-3)", 4, MAX_COLOR_VALUE+1);
-
-    drawTimeSeries(imageBuf, timeSeries->lpTiiTime2Hz, timeSeries->y2H, timeSeries->n2Hz, plotX0, plotY1, plotWidth, plotHeight1, timeSeries->minTime2Hz, timeSeries->maxTime2Hz, 0, 10.0, "Hours from start of file", "y2 (pix^2)", 4, MAX_COLOR_VALUE+1);
-
-    drawTimeSeries(imageBuf, timeSeries->lpTiiTime2Hz, timeSeries->y2V, timeSeries->n2Hz, plotX0, plotY1, plotWidth, plotHeight1, timeSeries->minTime2Hz, timeSeries->maxTime2Hz, 0, 10.0, "Hours from start of file", "y2 (pix^2)", 4, 13);
 
     if (false)
     {
@@ -375,7 +366,30 @@ void drawMonitors(uint8_t *imageBuf, ImagePair *imagePair, int x0, int y0)
 
 }
 
-void drawTimeSeries(uint8_t *imageBuf, double *times, double *values, size_t nValues, int plotX0, int plotY0, int plotWidth, int plotHeight, double t0, double t1, double minValue, double maxValue, const char *xLabel, const char *yLabel, int stride, int colorIndex)
+void drawTemplate(uint8_t * templateBuf, LpTiiTimeSeries *timeSeries)
+{
+
+    // Time series
+    int plotWidth = 430;
+    int plotHeight0 = 70;
+    int plotHeight1 = 50;
+    
+    int plotX0 = 400;
+    int plotY0 = 280;
+    int plotY1 = 350;
+
+    memset(templateBuf, BACKGROUND_COLOR, IMAGE_BUFFER_SIZE);
+
+    // Log 10 density
+    drawTimeSeries(templateBuf, timeSeries->lpTiiTime2Hz, timeSeries->ionDensity2, timeSeries->n2Hz, plotX0, plotY0, plotWidth, plotHeight0, timeSeries->minTime2Hz, timeSeries->maxTime2Hz, 3.0, 7.0, "", "log(Ni/cm^-3)", 4, MAX_COLOR_VALUE+1, "3", "7", true);
+
+    drawTimeSeries(templateBuf, timeSeries->lpTiiTime2Hz, timeSeries->y2H, timeSeries->n2Hz, plotX0, plotY1, plotWidth, plotHeight1, timeSeries->minTime2Hz, timeSeries->maxTime2Hz, 0, 10.0, "Hours from start of file", "y2 (pix^2)", 4, MAX_COLOR_VALUE+1, "0", "10", false);
+
+    drawTimeSeries(templateBuf, timeSeries->lpTiiTime2Hz, timeSeries->y2V, timeSeries->n2Hz, plotX0, plotY1, plotWidth, plotHeight1, timeSeries->minTime2Hz, timeSeries->maxTime2Hz, 0, 10.0, "Hours from start of file", "y2 (pix^2)", 4, 13, "0", "10", false);
+
+}
+
+void drawTimeSeries(uint8_t *imageBuf, double *times, double *values, size_t nValues, int plotX0, int plotY0, int plotWidth, int plotHeight, double t0, double t1, double minValue, double maxValue, const char *xLabel, const char *yLabel, int stride, int colorIndex, const char *minValueStr, const char *maxValueStr, bool log10Scale)
 {
     int x0, y0;
     int x, y;
@@ -383,37 +397,73 @@ void drawTimeSeries(uint8_t *imageBuf, double *times, double *values, size_t nVa
     double timeRange = t1 - t0;
     size_t index;
     double time;
-    char timeStr[255];
+    double tmpVal;
+    char label[255];
+
+    int fontSize = 12;
     if (timeRange > 0 && nValues > 0)
     {
         // Abscissa
         for (int s = 0; s <= timeRange; s+=60*60)
         {
-            sprintf(timeStr, "%d", (int)(s / 3600.));
-            annotate(timeStr, 9, plotX0 + (int)(s / timeRange * plotWidth)-3, plotY0, imageBuf);
+            sprintf(label, "%d", (int)(s / 3600.));
+            annotate(label, 12, plotX0 + (int)(s / timeRange * plotWidth)-3, plotY0, imageBuf);
         }
-        annotate(xLabel, 9, plotX0 + plotWidth/2 - strlen(xLabel)/2*6, plotY0+12, imageBuf);
+        annotate(xLabel, 12, plotX0 + plotWidth/2 - (strlen(xLabel)*(8*fontSize))/24, plotY0+12, imageBuf);
         // Ordinate
-        annotate(yLabel, 9, plotX0 + plotWidth + 5, plotY0 - plotHeight/2 - 6, imageBuf);
+        annotate(yLabel, 12, plotX0 + plotWidth + 5, plotY0 - plotHeight/2 - 6, imageBuf);
+        annotate(minValueStr, 12, plotX0 + plotWidth+3, plotY0 - 8, imageBuf);
+        annotate(maxValueStr, 12, plotX0 + plotWidth+3, plotY0 - plotHeight - 8, imageBuf);
+        for (int o = plotY0; o >= plotY0 - plotHeight; o--)
+        {
+            setBufferColorIndex(imageBuf, plotX0 + plotWidth+1, o, FOREGROUND_COLOR);
+        }
 
         // data
         for (int i = 0; i < nValues; i+=stride)
         {
-            time = times[i] - t0;
-            x = (int)((time / timeRange) *(double)plotWidth);
-            if (x > plotWidth) x = plotWidth;
-            if (x < 0) x = 0;
-            x0 = plotX0 + x;
-
-            y = (int)((values[i] - minValue)/(maxValue - minValue)*(double)plotHeight);
-            if (y > plotHeight) y = plotHeight;
-            if (y < 0) y = 0;
-            y0 = plotY0 - y;
-            index = IMAGE_WIDTH * y0 + x0;
-            if (index >=0 && index <= IMAGE_BUFFER_SIZE-1 && x0 < IMAGE_WIDTH && x0 >=0 && y0 >=0 && y0 < IMAGE_HEIGHT)
+            x0 = rescaleAsInteger(times[i], t0, t1, plotX0, plotX0 + plotWidth);
+            tmpVal = values[i];
+            if (log10Scale)
             {
-                imageBuf[index] = colorIndex;
+                if (tmpVal > 0)
+                    tmpVal = log10(tmpVal);
+                else
+                    tmpVal = -10000.;
             }
+            y0 = rescaleAsInteger(tmpVal, minValue, maxValue, plotY0, plotY0 - plotHeight);
+            setBufferColorIndex(imageBuf, x0, y0, colorIndex);
         }             
     }
+}
+
+void setBufferColorIndex(uint8_t *imageBuf, int x, int y, int colorIndex)
+{
+    size_t index = IMAGE_WIDTH * y + x;
+    if (index >=0 && index <= IMAGE_BUFFER_SIZE-1 && x < IMAGE_WIDTH && x >=0 && y >=0 && y < IMAGE_HEIGHT)
+    {
+        imageBuf[index] = colorIndex;
+    }
+}
+
+int rescaleAsInteger(double x, double minX, double maxX, int minScale, int maxScale)
+{
+    if (minX == maxX) 
+    {
+        if (x <= minX) return minScale;
+        else return maxScale;
+    }
+    int scaled = (int) floor(minScale + (x - minX) / (maxX - minX) * (double)(maxScale - minScale));
+    if (maxScale >= minScale)
+    {
+        if (scaled < minScale) scaled = minScale;
+        if (scaled > maxScale) scaled = maxScale;
+    }
+    else
+    {
+        if (scaled > minScale) scaled = minScale;
+        if (scaled < maxScale) scaled = maxScale;
+    }
+
+    return scaled;
 }

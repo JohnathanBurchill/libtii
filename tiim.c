@@ -58,6 +58,7 @@ int main(int argc, char **argv)
 
     char pngFile[FILENAME_MAX];
     uint16_t pixelsH[NUM_FULL_IMAGE_PIXELS], pixelsV[NUM_FULL_IMAGE_PIXELS];
+    uint8_t templateBuf[IMAGE_BUFFER_SIZE];
     uint8_t imageBuf[IMAGE_BUFFER_SIZE];
     FullImagePacket * fip1, *fip2;
     FullImageContinuedPacket *cip1, *cip2;
@@ -82,12 +83,15 @@ int main(int argc, char **argv)
         goto cleanup;
     }
 
-    // Construct frames and export MPEG format
+    // Construct frames and export MPEG
     int frameCounter = 0;
 
     ImageStats statsH, statsV;
     initializeImageStats(&statsH);
     initializeImageStats(&statsV);
+
+    // Static content from frame to frame
+    drawTemplate(templateBuf, &timeSeries);
 
     for (int i = 0; i < imagePackets.numberOfImages-1;)
     {
@@ -101,7 +105,8 @@ int main(int argc, char **argv)
         analyzeImage(imagePair.pixelsH, imagePair.gotImageH, max, &statsH);
         analyzeImage(imagePair.pixelsV, imagePair.gotImageV, max, &statsV);
 
-        drawFrame(imageBuf, &imagePair, &statsH, &statsV, &timeSeries, frameCounter);
+        memcpy(imageBuf, templateBuf, IMAGE_BUFFER_SIZE);
+        drawFrame(imageBuf, templateBuf, &imagePair, &statsH, &statsV, &timeSeries, frameCounter);
         generateFrame(imageBuf, frameCounter);
         frameCounter++;
 
