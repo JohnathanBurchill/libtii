@@ -94,6 +94,8 @@ int main(int argc, char **argv)
     // Static content from frame to frame
     drawTemplate(templateBuf, &timeSeries);
 
+    int nImagePairs = 0;
+
     for (int i = 0; i < imagePackets.numberOfImages-1;)
     {
         status = getAlignedImagePair(&imagePackets, i, &imagePair, &imagesRead);
@@ -101,6 +103,8 @@ int main(int argc, char **argv)
         i+=imagesRead;
         if (status == ISP_NO_IMAGE_PAIR)
             continue;
+
+        nImagePairs++;
 
         //analyze imagery
         analyzeImage(imagePair.pixelsH, imagePair.gotImageH, max, &statsH);
@@ -124,6 +128,7 @@ int main(int argc, char **argv)
     int xoffset = 0;
     int yoffset = 0;
     insertTransition(imageBuf, "Frame-by-frame Horizontal sensor", IMAGE_WIDTH/2, IMAGE_HEIGHT/2-16, 24, 2.0, &frameCounter);
+
     for (int i = 0; i < imagePackets.numberOfImages-1;)
     {
         status = getAlignedImagePair(&imagePackets, i, &imagePair, &imagesRead);
@@ -178,6 +183,47 @@ int main(int argc, char **argv)
         }
     }
     for (int c = 0; c < 3 * VIDEO_FPS; c++)
+        generateFrame(imageBuf, frameCounter++);
+
+    // PA and Measles time series
+    double *imageTimes = malloc((size_t)(nImagePairs*sizeof(double)));
+    double *paCountH = malloc((size_t)(nImagePairs*sizeof(double)));
+    double *paCountV = malloc((size_t)(nImagePairs*sizeof(double)));
+    double *measlesCountH = malloc((size_t)(nImagePairs*sizeof(double)));
+    double *measlesCountV = malloc((size_t)(nImagePairs*sizeof(double)));
+
+    int imagePairCounter = 0;
+    for (int i = 0; i < imagePackets.numberOfImages-1;)
+    {
+        status = getAlignedImagePair(&imagePackets, i, &imagePair, &imagesRead);
+
+        i+=imagesRead;
+        if (status == ISP_NO_IMAGE_PAIR)
+            continue;
+
+        //analyze imagery
+        analyzeImage(imagePair.pixelsH, imagePair.gotImageH, max, &statsH);
+        analyzeImage(imagePair.pixelsV, imagePair.gotImageV, max, &statsV);
+        imageTimes[imagePairCounter] = imagePair.secondsSince1970;
+        paCountH[imagePairCounter] = (double)statsH.paCount;
+        paCountV[imagePairCounter] = (double)statsV.paCount;
+        measlesCountH[imagePairCounter] = (double)statsH.measlesCount;
+        measlesCountV[imagePairCounter] = (double)statsV.measlesCount;
+        imagePairCounter++;
+    }
+    // Draw PA and measles time series
+    int plotWidth = 500;
+    int plotHeight = 120;
+    int ox = 200;
+    int oy = 200;
+    int dotSize = 3;
+    insertTransition(imageBuf, "Anomaly overview", IMAGE_WIDTH/2, IMAGE_HEIGHT/2-16, 24, 2.0, &frameCounter);
+    drawTimeSeries(imageBuf, imageTimes, paCountH, nImagePairs, ox, oy, plotWidth, plotHeight, imageTimes[0], imageTimes[nImagePairs-1], 0, 1000, "", "", 1, MAX_COLOR_VALUE + 1, "", "", false, dotSize, 12);
+    drawTimeSeries(imageBuf, imageTimes, paCountV, nImagePairs, ox, oy, plotWidth, plotHeight, imageTimes[0], imageTimes[nImagePairs-1], 0, 1000, "", "PA Level", 1, 13, "0", "1000", false, dotSize, 12);
+    
+    drawTimeSeries(imageBuf, imageTimes, measlesCountH, nImagePairs, ox, oy + plotHeight + 50, plotWidth, plotHeight, imageTimes[0], imageTimes[nImagePairs-1], 0, 200, "", "", 1, MAX_COLOR_VALUE + 1, "", "", false, dotSize, 12);
+    drawTimeSeries(imageBuf, imageTimes, measlesCountV, nImagePairs, ox, oy + plotHeight + 50, plotWidth, plotHeight, imageTimes[0], imageTimes[nImagePairs-1], 0, 200, "Hours from start of file", "Measles Level", 1, 13, "0", "200", false, dotSize, 12);
+    for (int c = 0; c < 1.0 * VIDEO_FPS; c++)
         generateFrame(imageBuf, frameCounter++);
 
     finishVideo();

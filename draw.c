@@ -323,27 +323,27 @@ void drawTemplate(uint8_t * templateBuf, LpTiiTimeSeries *timeSeries)
 
     memset(templateBuf, BACKGROUND_COLOR, IMAGE_BUFFER_SIZE);
     // y2
-    drawTimeSeries(templateBuf, timeSeries->lpTiiTime2Hz, timeSeries->y2H, timeSeries->n2Hz, plotX0, plotY0, plotWidth, plotHeight1, timeSeries->minTime2Hz, timeSeries->maxTime2Hz, 0, 10.0, "", "", 4, MAX_COLOR_VALUE+1, "0", "10", false);
-    drawTimeSeries(templateBuf, timeSeries->lpTiiTime2Hz, timeSeries->y2V, timeSeries->n2Hz, plotX0, plotY0, plotWidth, plotHeight1, timeSeries->minTime2Hz, timeSeries->maxTime2Hz, 0, 10.0, "", "y2 (pix^2)", 4, 13, "0", "10", false);
+    drawTimeSeries(templateBuf, timeSeries->lpTiiTime2Hz, timeSeries->y2H, timeSeries->n2Hz, plotX0, plotY0, plotWidth, plotHeight1, timeSeries->minTime2Hz, timeSeries->maxTime2Hz, 0, 10.0, "", "", 4, MAX_COLOR_VALUE+1, "0", "10", false, 1, 9);
+    drawTimeSeries(templateBuf, timeSeries->lpTiiTime2Hz, timeSeries->y2V, timeSeries->n2Hz, plotX0, plotY0, plotWidth, plotHeight1, timeSeries->minTime2Hz, timeSeries->maxTime2Hz, 0, 10.0, "", "y2 (pix^2)", 4, 13, "0", "10", false, 1, 9);
 
     // Log 10 density
-    drawTimeSeries(templateBuf, timeSeries->lpTiiTime2Hz, timeSeries->ionDensity2, timeSeries->n2Hz, plotX0, plotY1, plotWidth, plotHeight0, timeSeries->minTime2Hz, timeSeries->maxTime2Hz, 3.0, 7.0, "", "log(Ni/cm^-3)", 4, MAX_COLOR_VALUE+1, "3", "7", true);
+    drawTimeSeries(templateBuf, timeSeries->lpTiiTime2Hz, timeSeries->ionDensity2, timeSeries->n2Hz, plotX0, plotY1, plotWidth, plotHeight0, timeSeries->minTime2Hz, timeSeries->maxTime2Hz, 3.0, 7.0, "", "log(Ni/cm^-3)", 4, MAX_COLOR_VALUE+1, "3", "7", true, 1, 9);
 
     // VMCP
-    drawTimeSeries(templateBuf, timeSeries->lpTiiTime2Hz, timeSeries->mcpVoltageSettingH, timeSeries->n2Hz, plotX0, plotY2, plotWidth, plotHeight1, timeSeries->minTime2Hz, timeSeries->maxTime2Hz, -2400, -1800.0, "", "", 4, MAX_COLOR_VALUE+1, "-2400", "-1800", false);
-    drawTimeSeries(templateBuf, timeSeries->lpTiiTime2Hz, timeSeries->mcpVoltageSettingV, timeSeries->n2Hz, plotX0, plotY2, plotWidth, plotHeight1, timeSeries->minTime2Hz, timeSeries->maxTime2Hz, -2400, -1800.0, "", "VMCP (V)", 4, 13, "-2400", "-1800", false);
+    drawTimeSeries(templateBuf, timeSeries->lpTiiTime2Hz, timeSeries->mcpVoltageSettingH, timeSeries->n2Hz, plotX0, plotY2, plotWidth, plotHeight1, timeSeries->minTime2Hz, timeSeries->maxTime2Hz, -2400, -1800.0, "", "", 4, MAX_COLOR_VALUE+1, "-2400", "-1800", false, 1, 9);
+    drawTimeSeries(templateBuf, timeSeries->lpTiiTime2Hz, timeSeries->mcpVoltageSettingV, timeSeries->n2Hz, plotX0, plotY2, plotWidth, plotHeight1, timeSeries->minTime2Hz, timeSeries->maxTime2Hz, -2400, -1800.0, "", "VMCP (V)", 4, 13, "-2400", "-1800", false, 1, 9);
 
     // VPHOS
-    drawTimeSeries(templateBuf, timeSeries->lpTiiTime2Hz, timeSeries->phosphorVoltageSettingH, timeSeries->n2Hz, plotX0, plotY3, plotWidth, plotHeight1, timeSeries->minTime2Hz, timeSeries->maxTime2Hz, 0, 7000.0, "", "", 4, MAX_COLOR_VALUE+1, "0", "7000", false);
-    drawTimeSeries(templateBuf, timeSeries->lpTiiTime2Hz, timeSeries->phosphorVoltageSettingV, timeSeries->n2Hz, plotX0, plotY3, plotWidth, plotHeight1, timeSeries->minTime2Hz, timeSeries->maxTime2Hz, 0, 7000.0, "", "VPhos (V)", 4, 13, "0", "7000", false);
+    drawTimeSeries(templateBuf, timeSeries->lpTiiTime2Hz, timeSeries->phosphorVoltageSettingH, timeSeries->n2Hz, plotX0, plotY3, plotWidth, plotHeight1, timeSeries->minTime2Hz, timeSeries->maxTime2Hz, 0, 7000.0, "", "", 4, MAX_COLOR_VALUE+1, "0", "7000", false, 1, 9);
+    drawTimeSeries(templateBuf, timeSeries->lpTiiTime2Hz, timeSeries->phosphorVoltageSettingV, timeSeries->n2Hz, plotX0, plotY3, plotWidth, plotHeight1, timeSeries->minTime2Hz, timeSeries->maxTime2Hz, 0, 7000.0, "", "VPhos (V)", 4, 13, "0", "7000", false, 1, 9);
 
     // VBIASGRID
-    drawTimeSeries(templateBuf, timeSeries->lpTiiTime2Hz, timeSeries->biasGridVoltageSettingH, timeSeries->n2Hz, plotX0, plotY4, plotWidth, plotHeight1, timeSeries->minTime2Hz, timeSeries->maxTime2Hz, -100.0, 0.0, "", "", 4, MAX_COLOR_VALUE+1, "-100", "0", false);
-    drawTimeSeries(templateBuf, timeSeries->lpTiiTime2Hz, timeSeries->biasGridVoltageSettingV, timeSeries->n2Hz, plotX0, plotY4, plotWidth, plotHeight1, timeSeries->minTime2Hz, timeSeries->maxTime2Hz, -100.0, 0.0, "Hours from start of file", "VBias (V)", 4, 13, "-100", "0", false);
+    drawTimeSeries(templateBuf, timeSeries->lpTiiTime2Hz, timeSeries->biasGridVoltageSettingH, timeSeries->n2Hz, plotX0, plotY4, plotWidth, plotHeight1, timeSeries->minTime2Hz, timeSeries->maxTime2Hz, -100.0, 0.0, "", "", 4, MAX_COLOR_VALUE+1, "-100", "0", false, 1, 9);
+    drawTimeSeries(templateBuf, timeSeries->lpTiiTime2Hz, timeSeries->biasGridVoltageSettingV, timeSeries->n2Hz, plotX0, plotY4, plotWidth, plotHeight1, timeSeries->minTime2Hz, timeSeries->maxTime2Hz, -100.0, 0.0, "Hours from start of file", "VBias (V)", 4, 13, "-100", "0", false, 1, 9);
 
 }
 
-void drawTimeSeries(uint8_t *imageBuf, double *times, double *values, size_t nValues, int plotX0, int plotY0, int plotWidth, int plotHeight, double t0, double t1, double minValue, double maxValue, const char *xLabel, const char *yLabel, int stride, int colorIndex, const char *minValueStr, const char *maxValueStr, bool log10Scale)
+void drawTimeSeries(uint8_t *imageBuf, double *times, double *values, size_t nValues, int plotX0, int plotY0, int plotWidth, int plotHeight, double t0, double t1, double minValue, double maxValue, const char *xLabel, const char *yLabel, int stride, int colorIndex, const char *minValueStr, const char *maxValueStr, bool log10Scale, int dotSize, int fontSize)
 {
     int x0, y0;
     int x, y;
@@ -354,7 +354,6 @@ void drawTimeSeries(uint8_t *imageBuf, double *times, double *values, size_t nVa
     double tmpVal;
     char label[255];
 
-    int fontSize = 9;
     if (timeRange > 0 && nValues > 0)
     {
         // Abscissa
@@ -386,7 +385,29 @@ void drawTimeSeries(uint8_t *imageBuf, double *times, double *values, size_t nVa
                     tmpVal = -10000.;
             }
             y0 = rescaleAsInteger(tmpVal, minValue, maxValue, plotY0, plotY0 - plotHeight);
-            setBufferColorIndex(imageBuf, x0, y0, colorIndex);
+            switch (dotSize)
+            {
+                case 2:
+                    setBufferColorIndex(imageBuf, x0, y0, colorIndex);
+                    setBufferColorIndex(imageBuf, x0+1, y0, colorIndex);
+                    setBufferColorIndex(imageBuf, x0+1, y0+1, colorIndex);
+                    setBufferColorIndex(imageBuf, x0, y0+1, colorIndex);
+                    break;
+                case 3:
+                    setBufferColorIndex(imageBuf, x0, y0, colorIndex);
+                    setBufferColorIndex(imageBuf, x0, y0-1, colorIndex);
+                    setBufferColorIndex(imageBuf, x0, y0+1, colorIndex);
+                    setBufferColorIndex(imageBuf, x0+1, y0, colorIndex);
+                    setBufferColorIndex(imageBuf, x0+1, y0-1, colorIndex);
+                    setBufferColorIndex(imageBuf, x0+1, y0+1, colorIndex);
+                    setBufferColorIndex(imageBuf, x0-1, y0, colorIndex);
+                    setBufferColorIndex(imageBuf, x0-1, y0-1, colorIndex);
+                    setBufferColorIndex(imageBuf, x0-1, y0+1, colorIndex);
+                    break;
+                default:
+                    setBufferColorIndex(imageBuf, x0, y0, colorIndex);
+                    break;
+            }
         }             
     }
 }
