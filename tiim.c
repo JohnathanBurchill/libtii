@@ -11,6 +11,7 @@
 #include "filters.h"
 
 #include <string.h>
+#include <unistd.h>
 
 int main(int argc, char **argv)
 {
@@ -51,12 +52,6 @@ int main(int argc, char **argv)
     LpTiiTimeSeries timeSeries;
     getTimeSeries(&sciencePackets, &timeSeries);
     
-    // printf("2Hz samples: %ld\n", timeSeries.n2Hz);
-    // for (long i = 0; i < timeSeries.n2Hz; i+=1000)
-    // {
-    //     printf("time: %lf y2H: %.2lf y2V: %.2lf  Ni1: %lf  Ni2: %lf\n", timeSeries.lpTiiTime2Hz[i] - timeSeries.lpTiiTime2Hz[0], timeSeries.y2H[i], timeSeries.y2V[i], timeSeries.ionDensity1[i], timeSeries.ionDensity2[i]);
-    // }
-
     uint16_t pixelsH[NUM_FULL_IMAGE_PIXELS], pixelsV[NUM_FULL_IMAGE_PIXELS];
     uint8_t templateBuf[IMAGE_BUFFER_SIZE];
     uint8_t imageBuf[IMAGE_BUFFER_SIZE];
@@ -73,6 +68,12 @@ int main(int argc, char **argv)
     if (status != UTIL_OK)
     {
         printf("Could not construct movie filename.\n");
+        goto cleanup;
+    }
+
+    if (!access(movieFilename, F_OK))
+    {
+        printf("%s exists, skipping...\n", movieFilename);
         goto cleanup;
     }
 
