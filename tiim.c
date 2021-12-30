@@ -15,9 +15,9 @@
 
 int main(int argc, char **argv)
 {
-    if (argc != 4)
+    if (argc < 4 || argc > 5)
     {
-        printf("usage: %s normalModeHeaderFile.HDR maxSignal (pass -1 for autoscaling) outputDir\n", argv[0]);
+        printf("usage: %s normalModeHeaderFile.HDR maxSignal (pass -1 for autoscaling) outputDir [-f (overwrite mp4 file)] \n", argv[0]);
         exit(1);
     }
 
@@ -30,10 +30,16 @@ int main(int argc, char **argv)
     	printf("usage: %s <normalModeHeaderFile>.HDR maxSignal outputDir\n", argv[0]);
 	    exit(1);
     }
-
     double max = atof(argv[2]);
-
     char *outputDir = argv[3];
+
+    bool overwrite = false;
+    for (int i = 4; i < argc; i++)
+    {
+	char *arg = argv[i];
+	if (strcmp(arg, "-f") == 0)
+	    overwrite = true;
+    }
 
     // Data
     ImagePackets imagePackets;
@@ -71,9 +77,9 @@ int main(int argc, char **argv)
         goto cleanup;
     }
 
-    if (!access(movieFilename, F_OK))
+    if (!access(movieFilename, F_OK) && !overwrite)
     {
-        printf("%s exists, skipping...\n", movieFilename);
+        printf("%s exists, skipping. Append -f option to force export.\n", movieFilename);
         goto cleanup;
     }
 
