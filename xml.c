@@ -202,6 +202,8 @@ cleanup:
 
 int getLongValue(xmlDocPtr doc, const char * xpath, long *value)
 {
+    // init return to 0 in case of failure to read tag
+    *value = 0;
     xmlXPathContextPtr xpathCtx;
     xmlXPathObjectPtr xpathObj;
     xpathCtx = xmlXPathNewContext(doc);
@@ -213,7 +215,7 @@ int getLongValue(xmlDocPtr doc, const char * xpath, long *value)
         return -1;
     }
     xmlNodeSetPtr nodeset = xpathObj->nodesetval;
-    if (nodeset->nodeNr == 1)
+    if (nodeset && nodeset->nodeNr == 1)
     {
         *value = atol((char *)xmlNodeListGetString(doc, nodeset->nodeTab[0]->xmlChildrenNode, 1));
     }
