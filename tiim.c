@@ -57,7 +57,6 @@ int main(int argc, char **argv)
     //     printf("time: %lf y2H: %.2lf y2V: %.2lf  Ni1: %lf  Ni2: %lf\n", timeSeries.lpTiiTime2Hz[i] - timeSeries.lpTiiTime2Hz[0], timeSeries.y2H[i], timeSeries.y2V[i], timeSeries.ionDensity1[i], timeSeries.ionDensity2[i]);
     // }
 
-    char pngFile[FILENAME_MAX];
     uint16_t pixelsH[NUM_FULL_IMAGE_PIXELS], pixelsV[NUM_FULL_IMAGE_PIXELS];
     uint8_t templateBuf[IMAGE_BUFFER_SIZE];
     uint8_t imageBuf[IMAGE_BUFFER_SIZE];
