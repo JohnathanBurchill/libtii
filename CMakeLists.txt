@@ -43,3 +43,6 @@ TARGET_LINK_LIBRARIES(tiim_stats ${LIBS})
 install(TARGETS tiim DESTINATION $ENV{HOME}/bin)
 install(TARGETS tiim_stats DESTINATION $ENV{HOME}/bin)
 
+install(PROGRAMS parallel_process_TIIM.sh DESTINATION $ENV{HOME}/bin)
+install(PROGRAMS process_TIIM.sh DESTINATION $ENV{HOME}/bin)
+
