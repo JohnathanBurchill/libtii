@@ -21,6 +21,8 @@ typedef struct imagePackets
 {
     uint8_t *fullImagePackets;
     uint8_t *continuedPackets;
+    long numberOfFullImagePackets;
+    long numberOfContinuedPackets;
     long numberOfImages;
 
 } ImagePackets;

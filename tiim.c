@@ -18,16 +18,20 @@ int main(int argc, char **argv)
     if (argc < 4 || argc > 5)
     {
         printf("usage: %s normalModeHeaderFile.HDR maxSignal (pass -1 for autoscaling) outputDir [-f (overwrite mp4 file)] \n", argv[0]);
+    	printf("   or: %s Xyyyymmdd maxSignal outputDir\n", argv[0]);
         exit(1);
     }
 
     int status = 0;
+    char movieFilename[FILENAME_MAX];
+    int frameCounter = 0;
 
     char * hdr = argv[1];
     size_t len = strlen(hdr);
-    if (strcmp(hdr + len - 4, ".HDR") != 0)
+    if (strcmp(hdr + len - 4, ".HDR") != 0 && strlen(hdr) != 9)
     {
     	printf("usage: %s <normalModeHeaderFile>.HDR maxSignal outputDir\n", argv[0]);
+    	printf("   or: %s Xyyyymmdd maxSignal outputDir\n", argv[0]);
 	    exit(1);
     }
     double max = atof(argv[2]);
@@ -36,9 +40,9 @@ int main(int argc, char **argv)
     bool overwrite = false;
     for (int i = 4; i < argc; i++)
     {
-	char *arg = argv[i];
-	if (strcmp(arg, "-f") == 0)
-	    overwrite = true;
+        char *arg = argv[i];
+        if (strcmp(arg, "-f") == 0)
+            overwrite = true;
     }
 
     // Data
@@ -50,10 +54,24 @@ int main(int argc, char **argv)
         goto cleanup;
     }
     if (imagePackets.numberOfImages == 0)
+    {
+        if (strlen(hdr) == 9)
+            fprintf(stderr, "No images found for satellite %c for date %s\n", hdr[0], hdr+1);
+        else
+            fprintf(stderr, "No images found in file %s\n", hdr);
         goto cleanup;
+    }
 
     SciencePackets sciencePackets;
-    // Continue even if we could not import science packets
+    sciencePackets.lpTiiSciencePackets = NULL;  
+    sciencePackets.lpSweepPackets = NULL;
+    sciencePackets.offsetPackets = NULL;
+    sciencePackets.configPackets = NULL;
+    sciencePackets.numberOfLpTiiSciencePackets = 0;
+    sciencePackets.numberOfLpSweepPackets = 0;
+    sciencePackets.numberOfOffsetPackets = 0;
+    sciencePackets.numberOfConfigPackets = 0;
+    // Ignore result status, as we will display imagery whether or not there are science packets
     importScience(hdr, &sciencePackets);
     LpTiiTimeSeries timeSeries;
     getTimeSeries(&sciencePackets, &timeSeries);
@@ -69,7 +87,6 @@ int main(int argc, char **argv)
     double maxValueH, maxValueV;
     int imagesRead = 0;
 
-    char movieFilename[FILENAME_MAX];
     status = constructMovieFilename(&imagePackets, &imagePair, outputDir, movieFilename);
     if (status != UTIL_OK)
     {
@@ -91,7 +108,6 @@ int main(int argc, char **argv)
     }
 
     // Construct frames and export MPEG
-    int frameCounter = 0;
 
     ImageStats statsH, statsV;
     initializeImageStats(&statsH);
