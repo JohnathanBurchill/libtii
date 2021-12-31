@@ -53,5 +53,7 @@
 
 int getLongValue(xmlDocPtr doc, const char * xpath, long *value);
 
+void usage(char *name);
+
 #endif // _TIIM_H
 

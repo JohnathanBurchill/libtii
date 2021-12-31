@@ -18,8 +18,7 @@ int main(int argc, char **argv)
 {
     if (argc < 4 || argc > 5)
     {
-        printf("usage: %s normalModeHeaderFile.HDR maxSignal (pass -1 for autoscaling) outputDir [-f (overwrite mp4 file)] \n", argv[0]);
-    	printf("   or: %s Xyyyymmdd maxSignal outputDir\n", argv[0]);
+        usage(argv[0]);
         exit(1);
     }
 
@@ -32,8 +31,7 @@ int main(int argc, char **argv)
 
     if (strcmp(hdr + sourceLen - 4, ".HDR") != 0 && sourceLen != 9)
     {
-    	printf("usage: %s <normalModeHeaderFile>.HDR maxSignal outputDir\n", argv[0]);
-    	printf("   or: %s Xyyyymmdd maxSignal outputDir\n", argv[0]);
+        usage(argv[0]);
 	    exit(1);
     }
     double max = atof(argv[2]);
@@ -290,3 +288,21 @@ cleanup:
     exit(0);
 }
 
+void usage(char * name)
+{
+    printf("\nTII Movie Generator Version %s ", TIIM_VERSION);
+    printf("compiled %s %s UTC\n", __DATE__, __TIME__);
+    printf("\nLicense: GPL 3.0 ");
+    printf("Copyright 2021 University of Calgary\n");
+    printf("\nUsage:\n");
+    printf("\n  %s SW_OPER_EFIXDDD_0__yyyyMMddThhmmss_yyyyMMddThhmmss_vvvv.HDR maxSignal outputDir [-f] \n", name);
+    printf("\nor\n");
+    printf("\n  %s Xyyyymmdd maxSignal outputDir [-f]\n", name);
+    printf("\n");
+    printf("In the first form, DDD is either \"NOM\" or \"TIC\"\n");
+    printf("In the second form X designates the Swarm satellite (A, B or C).\n");
+    printf("Set maxSignal to -1 for autoscaling the TII imagery.\n");
+    printf("\"-f\" forces overwriting an extant TII movie file.\n");
+
+    return;
+}
