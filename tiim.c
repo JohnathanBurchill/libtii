@@ -149,6 +149,9 @@ int main(int argc, char **argv)
         frameCounter++;
 
     }
+    // Allow a moment before continuing with frame analysis
+    for (int c = 0; c < 3 * VIDEO_FPS; c++)
+        generateFrame(imageBuf, frameCounter++);
 
     int nAcross = 16;
     int nDown = 8;
@@ -272,7 +275,6 @@ int main(int argc, char **argv)
     finishVideo();
 
     // TODO
-    // Get the ion admittance from LP&TII packets and convert to density
     // Get config packet info as needed.
 
     if (frameCounter > 0)
@@ -290,8 +292,7 @@ cleanup:
 
 void usage(char * name)
 {
-    printf("\nTII Movie Generator Version %s ", TIIM_VERSION);
-    printf("compiled %s %s UTC\n", __DATE__, __TIME__);
+    printf("\nTII Movie Generator Version %s compiled %s %s UTC\n", TIIM_VERSION, __DATE__, __TIME__);
     printf("\nLicense: GPL 3.0 ");
     printf("Copyright 2021 University of Calgary\n");
     printf("\nUsage:\n");
