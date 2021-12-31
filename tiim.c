@@ -264,11 +264,11 @@ int main(int argc, char **argv)
     int dotSize = 3;
     if (sourceLen == 9) dotSize = 2; // full day
     insertTransition(imageBuf, "Anomaly overview", IMAGE_WIDTH/2, IMAGE_HEIGHT/2-16, 24, 2.0, &frameCounter);
-    drawTimeSeries(imageBuf, imageTimes, paCountH, nImagePairs, ox, oy, plotWidth, plotHeight, dayStart, dayEnd, 0, 1000, "", "", 1, MAX_COLOR_VALUE + 1, "", "", false, dotSize, 12, true);
-    drawTimeSeries(imageBuf, imageTimes, paCountV, nImagePairs, ox, oy, plotWidth, plotHeight, dayStart, dayEnd, 0, 1000, "", "PA Level", 1, 13, "0", "1000", false, dotSize, 12, false);
+    drawTimeSeries(imageBuf, imageTimes, paCountH, nImagePairs, ox, oy, plotWidth, plotHeight, dayStart, dayEnd, 0, 1000, "", "PA Level", 1, MAX_COLOR_VALUE + 1, "", "", false, dotSize, 12, true);
+    drawTimeSeries(imageBuf, imageTimes, paCountV, nImagePairs, ox, oy, plotWidth, plotHeight, dayStart, dayEnd, 0, 1000, "", "", 1, 13, "0", "1000", false, dotSize, 12, false);
     
-    drawTimeSeries(imageBuf, imageTimes, measlesCountH, nImagePairs, ox, oy + plotHeight + 50, plotWidth, plotHeight, dayStart, dayEnd, 0, 200, "", "", 1, MAX_COLOR_VALUE + 1, "", "", false, dotSize, 12, true);
-    drawTimeSeries(imageBuf, imageTimes, measlesCountV, nImagePairs, ox, oy + plotHeight + 50, plotWidth, plotHeight, dayStart, dayEnd, 0, 200, "Hours from start of file", "Measles Level", 1, 13, "0", "200", false, dotSize, 12, false);
+    drawTimeSeries(imageBuf, imageTimes, measlesCountH, nImagePairs, ox, oy + plotHeight + 50, plotWidth, plotHeight, dayStart, dayEnd, 0, 200, "Hours from start of file", "Measles Level", 1, MAX_COLOR_VALUE + 1, "", "", false, dotSize, 12, true);
+    drawTimeSeries(imageBuf, imageTimes, measlesCountV, nImagePairs, ox, oy + plotHeight + 50, plotWidth, plotHeight, dayStart, dayEnd, 0, 200, "", "", 1, 13, "0", "200", false, dotSize, 12, false);
     for (int c = 0; c < 1.0 * VIDEO_FPS; c++)
         generateFrame(imageBuf, frameCounter++);
 
