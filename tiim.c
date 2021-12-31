@@ -299,7 +299,7 @@ void usage(char * name)
     printf("\nor\n");
     printf("\n  %s Xyyyymmdd maxSignal outputDir [-f]\n", name);
     printf("\n");
-    printf("In the first form, DDD is either \"NOM\" or \"TIC\"\n");
+    printf("In the first form DDD is either \"NOM\" or \"TIC\"\n");
     printf("In the second form X designates the Swarm satellite (A, B or C).\n");
     printf("Set maxSignal to -1 for autoscaling the TII imagery.\n");
     printf("\"-f\" forces overwriting an extant TII movie file.\n");
