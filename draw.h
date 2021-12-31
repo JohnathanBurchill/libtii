@@ -8,7 +8,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-void drawFrame(uint8_t *imageBuf, uint8_t *templateBuf, ImagePair *imagePair, ImageStats *statsH, ImageStats *statsV, LpTiiTimeSeries *timeSeries, int frameCounter);
+void drawFrame(uint8_t * imageBuf, uint8_t *templateBuf, ImagePair *imagePair, ImageStats *statsH, ImageStats *statsV, LpTiiTimeSeries *timeSeries, int frameCounter, double dayStart, double dayEnd);
 
 void drawImage(uint8_t *imageBuf, uint16_t * pixels, bool gotImage, double maxValue, int xoff, int yoff, int scale, double (*pixelFilter)(int, void*, bool*, void *), void* filterArgs);
 
@@ -20,7 +20,7 @@ void drawImagePair(uint8_t *imageBuf, ImagePair *imagePair, double maxH, double 
 
 void drawMonitors(uint8_t *imageBuf, ImagePair *imagePair, int x0, int y0);
 
-void drawTemplate(uint8_t * templateBuf, LpTiiTimeSeries *timeSeries);
+void drawTemplate(uint8_t * templateBuf, LpTiiTimeSeries *timeSeries, double dayStart, double dayEnd);
 
 void drawTimeSeries(uint8_t *imageBuf, double *times, double *values, size_t nValues, int plotX0, int plotY0, int plotWidth, int plotHeight, double t0, double t1, double minValue, double maxValue, const char *xLabel, const char *yLabel, int stride, int colorIndex, const char *minValueStr, const char *maxValueStr, bool log10Scale, int dotSize, int fontSize);
 

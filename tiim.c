@@ -12,6 +12,7 @@
 
 #include <string.h>
 #include <unistd.h>
+#include <time.h>
 
 int main(int argc, char **argv)
 {
@@ -27,8 +28,9 @@ int main(int argc, char **argv)
     int frameCounter = 0;
 
     char * hdr = argv[1];
-    size_t len = strlen(hdr);
-    if (strcmp(hdr + len - 4, ".HDR") != 0 && strlen(hdr) != 9)
+    size_t sourceLen = strlen(hdr);
+
+    if (strcmp(hdr + sourceLen - 4, ".HDR") != 0 && sourceLen != 9)
     {
     	printf("usage: %s <normalModeHeaderFile>.HDR maxSignal outputDir\n", argv[0]);
     	printf("   or: %s Xyyyymmdd maxSignal outputDir\n", argv[0]);
@@ -55,7 +57,7 @@ int main(int argc, char **argv)
     }
     if (imagePackets.numberOfImages == 0)
     {
-        if (strlen(hdr) == 9)
+        if (sourceLen == 9)
             fprintf(stderr, "No images found for satellite %c for date %s\n", hdr[0], hdr+1);
         else
             fprintf(stderr, "No images found in file %s\n", hdr);
@@ -63,14 +65,6 @@ int main(int argc, char **argv)
     }
 
     SciencePackets sciencePackets;
-    sciencePackets.lpTiiSciencePackets = NULL;  
-    sciencePackets.lpSweepPackets = NULL;
-    sciencePackets.offsetPackets = NULL;
-    sciencePackets.configPackets = NULL;
-    sciencePackets.numberOfLpTiiSciencePackets = 0;
-    sciencePackets.numberOfLpSweepPackets = 0;
-    sciencePackets.numberOfOffsetPackets = 0;
-    sciencePackets.numberOfConfigPackets = 0;
     // Ignore result status, as we will display imagery whether or not there are science packets
     importScience(hdr, &sciencePackets);
     LpTiiTimeSeries timeSeries;
@@ -86,8 +80,24 @@ int main(int argc, char **argv)
     initializeImagePair(&imagePair, &auxH, pixelsH, &auxV, pixelsV);
     double maxValueH, maxValueV;
     int imagesRead = 0;
+    getFirstImagePair(&imagePackets, &imagePair);
+    double dayStart = imagePair.secondsSince1970;
+    char satellite = getSatellite(&imagePair);
+    getLastImagePair(&imagePackets, &imagePair);
+    double dayEnd = imagePair.secondsSince1970;
+    // Filter images based on time of day if yyyymmdd was passed
+    if (sourceLen == 9)
+    {
+        // Seconds since 1970
+        if (dateToSecondsSince1970(hdr + 1, &dayStart))
+        {
+            printf("Could not parse %s to a date.\n", hdr);
+            goto cleanup;
+        }
+        dayEnd = dayStart + 86400.0; // ignore leap second on this day
+    }
 
-    status = constructMovieFilename(&imagePackets, &imagePair, outputDir, movieFilename);
+    status = constructMovieFilename(satellite, (size_t)dayStart, (size_t)(dayEnd-1), outputDir, movieFilename);
     if (status != UTIL_OK)
     {
         printf("Could not construct movie filename.\n");
@@ -114,7 +124,7 @@ int main(int argc, char **argv)
     initializeImageStats(&statsV);
 
     // Static content from frame to frame
-    drawTemplate(templateBuf, &timeSeries);
+    drawTemplate(templateBuf, &timeSeries, dayStart, dayEnd);
 
     int nImagePairs = 0;
 
@@ -126,6 +136,9 @@ int main(int argc, char **argv)
         if (status == ISP_NO_IMAGE_PAIR)
             continue;
 
+        if (ignoreTime(imagePair.secondsSince1970, dayStart, dayEnd))
+            continue;
+
         nImagePairs++;
 
         //analyze imagery
@@ -133,7 +146,7 @@ int main(int argc, char **argv)
         analyzeImage(imagePair.pixelsV, imagePair.gotImageV, max, &statsV);
 
         memcpy(imageBuf, templateBuf, IMAGE_BUFFER_SIZE);
-        drawFrame(imageBuf, templateBuf, &imagePair, &statsH, &statsV, &timeSeries, frameCounter);
+        drawFrame(imageBuf, templateBuf, &imagePair, &statsH, &statsV, &timeSeries, frameCounter, dayStart, dayEnd);
         generateFrame(imageBuf, frameCounter);
         frameCounter++;
 
@@ -157,6 +170,9 @@ int main(int argc, char **argv)
 
         i+=imagesRead;
         if (status == ISP_NO_IMAGE_PAIR)
+            continue;
+
+        if (ignoreTime(imagePair.secondsSince1970, dayStart, dayEnd))
             continue;
 
         analyzeImage(imagePair.pixelsH, imagePair.gotImageH, max, &statsH);
@@ -187,6 +203,9 @@ int main(int argc, char **argv)
 
         i+=imagesRead;
         if (status == ISP_NO_IMAGE_PAIR)
+            continue;
+
+        if (ignoreTime(imagePair.secondsSince1970, dayStart, dayEnd))
             continue;
 
         analyzeImage(imagePair.pixelsV, imagePair.gotImageV, max, &statsV);
@@ -223,6 +242,9 @@ int main(int argc, char **argv)
         if (status == ISP_NO_IMAGE_PAIR)
             continue;
 
+        if (ignoreTime(imagePair.secondsSince1970, dayStart, dayEnd))
+            continue;
+
         //analyze imagery
         analyzeImage(imagePair.pixelsH, imagePair.gotImageH, max, &statsH);
         analyzeImage(imagePair.pixelsV, imagePair.gotImageV, max, &statsV);
@@ -240,11 +262,11 @@ int main(int argc, char **argv)
     int oy = 200;
     int dotSize = 3;
     insertTransition(imageBuf, "Anomaly overview", IMAGE_WIDTH/2, IMAGE_HEIGHT/2-16, 24, 2.0, &frameCounter);
-    drawTimeSeries(imageBuf, imageTimes, paCountH, nImagePairs, ox, oy, plotWidth, plotHeight, imageTimes[0], imageTimes[nImagePairs-1], 0, 1000, "", "", 1, MAX_COLOR_VALUE + 1, "", "", false, dotSize, 12);
-    drawTimeSeries(imageBuf, imageTimes, paCountV, nImagePairs, ox, oy, plotWidth, plotHeight, imageTimes[0], imageTimes[nImagePairs-1], 0, 1000, "", "PA Level", 1, 13, "0", "1000", false, dotSize, 12);
+    drawTimeSeries(imageBuf, imageTimes, paCountH, nImagePairs, ox, oy, plotWidth, plotHeight, dayStart, dayEnd, 0, 1000, "", "", 1, MAX_COLOR_VALUE + 1, "", "", false, dotSize, 12);
+    drawTimeSeries(imageBuf, imageTimes, paCountV, nImagePairs, ox, oy, plotWidth, plotHeight, dayStart, dayEnd, 0, 1000, "", "PA Level", 1, 13, "0", "1000", false, dotSize, 12);
     
-    drawTimeSeries(imageBuf, imageTimes, measlesCountH, nImagePairs, ox, oy + plotHeight + 50, plotWidth, plotHeight, imageTimes[0], imageTimes[nImagePairs-1], 0, 200, "", "", 1, MAX_COLOR_VALUE + 1, "", "", false, dotSize, 12);
-    drawTimeSeries(imageBuf, imageTimes, measlesCountV, nImagePairs, ox, oy + plotHeight + 50, plotWidth, plotHeight, imageTimes[0], imageTimes[nImagePairs-1], 0, 200, "Hours from start of file", "Measles Level", 1, 13, "0", "200", false, dotSize, 12);
+    drawTimeSeries(imageBuf, imageTimes, measlesCountH, nImagePairs, ox, oy + plotHeight + 50, plotWidth, plotHeight, dayStart, dayEnd, 0, 200, "", "", 1, MAX_COLOR_VALUE + 1, "", "", false, dotSize, 12);
+    drawTimeSeries(imageBuf, imageTimes, measlesCountV, nImagePairs, ox, oy + plotHeight + 50, plotWidth, plotHeight, dayStart, dayEnd, 0, 200, "Hours from start of file", "Measles Level", 1, 13, "0", "200", false, dotSize, 12);
     for (int c = 0; c < 1.0 * VIDEO_FPS; c++)
         generateFrame(imageBuf, frameCounter++);
 
