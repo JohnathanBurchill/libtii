@@ -324,27 +324,27 @@ void drawTemplate(uint8_t * templateBuf, LpTiiTimeSeries *timeSeries, double day
 
     memset(templateBuf, BACKGROUND_COLOR, IMAGE_BUFFER_SIZE);
     // y2
-    drawTimeSeries(templateBuf, timeSeries->lpTiiTime2Hz, timeSeries->y2H, timeSeries->n2Hz, plotX0, plotY0, plotWidth, plotHeight1, dayStart, dayEnd, 0, 20.0, "", "", 4, MAX_COLOR_VALUE+1, "0", "20", false, 1, 9);
-    drawTimeSeries(templateBuf, timeSeries->lpTiiTime2Hz, timeSeries->y2V, timeSeries->n2Hz, plotX0, plotY0, plotWidth, plotHeight1, dayStart, dayEnd, 0, 20.0, "", "y2 (pix^2)", 4, 13, "0", "20", false, 1, 9);
+    drawTimeSeries(templateBuf, timeSeries->lpTiiTime2Hz, timeSeries->y2H, timeSeries->n2Hz, plotX0, plotY0, plotWidth, plotHeight1, dayStart, dayEnd, 0, 20.0, "", "", 4, MAX_COLOR_VALUE+1, "0", "20", false, 1, 9, true);
+    drawTimeSeries(templateBuf, timeSeries->lpTiiTime2Hz, timeSeries->y2V, timeSeries->n2Hz, plotX0, plotY0, plotWidth, plotHeight1, dayStart, dayEnd, 0, 20.0, "", "y2 (pix^2)", 4, 13, "0", "20", false, 1, 9, false);
 
     // Log 10 density
-    drawTimeSeries(templateBuf, timeSeries->lpTiiTime2Hz, timeSeries->ionDensity2, timeSeries->n2Hz, plotX0, plotY1, plotWidth, plotHeight0, dayStart, dayEnd, 3.0, 7.0, "", "log(Ni/cm^-3)", 4, MAX_COLOR_VALUE+1, "3", "7", true, 1, 9);
+    drawTimeSeries(templateBuf, timeSeries->lpTiiTime2Hz, timeSeries->ionDensity2, timeSeries->n2Hz, plotX0, plotY1, plotWidth, plotHeight0, dayStart, dayEnd, 3.0, 7.0, "", "log(Ni/cm^-3)", 4, MAX_COLOR_VALUE+1, "3", "7", true, 1, 9, true);
 
     // VMCP
-    drawTimeSeries(templateBuf, timeSeries->lpTiiTime2Hz, timeSeries->mcpVoltageSettingH, timeSeries->n2Hz, plotX0, plotY2, plotWidth, plotHeight1, dayStart, dayEnd, -2400, -1600.0, "", "", 4, MAX_COLOR_VALUE+1, "-2400", "-1600", false, 1, 9);
-    drawTimeSeries(templateBuf, timeSeries->lpTiiTime2Hz, timeSeries->mcpVoltageSettingV, timeSeries->n2Hz, plotX0, plotY2, plotWidth, plotHeight1, dayStart, dayEnd, -2400, -1600.0, "", "VMCP (V)", 4, 13, "-2400", "-1600", false, 1, 9);
+    drawTimeSeries(templateBuf, timeSeries->lpTiiTime2Hz, timeSeries->mcpVoltageSettingH, timeSeries->n2Hz, plotX0, plotY2, plotWidth, plotHeight1, dayStart, dayEnd, -2400, -1600.0, "", "", 4, MAX_COLOR_VALUE+1, "-2400", "-1600", false, 1, 9, true);
+    drawTimeSeries(templateBuf, timeSeries->lpTiiTime2Hz, timeSeries->mcpVoltageSettingV, timeSeries->n2Hz, plotX0, plotY2, plotWidth, plotHeight1, dayStart, dayEnd, -2400, -1600.0, "", "VMCP (V)", 4, 13, "-2400", "-1600", false, 1, 9, false);
 
     // VPHOS
-    drawTimeSeries(templateBuf, timeSeries->lpTiiTime2Hz, timeSeries->phosphorVoltageSettingH, timeSeries->n2Hz, plotX0, plotY3, plotWidth, plotHeight1, dayStart, dayEnd, 0, 7000.0, "", "", 4, MAX_COLOR_VALUE+1, "0", "7000", false, 1, 9);
-    drawTimeSeries(templateBuf, timeSeries->lpTiiTime2Hz, timeSeries->phosphorVoltageSettingV, timeSeries->n2Hz, plotX0, plotY3, plotWidth, plotHeight1, dayStart, dayEnd, 0, 7000.0, "", "VPhos (V)", 4, 13, "0", "7000", false, 1, 9);
+    drawTimeSeries(templateBuf, timeSeries->lpTiiTime2Hz, timeSeries->phosphorVoltageSettingH, timeSeries->n2Hz, plotX0, plotY3, plotWidth, plotHeight1, dayStart, dayEnd, 0, 7000.0, "", "", 4, MAX_COLOR_VALUE+1, "0", "7000", false, 1, 9, true);
+    drawTimeSeries(templateBuf, timeSeries->lpTiiTime2Hz, timeSeries->phosphorVoltageSettingV, timeSeries->n2Hz, plotX0, plotY3, plotWidth, plotHeight1, dayStart, dayEnd, 0, 7000.0, "", "VPhos (V)", 4, 13, "0", "7000", false, 1, 9, false);
 
     // VBIASGRID
-    drawTimeSeries(templateBuf, timeSeries->lpTiiTime2Hz, timeSeries->biasGridVoltageSettingH, timeSeries->n2Hz, plotX0, plotY4, plotWidth, plotHeight1, dayStart, dayEnd, -100.0, 0.0, "", "", 4, MAX_COLOR_VALUE+1, "-100", "0", false, 1, 9);
-    drawTimeSeries(templateBuf, timeSeries->lpTiiTime2Hz, timeSeries->biasGridVoltageSettingV, timeSeries->n2Hz, plotX0, plotY4, plotWidth, plotHeight1, dayStart, dayEnd, -100.0, 0.0, "Hours from start of file", "VBias (V)", 4, 13, "-100", "0", false, 1, 9);
+    drawTimeSeries(templateBuf, timeSeries->lpTiiTime2Hz, timeSeries->biasGridVoltageSettingH, timeSeries->n2Hz, plotX0, plotY4, plotWidth, plotHeight1, dayStart, dayEnd, -100.0, 0.0, "", "", 4, MAX_COLOR_VALUE+1, "-100", "0", false, 1, 9, true);
+    drawTimeSeries(templateBuf, timeSeries->lpTiiTime2Hz, timeSeries->biasGridVoltageSettingV, timeSeries->n2Hz, plotX0, plotY4, plotWidth, plotHeight1, dayStart, dayEnd, -100.0, 0.0, "Hours from start of file", "VBias (V)", 4, 13, "-100", "0", false, 1, 9, false);
 
 }
 
-void drawTimeSeries(uint8_t *imageBuf, double *times, double *values, size_t nValues, int plotX0, int plotY0, int plotWidth, int plotHeight, double t0, double t1, double minValue, double maxValue, const char *xLabel, const char *yLabel, int stride, int colorIndex, const char *minValueStr, const char *maxValueStr, bool log10Scale, int dotSize, int fontSize)
+void drawTimeSeries(uint8_t *imageBuf, double *times, double *values, size_t nValues, int plotX0, int plotY0, int plotWidth, int plotHeight, double t0, double t1, double minValue, double maxValue, const char *xLabel, const char *yLabel, int stride, int colorIndex, const char *minValueStr, const char *maxValueStr, bool log10Scale, int dotSize, int fontSize, bool axes)
 {
     int x0, y0;
     int x, y;
@@ -357,20 +357,23 @@ void drawTimeSeries(uint8_t *imageBuf, double *times, double *values, size_t nVa
 
     if (timeRange > 0 && nValues > 0)
     {
-        // Abscissa
-        for (int s = 0; s <= timeRange; s+=60*60)
+        if (axes)
         {
-            sprintf(label, "%d", (int)(s / 3600.));
-            annotate(label, fontSize, plotX0 + (int)(s / timeRange * plotWidth)-6, plotY0, imageBuf);
-        }
-        annotate(xLabel, fontSize, plotX0 + plotWidth/2 - (strlen(xLabel)*(8*fontSize))/24, plotY0+12, imageBuf);
-        // Ordinate
-        annotate(yLabel, fontSize, plotX0 + plotWidth + 5, plotY0 - plotHeight/2 - 6, imageBuf);
-        annotate(minValueStr, fontSize, plotX0 + plotWidth+3, plotY0 - 8, imageBuf);
-        annotate(maxValueStr, fontSize, plotX0 + plotWidth+3, plotY0 - plotHeight - 8, imageBuf);
-        for (int o = plotY0; o >= plotY0 - plotHeight; o--)
-        {
-            setBufferColorIndex(imageBuf, plotX0 + plotWidth+1, o, FOREGROUND_COLOR);
+            // Abscissa
+            for (int s = 0; s <= timeRange; s+=60*60)
+            {
+                sprintf(label, "%d", (int)(s / 3600.));
+                annotate(label, fontSize, plotX0 + (int)(s / timeRange * plotWidth)-6, plotY0, imageBuf);
+            }
+            annotate(xLabel, fontSize, plotX0 + plotWidth/2 - (strlen(xLabel)*(8*fontSize))/24, plotY0+12, imageBuf);
+            // Ordinate
+            annotate(yLabel, fontSize, plotX0 + plotWidth + 5, plotY0 - plotHeight/2 - 6, imageBuf);
+            annotate(minValueStr, fontSize, plotX0 + plotWidth+3, plotY0 - 8, imageBuf);
+            annotate(maxValueStr, fontSize, plotX0 + plotWidth+3, plotY0 - plotHeight - 8, imageBuf);
+            for (int o = plotY0; o >= plotY0 - plotHeight; o--)
+            {
+                setBufferColorIndex(imageBuf, plotX0 + plotWidth+1, o, FOREGROUND_COLOR);
+            }
         }
 
         // data
