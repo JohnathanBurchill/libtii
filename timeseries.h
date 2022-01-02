@@ -11,7 +11,7 @@ enum TIMESERIESERROR
     TIME_SERIES_MALLOC = -1
 };
 
-typedef struct LpTiiTimeSeries 
+typedef struct LpTiiTimeSeries
 {
 
     size_t n2Hz;
@@ -47,6 +47,72 @@ typedef struct LpTiiTimeSeries
 
 } LpTiiTimeSeries;
 
-int getTimeSeries(SciencePackets *packets, LpTiiTimeSeries *timeSeries);
+typedef struct ImagePairTimeSeries
+{
+    char satellite;
+    size_t nImagePairs;
+    double minTime;
+    double maxTime;
+
+    // arrays
+    double *time;
+    bool *consistentImageH;
+    int *maxValueH;
+
+    bool *consistentImageV;
+    int *maxValueV;
+
+    uint16_t *CcdDarkCurrentH;
+    double *CcdTemperatureH;
+    double *FaceplateVoltageMonitorH;
+    double *BiasGridVoltageMonitorH;
+    double *ShutterDutyCycleH;
+    double *McpVoltageMonitorH;
+    double *PhosphorVoltageMonitorH;
+
+    uint16_t *CcdDarkCurrentV;
+    double *CcdTemperatureV;
+    double *FaceplateVoltageMonitorV;
+    double *BiasGridVoltageMonitorV;
+    double *ShutterDutyCycleV;
+    double *McpVoltageMonitorV;
+    double *PhosphorVoltageMonitorV;
+
+    // anomalies
+    int *paCountH;
+    int *maxPaValueH;
+    int *cumulativePaCountH;
+    int *paCumulativeFrameCountH;
+    int *measlesCountH;
+    int *cumulativeMeaslesCountH;
+    int *paAngularSpectrumH;
+    int *paAngularSpectrumMaxH;
+    int *paAngularSpectrumTotalH;
+    int *paAngularSpectrumCumulativeFrameCountH;
+
+    int *paCountV;
+    int *maxPaValueV;
+    int *cumulativePaCountV;
+    int *paCumulativeFrameCountV;
+    int *measlesCountV;
+    int *cumulativeMeaslesCountV;
+    int *paAngularSpectrumV;
+    int *paAngularSpectrumMaxV;
+    int *paAngularSpectrumTotalV;
+    int *paAngularSpectrumCumulativeFrameCountV;
+
+
+} ImagePairTimeSeries;
+
+int initImagePairTimeSeries(char satellite, ImagePairTimeSeries *timeSeries);
+
+int getImagePairTimeSeries(ImagePackets *packets, ImagePair *imagePair, ImagePairTimeSeries *timeSeries, size_t numberOfImagePairs, double dayStart, double dayEnd, double max);
+
+void freeImagePairTimeSeries(ImagePairTimeSeries * timeSeries);
+
+void freeLpTiiTimeSeries(LpTiiTimeSeries * timeSeries);
+
+int getLpTiiTimeSeries(SciencePackets *packets, LpTiiTimeSeries *timeSeries);
+
 
 #endif // _TIMESERIES_H

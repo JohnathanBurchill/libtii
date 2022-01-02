@@ -12,7 +12,7 @@
 #include <string.h>
 #include <math.h>
 
-void drawFrame(uint8_t * imageBuf, uint8_t *templateBuf, ImagePair *imagePair, ImageStats *statsH, ImageStats *statsV, LpTiiTimeSeries *timeSeries, int frameCounter, double dayStart, double dayEnd)
+void drawFrame(uint8_t * imageBuf, uint8_t *templateBuf, ImagePair *imagePair, LpTiiTimeSeries *timeSeries, ImagePairTimeSeries *imagePairTimeSeries, size_t imagePairIndex, int frameCounter, double dayStart, double dayEnd)
 {
     double v;
     int x, y;
@@ -62,32 +62,36 @@ void drawFrame(uint8_t * imageBuf, uint8_t *templateBuf, ImagePair *imagePair, I
     sprintf(title, "Image pair %d", frameCounter+1);
     annotate(title, 15, 100, 490, imageBuf);
 
+    double maxH = (double)imagePairTimeSeries->maxValueH[imagePairIndex];
+    double maxV = (double)imagePairTimeSeries->maxValueV[imagePairIndex];
+
     // Raw image
-    drawImagePair(imageBuf, imagePair, statsH->maxValue, statsV->maxValue, x0, y0, RAW_IMAGE_SCALE, RAW_IMAGE_SEPARATION_X, "Raw H", "Raw V", false, &identityFilter, NULL, NULL);
+    drawImagePair(imageBuf, imagePair, maxH, maxV, x0, y0, RAW_IMAGE_SCALE, RAW_IMAGE_SEPARATION_X, "Raw H", "Raw V", false, &identityFilter, NULL, NULL);
 
     // Gain corrected
     gainmap = getGainMap(imagePair->auxH->EfiInstrumentId, H_SENSOR, imagePair->auxH->dateTime.secondsSince1970);
     if (gainmap != NULL)
     {
-        applyGainMap(imagePair->pixelsH, gainmap, threshold, &(statsH->maxValue));
+        applyGainMap(imagePair->pixelsH, gainmap, threshold, &maxH);
     }
 
     gainmap = getGainMap(imagePair->auxV->EfiInstrumentId, V_SENSOR, imagePair->auxV->dateTime.secondsSince1970);
     if (gainmap != NULL)
     {
-        applyGainMap(imagePair->pixelsV, gainmap, threshold, &(statsV->maxValue));
+        applyGainMap(imagePair->pixelsV, gainmap, threshold, &maxV);
     }
 
-    drawImagePair(imageBuf, imagePair, statsH->maxValue, statsV->maxValue, GAIN_CORRECTED_OFFSET_X, GAIN_CORRECTED_OFFSET_Y, GAIN_CORRECTED_IMAGE_SCALE, RAW_IMAGE_SEPARATION_X, "GC H", "GC V", false, &identityFilter, NULL, NULL);
+    drawImagePair(imageBuf, imagePair, maxH, maxV, GAIN_CORRECTED_OFFSET_X, GAIN_CORRECTED_OFFSET_Y, GAIN_CORRECTED_IMAGE_SCALE, RAW_IMAGE_SEPARATION_X, "GC H", "GC V", false, &identityFilter, NULL, NULL);
 
     // Intensity scaling for PA region imagery
     for (int b = 0; b < PA_ANGULAR_NUM_BINS; b++)
     {
-        if (statsH->paAngularSpectrumCumulativeFrameCount[b] > maxPaH) maxPaH = statsH->paAngularSpectrumCumulativeFrameCount[b];
-        if (statsV->paAngularSpectrumCumulativeFrameCount[b] > maxPaV) maxPaV = statsV->paAngularSpectrumCumulativeFrameCount[b];
+        paBin = PA_ANGULAR_NUM_BINS * imagePairIndex + b;
+        if (imagePairTimeSeries->paAngularSpectrumCumulativeFrameCountH[paBin] > maxPaH) maxPaH = imagePairTimeSeries->paAngularSpectrumCumulativeFrameCountH[paBin];
+        if (imagePairTimeSeries->paAngularSpectrumCumulativeFrameCountV[paBin] > maxPaV) maxPaV = imagePairTimeSeries->paAngularSpectrumCumulativeFrameCountV[paBin];
     }
 
-    drawImagePair(imageBuf, imagePair, maxPaH, maxPaV, PA_REGION_IMAGE_OFFSET_X, PA_REGION_IMAGE_OFFSET_Y, PA_REGION_IMAGE_SCALE, 28, "", "", false, paAngularSpectrumFilter, statsH->paAngularSpectrumCumulativeFrameCount, statsV->paAngularSpectrumCumulativeFrameCount);
+    drawImagePair(imageBuf, imagePair, maxPaH, maxPaV, PA_REGION_IMAGE_OFFSET_X, PA_REGION_IMAGE_OFFSET_Y, PA_REGION_IMAGE_SCALE, 28, "", "", false, paAngularSpectrumFilter, imagePairTimeSeries->paAngularSpectrumCumulativeFrameCountH, imagePairTimeSeries->paAngularSpectrumCumulativeFrameCountV);
 
     annotate("Number of PA frames", 12, PA_REGION_IMAGE_OFFSET_X + PA_REGION_IMAGE_SCALE * TII_COLS + 28 - strlen("Number of PA frame")*8/2, PA_REGION_IMAGE_OFFSET_Y + PA_REGION_IMAGE_SCALE * TII_ROWS, imageBuf);
 
@@ -231,17 +235,20 @@ void drawMonitors(uint8_t *imageBuf, ImagePair *imagePair, int x0, int y0)
     ImageAuxData *auxH = imagePair->auxH;
     ImageAuxData *auxV = imagePair->auxV;
 
+    int font1 = 12;
+    int font2 = 9;
+
     // Monitors
-    annotate("Monitors", 15, x0, y0 + 30, imageBuf);
-    annotate("H", 15, x0 + 120, y0 + 30, imageBuf);
-    annotate("V", 15, x0 + 120 + 70, y0 + 30, imageBuf);
+    annotate("Monitors", font1, x0, y0 + 30, imageBuf);
+    annotate("H", font1, x0 + 120, y0 + 30, imageBuf);
+    annotate("V", font1, x0 + 120 + 70, y0 + 30, imageBuf);
 
 
-    annotate("      MCP:", 12, x0, 50 + y0, imageBuf);
-    annotate("     Phos:", 12, x0, 50 + LINE_SPACING + y0, imageBuf);
-    annotate("  ID Bias:", 12, x0, 50 + 2 * LINE_SPACING + y0, imageBuf);
-    annotate("Faceplate:", 12, x0, 50 + 3 * LINE_SPACING + y0, imageBuf);
-    annotate("CCD temp.:", 12, x0, 50 + 4 * LINE_SPACING + y0, imageBuf);
+    annotate("      MCP:", font2, x0, 50 + y0, imageBuf);
+    annotate("     Phos:", font2, x0, 50 + LINE_SPACING + y0, imageBuf);
+    annotate("  ID Bias:", font2, x0, 50 + 2 * LINE_SPACING + y0, imageBuf);
+    annotate("Faceplate:", font2, x0, 50 + 3 * LINE_SPACING + y0, imageBuf);
+    annotate("CCD temp.:", font2, x0, 50 + 4 * LINE_SPACING + y0, imageBuf);
 
 
     // int anomXOff = x0;
@@ -255,42 +262,42 @@ void drawMonitors(uint8_t *imageBuf, ImagePair *imagePair, int x0, int y0)
     if (imagePair->gotImageH)
     {
         sprintf(title, "  %6.0lf V", imagePair->auxH->McpVoltageMonitor);
-        annotate(title, 12, x0 + 80, 50 + y0, imageBuf);
+        annotate(title, font2, x0 + 80, 50 + y0, imageBuf);
         sprintf(title, "  %6.0lf V", imagePair->auxH->PhosphorVoltageMonitor);
-        annotate(title, 12, x0 + 80, 50 + LINE_SPACING + y0, imageBuf);
+        annotate(title, font2, x0 + 80, 50 + LINE_SPACING + y0, imageBuf);
         sprintf(title, "  %6.1lf V", imagePair->auxH->BiasGridVoltageMonitor);
-        annotate(title, 12, x0 + 80, 50 + 2 * LINE_SPACING + y0, imageBuf);
+        annotate(title, font2, x0 + 80, 50 + 2 * LINE_SPACING + y0, imageBuf);
         sprintf(title, "  %6.1lf V", imagePair->auxH->FaceplateVoltageMonitor);
-        annotate(title, 12, x0 + 80, 50 + 3 * LINE_SPACING + y0, imageBuf);
+        annotate(title, font2, x0 + 80, 50 + 3 * LINE_SPACING + y0, imageBuf);
         sprintf(title, "  %6.1lf C", imagePair->auxH->CcdTemperature);
-        annotate(title, 12, x0 + 80, 50 + 4 * LINE_SPACING + y0, imageBuf);
+        annotate(title, font2, x0 + 80, 50 + 4 * LINE_SPACING + y0, imageBuf);
 
 
         // sprintf(title, "  %6d", statsH->paCount);
-        // annotate(title, 12, anomXOff + 80, anomYOff, imageBuf);
+        // annotate(title, font2, anomXOff + 80, anomYOff, imageBuf);
         // sprintf(title, "  %6d", statsH->cumulativePaCount);
-        // annotate(title, 12, anomXOff + 80, anomYOff + 1 * LINE_SPACING, imageBuf);
+        // annotate(title, font2, anomXOff + 80, anomYOff + 1 * LINE_SPACING, imageBuf);
         // sprintf(title, "  %6d", statsH->paCumulativeFrameCount);
-        // annotate(title, 12, anomXOff + 80, anomYOff + 2 * LINE_SPACING, imageBuf);
+        // annotate(title, font2, anomXOff + 80, anomYOff + 2 * LINE_SPACING, imageBuf);
         // sprintf(title, "  %6d", statsH->measlesCount);
-        // annotate(title, 12, anomXOff + 80, anomYOff + 3 * LINE_SPACING, imageBuf);
+        // annotate(title, font2, anomXOff + 80, anomYOff + 3 * LINE_SPACING, imageBuf);
         // sprintf(title, "  %6d", statsH->cumulativeMeaslesCount);
-        // annotate(title, 12, anomXOff + 80, anomYOff + 4 * LINE_SPACING, imageBuf);
+        // annotate(title, font2, anomXOff + 80, anomYOff + 4 * LINE_SPACING, imageBuf);
 
     }
 
     if (imagePair->gotImageV)
     {            
         sprintf(title, "  %6.0lf V", imagePair->auxV->McpVoltageMonitor);
-        annotate(title, 12, x0 + 150, 50 + y0, imageBuf);
+        annotate(title, font2, x0 + 150, 50 + y0, imageBuf);
         sprintf(title, "  %6.0lf V", imagePair->auxV->PhosphorVoltageMonitor);
-        annotate(title, 12, x0 + 150, 50 + LINE_SPACING + y0, imageBuf);
+        annotate(title, font2, x0 + 150, 50 + LINE_SPACING + y0, imageBuf);
         sprintf(title, "  %6.1lf V", imagePair->auxV->BiasGridVoltageMonitor);
-        annotate(title, 12, x0 + 150, 50 + 2 * LINE_SPACING + y0, imageBuf);
+        annotate(title, font2, x0 + 150, 50 + 2 * LINE_SPACING + y0, imageBuf);
         sprintf(title, "  %6.1lf V", imagePair->auxV->FaceplateVoltageMonitor);
-        annotate(title, 12, x0 + 150, 50 + 3 * LINE_SPACING + y0, imageBuf);
+        annotate(title, font2, x0 + 150, 50 + 3 * LINE_SPACING + y0, imageBuf);
         sprintf(title, "  %6.1lf C", imagePair->auxV->CcdTemperature);
-        annotate(title, 12, x0 + 150, 50 + 4 * LINE_SPACING + y0, imageBuf);
+        annotate(title, font2, x0 + 150, 50 + 4 * LINE_SPACING + y0, imageBuf);
 
 
         // sprintf(title, "  %6d", statsV->paCount);
@@ -307,32 +314,34 @@ void drawMonitors(uint8_t *imageBuf, ImagePair *imagePair, int x0, int y0)
 
 }
 
-void drawTemplate(uint8_t * templateBuf, LpTiiTimeSeries *timeSeries, double dayStart, double dayEnd)
+void drawTemplate(uint8_t * templateBuf, LpTiiTimeSeries *timeSeries, ImagePairTimeSeries *imagePairTimeSeries, double dayStart, double dayEnd)
 {
 
     // Time series
     int plotWidth = 430;
-    int plotHeight0 = 50;
-    int plotHeight1 = 50;
+    int plotHeight0 = 45;
+    int plotHeight1 = 30;
     
     int plotX0 = 400;
-    int plotY0 = 250;
-    int plotY1 = 315;
-    int plotY2 = 380;
-    int plotY3 = 445;
-    int plotY4 = 510;
+
+    int plotY0 = 210;
+    int plotY1 = 260;
+    int plotY2 = 310;
+    int plotY3 = 360;
+    int plotY4 = 405;
+    int plotY5 = 450;
 
     memset(templateBuf, BACKGROUND_COLOR, IMAGE_BUFFER_SIZE);
     // y2
-    drawTimeSeries(templateBuf, timeSeries->lpTiiTime2Hz, timeSeries->y2H, timeSeries->n2Hz, plotX0, plotY0, plotWidth, plotHeight1, dayStart, dayEnd, 0, 20.0, "", "y2 (pix^2)", 4, MAX_COLOR_VALUE+1, "0", "20", false, 1, 9, true);
-    drawTimeSeries(templateBuf, timeSeries->lpTiiTime2Hz, timeSeries->y2V, timeSeries->n2Hz, plotX0, plotY0, plotWidth, plotHeight1, dayStart, dayEnd, 0, 20.0, "", "", 4, 13, "", "", false, 1, 9, false);
+    drawTimeSeries(templateBuf, timeSeries->lpTiiTime2Hz, timeSeries->y2H, timeSeries->n2Hz, plotX0, plotY0, plotWidth, plotHeight0, dayStart, dayEnd, 0, 20.0, "", "y2 (pix^2)", 4, MAX_COLOR_VALUE+1, "0", "20", false, 1, 9, true);
+    drawTimeSeries(templateBuf, timeSeries->lpTiiTime2Hz, timeSeries->y2V, timeSeries->n2Hz, plotX0, plotY0, plotWidth, plotHeight0, dayStart, dayEnd, 0, 20.0, "", "", 4, 13, "", "", false, 1, 9, false);
 
     // Log 10 density
     drawTimeSeries(templateBuf, timeSeries->lpTiiTime2Hz, timeSeries->ionDensity2, timeSeries->n2Hz, plotX0, plotY1, plotWidth, plotHeight0, dayStart, dayEnd, 3.0, 7.0, "", "log(Ni/cm^-3)", 4, MAX_COLOR_VALUE+1, "3", "7", true, 1, 9, true);
 
     // VMCP
-    drawTimeSeries(templateBuf, timeSeries->lpTiiTime2Hz, timeSeries->mcpVoltageSettingH, timeSeries->n2Hz, plotX0, plotY2, plotWidth, plotHeight1, dayStart, dayEnd, -2400, -1600.0, "", "VMCP (V)", 4, MAX_COLOR_VALUE+1, "-2400", "-1600", false, 1, 9, true);
-    drawTimeSeries(templateBuf, timeSeries->lpTiiTime2Hz, timeSeries->mcpVoltageSettingV, timeSeries->n2Hz, plotX0, plotY2, plotWidth, plotHeight1, dayStart, dayEnd, -2400, -1600.0, "", "", 4, 13, "", "", false, 1, 9, false);
+    drawTimeSeries(templateBuf, timeSeries->lpTiiTime2Hz, timeSeries->mcpVoltageSettingH, timeSeries->n2Hz, plotX0, plotY2, plotWidth, plotHeight0, dayStart, dayEnd, -2400, -1600.0, "", "VMCP (V)", 4, MAX_COLOR_VALUE+1, "-2400", "-1600", false, 1, 9, true);
+    drawTimeSeries(templateBuf, timeSeries->lpTiiTime2Hz, timeSeries->mcpVoltageSettingV, timeSeries->n2Hz, plotX0, plotY2, plotWidth, plotHeight0, dayStart, dayEnd, -2400, -1600.0, "", "", 4, 13, "", "", false, 1, 9, false);
 
     // VPHOS
     drawTimeSeries(templateBuf, timeSeries->lpTiiTime2Hz, timeSeries->phosphorVoltageSettingH, timeSeries->n2Hz, plotX0, plotY3, plotWidth, plotHeight1, dayStart, dayEnd, 0, 7000.0, "", "VPhos (V)", 4, MAX_COLOR_VALUE+1, "0", "7000", false, 1, 9, true);
@@ -342,6 +351,24 @@ void drawTemplate(uint8_t * templateBuf, LpTiiTimeSeries *timeSeries, double day
     drawTimeSeries(templateBuf, timeSeries->lpTiiTime2Hz, timeSeries->biasGridVoltageSettingH, timeSeries->n2Hz, plotX0, plotY4, plotWidth, plotHeight1, dayStart, dayEnd, -100.0, 0.0, "Hours from start of file", "VBias (V)", 4, MAX_COLOR_VALUE+1, "-100", "0", false, 1, 9, true);
     drawTimeSeries(templateBuf, timeSeries->lpTiiTime2Hz, timeSeries->biasGridVoltageSettingV, timeSeries->n2Hz, plotX0, plotY4, plotWidth, plotHeight1, dayStart, dayEnd, -100.0, 0.0, "", "", 4, 13, "", "", false, 1, 9, false);
 
+}
+
+
+
+void drawIntTimeSeries(uint8_t *imageBuf, double *times, int *values, size_t nValues, int plotX0, int plotY0, int plotWidth, int plotHeight, double t0, double t1, double minValue, double maxValue, const char *xLabel, const char *yLabel, int stride, int colorIndex, const char *minValueStr, const char *maxValueStr, bool log10Scale, int dotSize, int fontSize, bool axes)
+{
+    double *dVals = NULL;
+    dVals = (double*) malloc(nValues * sizeof(double));
+    if (dVals == NULL)
+        return;
+
+    for (int i = 0; i < nValues; i++)
+    {
+        dVals[i] = (double) values[i];
+    }
+    drawTimeSeries(imageBuf, times, dVals, nValues, plotX0, plotY0, plotWidth, plotHeight, t0, t1, minValue, maxValue, xLabel, yLabel, stride, colorIndex, minValueStr, maxValueStr, log10Scale, dotSize, fontSize, axes);
+
+    free(dVals);
 }
 
 void drawTimeSeries(uint8_t *imageBuf, double *times, double *values, size_t nValues, int plotX0, int plotY0, int plotWidth, int plotHeight, double t0, double t1, double minValue, double maxValue, const char *xLabel, const char *yLabel, int stride, int colorIndex, const char *minValueStr, const char *maxValueStr, bool log10Scale, int dotSize, int fontSize, bool axes)

@@ -25,6 +25,8 @@ int main(int argc, char **argv)
     int status = 0;
     char movieFilename[FILENAME_MAX];
     int frameCounter = 0;
+    int gotImagePairTimeSeries = 0;
+    int gotLpTiiTimeSeries = 0;
 
     char * hdr = argv[1];
     size_t sourceLen = strlen(hdr);
@@ -47,6 +49,10 @@ int main(int argc, char **argv)
 
     // Data
     ImagePackets imagePackets;
+    SciencePackets sciencePackets;
+    LpTiiTimeSeries timeSeries;
+    ImagePairTimeSeries imagePairTimeSeries;
+
     status = importImagery(hdr, &imagePackets);
     if (status)
     {
@@ -61,12 +67,6 @@ int main(int argc, char **argv)
             fprintf(stderr, "No images found in file %s\n", hdr);
         goto cleanup;
     }
-
-    SciencePackets sciencePackets;
-    // Ignore result status, as we will display imagery whether or not there are science packets
-    importScience(hdr, &sciencePackets);
-    LpTiiTimeSeries timeSeries;
-    getTimeSeries(&sciencePackets, &timeSeries);
     
     uint16_t pixelsH[NUM_FULL_IMAGE_PIXELS], pixelsV[NUM_FULL_IMAGE_PIXELS];
     uint8_t templateBuf[IMAGE_BUFFER_SIZE];
@@ -116,13 +116,16 @@ int main(int argc, char **argv)
     }
 
     // Construct frames and export MPEG
+    size_t numberOfImagePairs = countImagePairs(&imagePackets, &imagePair, dayStart, dayEnd);
+    getImagePairTimeSeries(&imagePackets, &imagePair, &imagePairTimeSeries, numberOfImagePairs, dayStart, dayEnd, max);
 
-    ImageStats statsH, statsV;
-    initializeImageStats(&statsH);
-    initializeImageStats(&statsV);
+    // Ignore result status, as we will display imagery whether or not there are science packets
+    importScience(hdr, &sciencePackets);
+    getLpTiiTimeSeries(&sciencePackets, &timeSeries);
+
 
     // Static content from frame to frame
-    drawTemplate(templateBuf, &timeSeries, dayStart, dayEnd);
+    drawTemplate(templateBuf, &timeSeries, &imagePairTimeSeries, dayStart, dayEnd);
 
     int nImagePairs = 0;
 
@@ -137,16 +140,13 @@ int main(int argc, char **argv)
         if (ignoreTime(imagePair.secondsSince1970, dayStart, dayEnd))
             continue;
 
+        memcpy(imageBuf, templateBuf, IMAGE_BUFFER_SIZE);
+        drawFrame(imageBuf, templateBuf, &imagePair, &timeSeries, &imagePairTimeSeries, nImagePairs, frameCounter, dayStart, dayEnd);
+        generateFrame(imageBuf, frameCounter);
+
+        frameCounter++;
         nImagePairs++;
 
-        //analyze imagery
-        analyzeImage(imagePair.pixelsH, imagePair.gotImageH, max, &statsH);
-        analyzeImage(imagePair.pixelsV, imagePair.gotImageV, max, &statsV);
-
-        memcpy(imageBuf, templateBuf, IMAGE_BUFFER_SIZE);
-        drawFrame(imageBuf, templateBuf, &imagePair, &statsH, &statsV, &timeSeries, frameCounter, dayStart, dayEnd);
-        generateFrame(imageBuf, frameCounter);
-        frameCounter++;
 
     }
     // Allow a moment before continuing with frame analysis
@@ -165,6 +165,7 @@ int main(int argc, char **argv)
     int yoffset = 0;
     insertTransition(imageBuf, "Frame-by-frame Horizontal sensor", IMAGE_WIDTH/2, IMAGE_HEIGHT/2-16, 24, 2.0, &frameCounter);
 
+    nImagePairs = 0;
     for (int i = 0; i < imagePackets.numberOfImages-1;)
     {
         status = getAlignedImagePair(&imagePackets, i, &imagePair, &imagesRead);
@@ -176,9 +177,8 @@ int main(int argc, char **argv)
         if (ignoreTime(imagePair.secondsSince1970, dayStart, dayEnd))
             continue;
 
-        analyzeImage(imagePair.pixelsH, imagePair.gotImageH, max, &statsH);
 
-        drawImage(imageBuf, imagePair.pixelsH, imagePair.gotImageH, statsH.maxValue, xborder+(xoffset++)*dx, yborder+yoffset*dy, 1, &identityFilter, NULL);
+        drawImage(imageBuf, imagePair.pixelsH, imagePair.gotImageH, imagePairTimeSeries.maxValueH[nImagePairs], xborder+(xoffset++)*dx, yborder+yoffset*dy, 1, &identityFilter, NULL);
         xoffset %= nAcross;
         if (xoffset == 0) yoffset++;
         // Show for 3 seconds each
@@ -190,6 +190,7 @@ int main(int argc, char **argv)
             yoffset = 0;
             drawFill(imageBuf, BACKGROUND_COLOR);
         }
+        nImagePairs++;
     }
     for (int c = 0; c < 3 * VIDEO_FPS; c++)
         generateFrame(imageBuf, frameCounter++);
@@ -198,6 +199,7 @@ int main(int argc, char **argv)
     xoffset = 0;
     yoffset = 0;
     insertTransition(imageBuf, "Frame-by-frame Vertical sensor", IMAGE_WIDTH/2, IMAGE_HEIGHT/2-16, 24, 2.0, &frameCounter);
+    nImagePairs= 0;
     for (int i = 0; i < imagePackets.numberOfImages-1;)
     {
         status = getAlignedImagePair(&imagePackets, i, &imagePair, &imagesRead);
@@ -209,9 +211,8 @@ int main(int argc, char **argv)
         if (ignoreTime(imagePair.secondsSince1970, dayStart, dayEnd))
             continue;
 
-        analyzeImage(imagePair.pixelsV, imagePair.gotImageV, max, &statsV);
 
-        drawImage(imageBuf, imagePair.pixelsV, imagePair.gotImageV, statsV.maxValue, xborder+(xoffset++)*dx, yborder+yoffset*dy, 1, &identityFilter, NULL);
+        drawImage(imageBuf, imagePair.pixelsV, imagePair.gotImageV, imagePairTimeSeries.maxValueV[nImagePairs], xborder+(xoffset++)*dx, yborder+yoffset*dy, 1, &identityFilter, NULL);
         xoffset %= nAcross;
         if (xoffset == 0) yoffset++;
         // Show for 3 seconds each
@@ -223,39 +224,11 @@ int main(int argc, char **argv)
             yoffset = 0;
             drawFill(imageBuf, BACKGROUND_COLOR);
         }
+        nImagePairs++;
     }
     for (int c = 0; c < 3 * VIDEO_FPS; c++)
         generateFrame(imageBuf, frameCounter++);
 
-    // PA and Measles time series
-    double *imageTimes = malloc((size_t)(nImagePairs*sizeof(double)));
-    double *paCountH = malloc((size_t)(nImagePairs*sizeof(double)));
-    double *paCountV = malloc((size_t)(nImagePairs*sizeof(double)));
-    double *measlesCountH = malloc((size_t)(nImagePairs*sizeof(double)));
-    double *measlesCountV = malloc((size_t)(nImagePairs*sizeof(double)));
-
-    int imagePairCounter = 0;
-    for (int i = 0; i < imagePackets.numberOfImages-1;)
-    {
-        status = getAlignedImagePair(&imagePackets, i, &imagePair, &imagesRead);
-
-        i+=imagesRead;
-        if (status == ISP_NO_IMAGE_PAIR)
-            continue;
-
-        if (ignoreTime(imagePair.secondsSince1970, dayStart, dayEnd))
-            continue;
-
-        //analyze imagery
-        analyzeImage(imagePair.pixelsH, imagePair.gotImageH, max, &statsH);
-        analyzeImage(imagePair.pixelsV, imagePair.gotImageV, max, &statsV);
-        imageTimes[imagePairCounter] = imagePair.secondsSince1970;
-        paCountH[imagePairCounter] = (double)statsH.paCount;
-        paCountV[imagePairCounter] = (double)statsV.paCount;
-        measlesCountH[imagePairCounter] = (double)statsH.measlesCount;
-        measlesCountV[imagePairCounter] = (double)statsV.measlesCount;
-        imagePairCounter++;
-    }
     // Draw PA and measles time series
     int plotWidth = 500;
     int plotHeight = 120;
@@ -264,11 +237,11 @@ int main(int argc, char **argv)
     int dotSize = 3;
     if (sourceLen == 9) dotSize = 2; // full day
     insertTransition(imageBuf, "Anomaly overview", IMAGE_WIDTH/2, IMAGE_HEIGHT/2-16, 24, 2.0, &frameCounter);
-    drawTimeSeries(imageBuf, imageTimes, paCountH, nImagePairs, ox, oy, plotWidth, plotHeight, dayStart, dayEnd, 0, 1000, "", "PA Level", 1, MAX_COLOR_VALUE + 1, "0", "1000", false, dotSize, 12, true);
-    drawTimeSeries(imageBuf, imageTimes, paCountV, nImagePairs, ox, oy, plotWidth, plotHeight, dayStart, dayEnd, 0, 1000, "", "", 1, 13, "", "", false, dotSize, 12, false);
+    drawIntTimeSeries(imageBuf, imagePairTimeSeries.time, imagePairTimeSeries.paCountH, nImagePairs, ox, oy, plotWidth, plotHeight, dayStart, dayEnd, 0, 1000, "", "PA Level", 1, MAX_COLOR_VALUE + 1, "0", "1000", false, dotSize, 12, true);
+    drawIntTimeSeries(imageBuf, imagePairTimeSeries.time, imagePairTimeSeries.paCountV, nImagePairs, ox, oy, plotWidth, plotHeight, dayStart, dayEnd, 0, 1000, "", "", 1, 13, "", "", false, dotSize, 12, false);
     
-    drawTimeSeries(imageBuf, imageTimes, measlesCountH, nImagePairs, ox, oy + plotHeight + 50, plotWidth, plotHeight, dayStart, dayEnd, 0, 200, "Hours from start of file", "Measles Level", 1, MAX_COLOR_VALUE + 1, "0", "200", false, dotSize, 12, true);
-    drawTimeSeries(imageBuf, imageTimes, measlesCountV, nImagePairs, ox, oy + plotHeight + 50, plotWidth, plotHeight, dayStart, dayEnd, 0, 200, "", "", 1, 13, "", "", false, dotSize, 12, false);
+    drawIntTimeSeries(imageBuf, imagePairTimeSeries.time, imagePairTimeSeries.measlesCountH, nImagePairs, ox, oy + plotHeight + 50, plotWidth, plotHeight, dayStart, dayEnd, 0, 200, "Hours from start of file", "Measles Level", 1, MAX_COLOR_VALUE + 1, "0", "200", false, dotSize, 12, true);
+    drawIntTimeSeries(imageBuf, imagePairTimeSeries.time, imagePairTimeSeries.measlesCountV, nImagePairs, ox, oy + plotHeight + 50, plotWidth, plotHeight, dayStart, dayEnd, 0, 200, "", "", 1, 13, "", "", false, dotSize, 12, false);
     for (int c = 0; c < 1.0 * VIDEO_FPS; c++)
         generateFrame(imageBuf, frameCounter++);
 
@@ -285,6 +258,10 @@ int main(int argc, char **argv)
 cleanup:
     if (imagePackets.fullImagePackets != NULL) free(imagePackets.fullImagePackets);
     if (imagePackets.continuedPackets != NULL) free(imagePackets.continuedPackets);
+
+    freeLpTiiTimeSeries(&timeSeries);
+    freeImagePairTimeSeries(&imagePairTimeSeries);
+
     fflush(stdout);
 
     exit(0);

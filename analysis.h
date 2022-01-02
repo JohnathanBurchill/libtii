@@ -2,6 +2,7 @@
 #define _ANALYSIS_H
 
 #include "tiim.h"
+#include "isp.h"
 
 #include <stdint.h>
 #include <stdbool.h>
@@ -31,5 +32,9 @@ void analyzeImage(uint16_t *pixels, bool gotImage, double requestedMaxValue, Ima
 double getMaxValue(uint16_t *pixels, double requestedMaxValue);
 
 int getPaBin(double phi);
+
+size_t countImagePairs(ImagePackets *imagePackets, ImagePair *imagePair, double dayStart, double dayEnd);
+
+void analyzeImagePairs(ImagePackets * imagePackets, ImagePair *imagePair, double dayStart, double dayEnd, int max, double *imageTimeSeries);
 
 #endif // _ANALYSIS_H

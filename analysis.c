@@ -2,6 +2,7 @@
 
 #include "tiim.h"
 #include "isp.h"
+#include "utility.h"
 
 #include <math.h>
 
@@ -107,3 +108,25 @@ int getPaBin(double phi)
     return paBin;
 }
 
+size_t countImagePairs(ImagePackets *imagePackets, ImagePair *imagePair, double dayStart, double dayEnd)
+{
+    int status;
+    int nImagePairs;
+    int imagesRead = 0;
+
+    for (int i = 0; i < imagePackets->numberOfImages-1;)
+    {
+        status = getAlignedImagePair(imagePackets, i, imagePair, &imagesRead);
+
+        i+=imagesRead;
+        if (status == ISP_NO_IMAGE_PAIR)
+            continue;
+
+        if (ignoreTime(imagePair->secondsSince1970, dayStart, dayEnd))
+            continue;
+
+        nImagePairs++;
+
+    }
+
+}
