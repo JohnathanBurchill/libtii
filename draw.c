@@ -91,7 +91,7 @@ void drawFrame(uint8_t * imageBuf, uint8_t *templateBuf, ImagePair *imagePair, L
         if (imagePairTimeSeries->paAngularSpectrumCumulativeFrameCountV[paBin] > maxPaV) maxPaV = imagePairTimeSeries->paAngularSpectrumCumulativeFrameCountV[paBin];
     }
 
-    drawImagePair(imageBuf, imagePair, maxPaH, maxPaV, PA_REGION_IMAGE_OFFSET_X, PA_REGION_IMAGE_OFFSET_Y, PA_REGION_IMAGE_SCALE, 28, "", "", false, paAngularSpectrumFilter, imagePairTimeSeries->paAngularSpectrumCumulativeFrameCountH, imagePairTimeSeries->paAngularSpectrumCumulativeFrameCountV);
+    drawImagePair(imageBuf, imagePair, maxPaH, maxPaV, PA_REGION_IMAGE_OFFSET_X, PA_REGION_IMAGE_OFFSET_Y, PA_REGION_IMAGE_SCALE, 28, "", "", false, paAngularSpectrumFilter, &imagePairTimeSeries->paAngularSpectrumCumulativeFrameCountH[PA_ANGULAR_NUM_BINS * imagePairIndex], &imagePairTimeSeries->paAngularSpectrumCumulativeFrameCountV[PA_ANGULAR_NUM_BINS * imagePairIndex]);
 
     annotate("Number of PA frames", 12, PA_REGION_IMAGE_OFFSET_X + PA_REGION_IMAGE_SCALE * TII_COLS + 28 - strlen("Number of PA frame")*8/2, PA_REGION_IMAGE_OFFSET_Y + PA_REGION_IMAGE_SCALE * TII_ROWS, imageBuf);
 
@@ -110,22 +110,20 @@ void drawFrame(uint8_t * imageBuf, uint8_t *templateBuf, ImagePair *imagePair, L
     // sprintf(title, "%d", maxPaV);
     // annotate(title, 9, pxoff + pcbarWidth + cbarSeparation + pcbarWidth+3, pyoff - MAX_COLOR_VALUE/3 - 2, imageBuf);
     int plotWidth = 430;
-    int plotHeight0 = 50;
-    int plotHeight1 = 50;
+    int plotHeight0 = 45;
+    int plotHeight1 = 30;
+    int plotdy = 15;
     
     int plotX0 = 400;
-    int plotY0 = 250;
-    int plotY1 = 315;
-    int plotY2 = 380;
-    int plotY3 = 445;
-    int plotY4 = 510;
+    int plotY0 = 210;
+    int plotY1 = plotY0 + plotHeight0 + plotdy;
+    int plotY2 = plotY1 + plotHeight0 + plotdy;
+    int plotY3 = plotY2 + plotHeight0 + plotdy;
+    int plotY4 = plotY3 + plotHeight1 + plotdy;
+    int plotY5 = plotY4 + plotHeight1 + plotdy;
     
     x = rescaleAsInteger(imagePair->secondsSince1970, dayStart, dayEnd, plotX0, plotX0 + plotWidth);
-    drawIndicatorLine(imageBuf, x, plotY0, plotY0 - plotHeight1);
-    drawIndicatorLine(imageBuf, x, plotY1, plotY1 - plotHeight1);
-    drawIndicatorLine(imageBuf, x, plotY2, plotY1 - plotHeight1);
-    drawIndicatorLine(imageBuf, x, plotY3, plotY3 - plotHeight1);
-    drawIndicatorLine(imageBuf, x, plotY4, plotY4 - plotHeight1);
+    drawIndicatorLine(imageBuf, x, plotY5, plotY0 - plotHeight0);
 
     return;
     
@@ -321,15 +319,15 @@ void drawTemplate(uint8_t * templateBuf, LpTiiTimeSeries *timeSeries, ImagePairT
     int plotWidth = 430;
     int plotHeight0 = 45;
     int plotHeight1 = 30;
+    int plotdy = 15;
     
     int plotX0 = 400;
-
     int plotY0 = 210;
-    int plotY1 = 260;
-    int plotY2 = 310;
-    int plotY3 = 360;
-    int plotY4 = 405;
-    int plotY5 = 450;
+    int plotY1 = plotY0 + plotHeight0 + plotdy;
+    int plotY2 = plotY1 + plotHeight0 + plotdy;
+    int plotY3 = plotY2 + plotHeight0 + plotdy;
+    int plotY4 = plotY3 + plotHeight1 + plotdy;
+    int plotY5 = plotY4 + plotHeight1 + plotdy;
 
     memset(templateBuf, BACKGROUND_COLOR, IMAGE_BUFFER_SIZE);
     // y2
@@ -337,19 +335,23 @@ void drawTemplate(uint8_t * templateBuf, LpTiiTimeSeries *timeSeries, ImagePairT
     drawTimeSeries(templateBuf, timeSeries->lpTiiTime2Hz, timeSeries->y2V, timeSeries->n2Hz, plotX0, plotY0, plotWidth, plotHeight0, dayStart, dayEnd, 0, 20.0, "", "", 4, 13, "", "", false, 1, 9, false);
 
     // Log 10 density
-    drawTimeSeries(templateBuf, timeSeries->lpTiiTime2Hz, timeSeries->ionDensity2, timeSeries->n2Hz, plotX0, plotY1, plotWidth, plotHeight0, dayStart, dayEnd, 3.0, 7.0, "", "log(Ni/cm^-3)", 4, MAX_COLOR_VALUE+1, "3", "7", true, 1, 9, true);
+    drawTimeSeries(templateBuf, timeSeries->lpTiiTime2Hz, timeSeries->ionDensity2, timeSeries->n2Hz, plotX0, plotY1, plotWidth, plotHeight0, dayStart, dayEnd, 4.0, 7.0, "", "log(Ni/cm^-3)", 4, MAX_COLOR_VALUE+1, "4", "7", true, 1, 9, true);
+
+    // PA level
+    drawIntTimeSeries(templateBuf, imagePairTimeSeries->time, imagePairTimeSeries->paCountH, imagePairTimeSeries->nImagePairs, plotX0, plotY2, plotWidth, plotHeight0, dayStart, dayEnd, 0, 1000, "", "PA level", 1, MAX_COLOR_VALUE+1, "0", "1000", false, 2, 9, true);
+    drawIntTimeSeries(templateBuf, imagePairTimeSeries->time, imagePairTimeSeries->paCountV, imagePairTimeSeries->nImagePairs, plotX0, plotY2, plotWidth, plotHeight0, dayStart, dayEnd, 0, 1000, "", "PA level", 1, 13, "", "", false, 2, 9, false);
 
     // VMCP
-    drawTimeSeries(templateBuf, timeSeries->lpTiiTime2Hz, timeSeries->mcpVoltageSettingH, timeSeries->n2Hz, plotX0, plotY2, plotWidth, plotHeight0, dayStart, dayEnd, -2400, -1600.0, "", "VMCP (V)", 4, MAX_COLOR_VALUE+1, "-2400", "-1600", false, 1, 9, true);
-    drawTimeSeries(templateBuf, timeSeries->lpTiiTime2Hz, timeSeries->mcpVoltageSettingV, timeSeries->n2Hz, plotX0, plotY2, plotWidth, plotHeight0, dayStart, dayEnd, -2400, -1600.0, "", "", 4, 13, "", "", false, 1, 9, false);
+    drawTimeSeries(templateBuf, timeSeries->lpTiiTime2Hz, timeSeries->mcpVoltageSettingH, timeSeries->n2Hz, plotX0, plotY3, plotWidth, plotHeight0, dayStart, dayEnd, -2400, -1600.0, "", "VMCP (V)", 4, MAX_COLOR_VALUE+1, "-2400", "-1600", false, 1, 9, true);
+    drawTimeSeries(templateBuf, timeSeries->lpTiiTime2Hz, timeSeries->mcpVoltageSettingV, timeSeries->n2Hz, plotX0, plotY3, plotWidth, plotHeight0, dayStart, dayEnd, -2400, -1600.0, "", "", 4, 13, "", "", false, 1, 9, false);
 
     // VPHOS
-    drawTimeSeries(templateBuf, timeSeries->lpTiiTime2Hz, timeSeries->phosphorVoltageSettingH, timeSeries->n2Hz, plotX0, plotY3, plotWidth, plotHeight1, dayStart, dayEnd, 0, 7000.0, "", "VPhos (V)", 4, MAX_COLOR_VALUE+1, "0", "7000", false, 1, 9, true);
-    drawTimeSeries(templateBuf, timeSeries->lpTiiTime2Hz, timeSeries->phosphorVoltageSettingV, timeSeries->n2Hz, plotX0, plotY3, plotWidth, plotHeight1, dayStart, dayEnd, 0, 7000.0, "", "", 4, 13, "", "", false, 1, 9, false);
+    drawTimeSeries(templateBuf, timeSeries->lpTiiTime2Hz, timeSeries->phosphorVoltageSettingH, timeSeries->n2Hz, plotX0, plotY4, plotWidth, plotHeight1, dayStart, dayEnd, 0, 7000.0, "", "VPhos (V)", 4, MAX_COLOR_VALUE+1, "0", "7000", false, 1, 9, true);
+    drawTimeSeries(templateBuf, timeSeries->lpTiiTime2Hz, timeSeries->phosphorVoltageSettingV, timeSeries->n2Hz, plotX0, plotY4, plotWidth, plotHeight1, dayStart, dayEnd, 0, 7000.0, "", "", 4, 13, "", "", false, 1, 9, false);
 
     // VBIASGRID
-    drawTimeSeries(templateBuf, timeSeries->lpTiiTime2Hz, timeSeries->biasGridVoltageSettingH, timeSeries->n2Hz, plotX0, plotY4, plotWidth, plotHeight1, dayStart, dayEnd, -100.0, 0.0, "Hours from start of file", "VBias (V)", 4, MAX_COLOR_VALUE+1, "-100", "0", false, 1, 9, true);
-    drawTimeSeries(templateBuf, timeSeries->lpTiiTime2Hz, timeSeries->biasGridVoltageSettingV, timeSeries->n2Hz, plotX0, plotY4, plotWidth, plotHeight1, dayStart, dayEnd, -100.0, 0.0, "", "", 4, 13, "", "", false, 1, 9, false);
+    drawTimeSeries(templateBuf, timeSeries->lpTiiTime2Hz, timeSeries->biasGridVoltageSettingH, timeSeries->n2Hz, plotX0, plotY5, plotWidth, plotHeight1, dayStart, dayEnd, -100.0, 0.0, "Hours from start of file", "VBias (V)", 4, MAX_COLOR_VALUE+1, "-100", "0", false, 1, 9, true);
+    drawTimeSeries(templateBuf, timeSeries->lpTiiTime2Hz, timeSeries->biasGridVoltageSettingV, timeSeries->n2Hz, plotX0, plotY5, plotWidth, plotHeight1, dayStart, dayEnd, -100.0, 0.0, "", "", 4, 13, "", "", false, 1, 9, false);
 
 }
 
