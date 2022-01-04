@@ -1,0 +1,21 @@
+Requires libxml2 and ffmpeg libraries libavformat, libavcodec, libavutil and libavswscale.
+Try setting the PKG_CONFIG_PATH if the ffmpeg libraries cannot be found. E.g., in bash:
+$ export PKG_CONFIG_PATH=/usr/local/lib/pkgconfig
+
+A C compiler is required, e.g. GCC. Requires CMake 3.0 if building with CMake (recommended).
+
+Checkout the sources from git. Contact UCalgary EFI TII team for access.
+
+$ git clone ssh://git@efi.phys.ucalgary.ca:/data/git/tiim.git
+$ cd tiim
+$ mkdir build
+$ cd build
+$ cmake ..
+
+If no errors from this, 
+
+$ make install
+
+will put the binaries tiim and tiimstats and the parallel processing scripts in your $HOME/bin directory.
+
+
