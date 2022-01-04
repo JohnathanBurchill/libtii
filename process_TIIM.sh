@@ -52,7 +52,7 @@ while [ "$dateToProcess" -le "$stopDate" ]; do
 	datestring=`date -I -d "@$dateToProcess"`
 	draw_progress_bar $daysProcessed $daysToProcess "days: TIIM ${satellite} $datestring"
 	if [ ! -d "/data/Movies/Swarm/${year}${month}" ]; then
-		mkdir -p /data/Movies/Swarm/${year}${momth}
+		mkdir -p /data/Movies/Swarm/${year}${month}
 	fi
  	tiim ${satellite}${year}${month}${day} -1 /data/Movies/Swarm/${year}${month} -f
 	dateToProcess=$((dateToProcess + stride * 86400))
