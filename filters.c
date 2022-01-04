@@ -21,7 +21,7 @@ double paAngularSpectrumFilter(int k, void *pixelBuf, bool *missing, void *args)
 {
     double v;
     int x, y;
-    double dx, dy, r, r1, phi;
+    double dx, dy, r, r1, phidx, phidy, phi;
     int paBin;
     
     x = k / 66;
@@ -30,7 +30,9 @@ double paAngularSpectrumFilter(int k, void *pixelBuf, bool *missing, void *args)
     dy = OPTICAL_CENTER_Y - (double) y; // y increases downward, switch to match graphics in case needed for other analysis
     r = hypot(dx, dy);
     r1 = hypot(dx, dy / PA_DY_FACTOR);
-    phi = atan2(dy, dx) * 180.0 / M_PI;
+    phidx = (double) x - PA_ANGULAR_X0;
+    phidy = PA_ANGULAR_Y0 - (double) y; // y increases downward, switch to match graphics in case needed for other analysis
+    phi = atan2(phidy, phidx) * 180.0 / M_PI;
     paBin = getPaBin(phi);
 
     int *spectrum = (int*) args;

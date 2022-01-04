@@ -30,7 +30,7 @@ void analyzeImage(uint16_t *pixels, bool gotImage, double requestedMaxValue, Ima
         stats->paAngularSpectrum[b] = 0;
 
     int x, y; // pixel coordinates
-    double dx, dy, r, phi;
+    double dx, dy, r, phidx, phidy, phi;
     int paBin;
     if (gotImage)
     {
@@ -46,7 +46,9 @@ void analyzeImage(uint16_t *pixels, bool gotImage, double requestedMaxValue, Ima
             dx = (double) x - OPTICAL_CENTER_X;
             dy = OPTICAL_CENTER_Y - (double) y; // y increases downward, switch to match graphics in case needed for other analysis
             r = hypot(dx, dy);
-            phi = atan2(dy, dx) * 180.0 / M_PI;
+            phidx = (double) x - PA_ANGULAR_X0;
+            phidy = PA_ANGULAR_X0 - (double) y; // y increases downward, switch to match graphics in case needed for other analysis
+            phi = atan2(phidy, phidx) * 180.0 / M_PI;
             if (r >= PA_MINIMUM_RADIUS && r <= PA_MAXIMUM_RADIUS && pixels[k] != 4095 && pixels[k] > PA_MINIMUM_VALUE)
             {
                 paCounter++;
