@@ -10,8 +10,8 @@
 int constructMovieFilename(char satellite, time_t dayStart, time_t dayEnd, const char *outputDir, char *movieFilename)
 {
 
-    char startDate[16];
-    char stopDate[16];
+    char startDate[255];
+    char stopDate[255];
     memset(startDate, 0, 16);
     memset(stopDate, 0, 16);
 
