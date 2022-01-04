@@ -5,9 +5,9 @@
 
 #include <stdio.h>
 
-int initImagePairTimeSeries(char satellite, ImagePairTimeSeries *ts)
+void initImagePairTimeSeries(ImagePairTimeSeries *ts)
 {
-    ts->satellite = satellite;
+    ts->satellite = 'X';
 
     ts->nImagePairs = 0;
     ts->minTime = 0.0;
@@ -182,10 +182,12 @@ void freeLpTiiTimeSeries(LpTiiTimeSeries * ts)
 }
 
 
-int getImagePairTimeSeries(ImagePackets * imagePackets, ImagePair *imagePair, ImagePairTimeSeries *ts, size_t numberOfImagePairs, double dayStart, double dayEnd, double max)
+int getImagePairTimeSeries(char satellite, ImagePackets * imagePackets, ImagePair *imagePair, ImagePairTimeSeries *ts, size_t numberOfImagePairs, double dayStart, double dayEnd, double max)
 {
 
     int status;
+
+    ts->satellite = satellite;
 
     // Allocate heap
     ts->nImagePairs = numberOfImagePairs;
@@ -411,6 +413,8 @@ int getImagePairTimeSeries(ImagePackets * imagePackets, ImagePair *imagePair, Im
 
 void initLpTiiTimeSeries(LpTiiTimeSeries * timeSeries)
 {
+    timeSeries->satellite = 'X';
+
     timeSeries->n2Hz = 0;
     timeSeries->n16Hz = 0;
     timeSeries->nSweep = 0;
@@ -440,9 +444,11 @@ void initLpTiiTimeSeries(LpTiiTimeSeries * timeSeries)
 
 }
 
-int getLpTiiTimeSeries(SciencePackets *packets, LpTiiTimeSeries * timeSeries)
+int getLpTiiTimeSeries(char satellite, SciencePackets *packets, LpTiiTimeSeries * timeSeries)
 {
     int status = TIME_SERIES_OK;
+
+    timeSeries->satellite = satellite;
 
     LpTiiSciencePacket *pkt;
     LpTiiScience science;

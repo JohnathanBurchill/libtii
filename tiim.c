@@ -51,7 +51,9 @@ int main(int argc, char **argv)
     ImagePackets imagePackets;
     SciencePackets sciencePackets;
     LpTiiTimeSeries timeSeries;
+    initLpTiiTimeSeries(&timeSeries);
     ImagePairTimeSeries imagePairTimeSeries;
+    initImagePairTimeSeries(&imagePairTimeSeries);
 
     status = importImagery(hdr, &imagePackets);
     if (status)
@@ -117,11 +119,11 @@ int main(int argc, char **argv)
 
     // Construct frames and export MPEG
     size_t numberOfImagePairs = countImagePairs(&imagePackets, &imagePair, dayStart, dayEnd);
-    getImagePairTimeSeries(&imagePackets, &imagePair, &imagePairTimeSeries, numberOfImagePairs, dayStart, dayEnd, max);
+    getImagePairTimeSeries(satellite, &imagePackets, &imagePair, &imagePairTimeSeries, numberOfImagePairs, dayStart, dayEnd, max);
 
     // Ignore result status, as we will display imagery whether or not there are science packets
     importScience(hdr, &sciencePackets);
-    getLpTiiTimeSeries(&sciencePackets, &timeSeries);
+    getLpTiiTimeSeries(satellite, &sciencePackets, &timeSeries);
 
 
     // Static content from frame to frame

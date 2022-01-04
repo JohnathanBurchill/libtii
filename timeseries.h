@@ -13,6 +13,7 @@ enum TIMESERIESERROR
 
 typedef struct LpTiiTimeSeries
 {
+    char satellite;
 
     size_t n2Hz;
     double *lpTiiTime2Hz;
@@ -104,15 +105,14 @@ typedef struct ImagePairTimeSeries
 
 } ImagePairTimeSeries;
 
-int initImagePairTimeSeries(char satellite, ImagePairTimeSeries *timeSeries);
-
-int getImagePairTimeSeries(ImagePackets *packets, ImagePair *imagePair, ImagePairTimeSeries *timeSeries, size_t numberOfImagePairs, double dayStart, double dayEnd, double max);
-
+void initImagePairTimeSeries(ImagePairTimeSeries *timeSeries);
 void freeImagePairTimeSeries(ImagePairTimeSeries * timeSeries);
+int getImagePairTimeSeries(char satellite, ImagePackets *packets, ImagePair *imagePair, ImagePairTimeSeries *timeSeries, size_t numberOfImagePairs, double dayStart, double dayEnd, double max);
 
+
+void initLpTiiTimeSeries(LpTiiTimeSeries *timeSeries);
 void freeLpTiiTimeSeries(LpTiiTimeSeries * timeSeries);
-
-int getLpTiiTimeSeries(SciencePackets *packets, LpTiiTimeSeries *timeSeries);
+int getLpTiiTimeSeries(char satellite, SciencePackets *packets, LpTiiTimeSeries *timeSeries);
 
 
 #endif // _TIMESERIES_H
