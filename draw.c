@@ -84,12 +84,15 @@ void drawFrame(uint8_t * imageBuf, uint8_t *templateBuf, ImagePair *imagePair, L
     drawImagePair(imageBuf, imagePair, maxH, maxV, GAIN_CORRECTED_OFFSET_X, GAIN_CORRECTED_OFFSET_Y, GAIN_CORRECTED_IMAGE_SCALE, RAW_IMAGE_SEPARATION_X, "GC H", "GC V", false, &identityFilter, NULL, NULL);
 
     // Intensity scaling for PA region imagery
-    for (int b = 0; b < PA_ANGULAR_NUM_BINS; b++)
-    {
-        paBin = PA_ANGULAR_NUM_BINS * imagePairIndex + b;
-        if (imagePairTimeSeries->paAngularSpectrumCumulativeFrameCountH[paBin] > maxPaH) maxPaH = imagePairTimeSeries->paAngularSpectrumCumulativeFrameCountH[paBin];
-        if (imagePairTimeSeries->paAngularSpectrumCumulativeFrameCountV[paBin] > maxPaV) maxPaV = imagePairTimeSeries->paAngularSpectrumCumulativeFrameCountV[paBin];
-    }
+//    for (int b = 0; b < PA_ANGULAR_NUM_BINS; b++)
+//    {
+//        paBin = PA_ANGULAR_NUM_BINS * imagePairIndex + b;
+//        if (imagePairTimeSeries->paAngularSpectrumCumulativeFrameCountH[paBin] > maxPaH) maxPaH = imagePairTimeSeries->paAngularSpectrumCumulativeFrameCountH[paBin];
+//        if (imagePairTimeSeries->paAngularSpectrumCumulativeFrameCountV[paBin] > maxPaV) maxPaV = imagePairTimeSeries->paAngularSpectrumCumulativeFrameCountV[paBin];
+//    }
+
+    maxPaH = 500;
+    maxPaV = 500;
 
     drawImagePair(imageBuf, imagePair, maxPaH, maxPaV, PA_REGION_IMAGE_OFFSET_X, PA_REGION_IMAGE_OFFSET_Y, PA_REGION_IMAGE_SCALE, 28, "", "", false, paAngularSpectrumFilter, &imagePairTimeSeries->paAngularSpectrumCumulativeFrameCountH[PA_ANGULAR_NUM_BINS * imagePairIndex], &imagePairTimeSeries->paAngularSpectrumCumulativeFrameCountV[PA_ANGULAR_NUM_BINS * imagePairIndex]);
 
@@ -331,6 +334,7 @@ void drawTemplate(uint8_t * templateBuf, LpTiiTimeSeries *timeSeries, ImagePairT
 
     memset(templateBuf, BACKGROUND_COLOR, IMAGE_BUFFER_SIZE);
     // y2
+    drawHorizontalLine(templateBuf, plotX0, plotX0 + plotWidth, rescaleAsInteger(10., 0, 20., plotY0, plotY0-plotHeight0));
     drawTimeSeries(templateBuf, timeSeries->lpTiiTime2Hz, timeSeries->y2H, timeSeries->n2Hz, plotX0, plotY0, plotWidth, plotHeight0, dayStart, dayEnd, 0, 20.0, "", "y2 (pix^2)", 4, MAX_COLOR_VALUE+1, "0", "20", false, 1, 9, true);
     drawTimeSeries(templateBuf, timeSeries->lpTiiTime2Hz, timeSeries->y2V, timeSeries->n2Hz, plotX0, plotY0, plotWidth, plotHeight0, dayStart, dayEnd, 0, 20.0, "", "", 4, 13, "", "", false, 1, 9, false);
 
@@ -487,6 +491,18 @@ void drawIndicatorLine(uint8_t *imageBuf, int x, int y0, int y1)
         {
             setBufferColorIndex(imageBuf, x, y, MAX_COLOR_VALUE + 3);
             setBufferColorIndex(imageBuf, x + 1, y, MAX_COLOR_VALUE + 3);
+        }
+    }
+}
+
+void drawHorizontalLine(uint8_t *imageBuf, int x0, int x1, int y)
+{
+    for (int x = x0; x < x1; x++)
+    {
+        if (x/5 % 2 == 0)
+        {
+            setBufferColorIndex(imageBuf, x, y, MAX_COLOR_VALUE + 3);
+            setBufferColorIndex(imageBuf, x, y+1, MAX_COLOR_VALUE + 3);
         }
     }
 }

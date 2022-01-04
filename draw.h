@@ -30,6 +30,7 @@ void setBufferColorIndex(uint8_t *imageBuf, int x, int y, int colorIndex);
 int rescaleAsInteger(double x, double minX, double maxX, int minScale, int maxScale);
 
 void drawIndicatorLine(uint8_t *imageBuf, int x, int y0, int y1);
+void drawHorizontalLine(uint8_t *imageBuf, int x0, int x1, int y);
 
 void drawFill(uint8_t *imageBuf, int colorIndex);
 
