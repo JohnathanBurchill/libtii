@@ -113,7 +113,7 @@ int getPaBin(double phi)
 size_t countImagePairs(ImagePackets *imagePackets, ImagePair *imagePair, double dayStart, double dayEnd)
 {
     int status;
-    int nImagePairs;
+    int nImagePairs = 0;
     int imagesRead = 0;
 
     for (int i = 0; i < imagePackets->numberOfImages-1;)
@@ -130,5 +130,7 @@ size_t countImagePairs(ImagePackets *imagePackets, ImagePair *imagePair, double 
         nImagePairs++;
 
     }
+
+    return nImagePairs;
 
 }
