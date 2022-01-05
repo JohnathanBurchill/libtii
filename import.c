@@ -10,6 +10,14 @@
 #include <math.h>
 #include <fts.h>
 
+int sortFiles(const FTSENT **first, const FTSENT **second)
+{
+    if (((*first)->fts_namelen != 59) || (*second)->fts_namelen != 59)
+        return 0;
+    else 
+        return strncmp((*first)->fts_name + 19, (*second)->fts_name + 19, 15);
+}
+
 int importImagery(const char *source, ImagePackets *imagePackets)
 {
     int status = IMPORT_OK;
@@ -30,7 +38,7 @@ int importImagery(const char *source, ImagePackets *imagePackets)
     {
         char *path[2] = {NULL, NULL};
         path[0] = ".";
-        FTS * fts = fts_open(path, FTS_PHYSICAL | FTS_NOCHDIR, NULL);
+        FTS * fts = fts_open(path, FTS_PHYSICAL | FTS_NOCHDIR, &sortFiles);
         if (fts == NULL)
             return IMPORT_SOURCE;
         FTSENT * f = fts_read(fts);
@@ -43,12 +51,8 @@ int importImagery(const char *source, ImagePackets *imagePackets)
             if ((strncmp(f->fts_name + nameLength - 40, date, 8) == 0 || strncmp(f->fts_name + nameLength - 24, date, 8) == 0) && f->fts_name[11] == satellite && strcmp(f->fts_name + nameLength - 4, ".HDR") == 0 && strncmp(f->fts_name, "SW_OPER_EFI", 11) == 0 && (strncmp(f->fts_name + nameLength - 47, "NOM_0__", 7) == 0 || strncmp(f->fts_name +nameLength - 47, "TIC_0__", 7) == 0) && nameLength == 59)
             {
                 // Very likely got a SW_OPER_EFI?{NOM,TIC}_0__*.HDR file for the correct satellite and date
+                // Ignore errors: we read as many files as we can
                 status = importImageryFromHdr(f->fts_path, imagePackets);
-                if (status != IMPORT_OK)
-                {
-                    fts_close(fts);
-                    return status;
-                }
             }
             f = fts_read(fts);
         }
@@ -243,7 +247,7 @@ int importScience(const char *source, SciencePackets *sciencePackets)
     {
         char *path[2] = {NULL, NULL};
         path[0] = ".";
-        FTS * fts = fts_open(path, FTS_PHYSICAL | FTS_NOCHDIR, NULL);
+        FTS * fts = fts_open(path, FTS_PHYSICAL | FTS_NOCHDIR, &sortFiles);
         if (fts == NULL)
             return IMPORT_SOURCE;
         FTSENT * f = fts_read(fts);
@@ -256,12 +260,8 @@ int importScience(const char *source, SciencePackets *sciencePackets)
             if ((strncmp(f->fts_name + nameLength - 40, date, 8) == 0 || strncmp(f->fts_name + nameLength - 24, date, 8) == 0) && f->fts_name[11] == satellite && strcmp(f->fts_name + nameLength - 4, ".HDR") == 0 && strncmp(f->fts_name, "SW_OPER_EFI", 11) == 0 && (strncmp(f->fts_name + nameLength - 47, "NOM_0__", 7) == 0 || strncmp(f->fts_name +nameLength - 47, "TIC_0__", 7) == 0) && nameLength == 59)
             {
                 // Very likely got a SW_OPER_EFI?{NOM,TIC}_0__*.HDR file for the correct satellite and date
+                // Ignore errors here: we try to return data from at least a subset of valid files
                 status = importScienceFromHdr(f->fts_path, sciencePackets);
-                if (status != IMPORT_OK)
-                {
-                    fts_close(fts);
-                    return status;
-                }
             }
             f = fts_read(fts);
         }
@@ -311,22 +311,33 @@ int importScienceFromHdr(const char *hdr, SciencePackets *sciencePackets)
         goto cleanup;
     }
 
-    status = loadPackets(dblFile, &sciencePackets->lpTiiSciencePackets, &sciencePackets->numberOfLpTiiSciencePackets, &pfc.lpTiiScience);
-    if (status)
-        goto cleanup;
+    if (pfc.lpTiiScience.numRecords > 0)
+    {
+        status = loadPackets(dblFile, &sciencePackets->lpTiiSciencePackets, &sciencePackets->numberOfLpTiiSciencePackets, &pfc.lpTiiScience);
+        if (status)
+            goto cleanup;
+    }
 
-    status = loadPackets(dblFile, &sciencePackets->lpSweepPackets, &sciencePackets->numberOfLpSweepPackets, &pfc.lpSweep);
-    if (status)
-        goto cleanup;
+    if (pfc.lpSweep.numRecords > 0)
+    {
+        status = loadPackets(dblFile, &sciencePackets->lpSweepPackets, &sciencePackets->numberOfLpSweepPackets, &pfc.lpSweep);
+        if (status)
+            goto cleanup;
+    }
 
-    status = loadPackets(dblFile, &sciencePackets->offsetPackets, &sciencePackets->numberOfOffsetPackets, &pfc.lpOffset);
-    if (status)
-        goto cleanup;
+    if (pfc.lpOffset.numRecords > 0)
+    {
+        status = loadPackets(dblFile, &sciencePackets->offsetPackets, &sciencePackets->numberOfOffsetPackets, &pfc.lpOffset);
+        if (status)
+            goto cleanup;
+    }
 
-    status = loadPackets(dblFile, &sciencePackets->configPackets, &sciencePackets->numberOfConfigPackets, &pfc.config);
-    if (status)
-        goto cleanup;
-
+    if (pfc.config.numRecords > 0)
+    {
+        status = loadPackets(dblFile, &sciencePackets->configPackets, &sciencePackets->numberOfConfigPackets, &pfc.config);
+        if (status)
+            goto cleanup;
+    }
 
 cleanup:
     if (dblFile != NULL) fclose(dblFile);
