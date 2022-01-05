@@ -7,6 +7,20 @@
 
 int parseHdr(const char *hdr, PacketFileContents *packetInfo)
 {
+    // Set packetInfo to a known state
+    packetInfo->config.offset = 0;
+    packetInfo->config.numRecords = 0;
+    packetInfo->config.recordSize = 0;
+    packetInfo->lpTiiScience.offset = 0;
+    packetInfo->lpTiiScience.numRecords = 0;
+    packetInfo->lpTiiScience.recordSize = 0;
+    packetInfo->lpSweep.offset = 0;
+    packetInfo->lpSweep.numRecords = 0;
+    packetInfo->lpSweep.recordSize = 0;
+    packetInfo->lpOffset.offset = 0;
+    packetInfo->lpOffset.numRecords = 0;
+    packetInfo->lpOffset.recordSize = 0;
+
 
     int status = HDR_PARSE_OK;
 
