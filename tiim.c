@@ -280,7 +280,7 @@ int main(int argc, char **argv)
     drawTimeSeries(imageBuf, imagePairTimeSeries.time, imagePairTimeSeries.x1H, nImagePairs, ox, oy + plotHeight + dy, plotWidth, plotHeight, dayStart, dayEnd, 25, 55, "", "x1", 1, MAX_COLOR_VALUE + 1, "25", "55", false, dotSize, 12, true);
     drawTimeSeries(imageBuf, imagePairTimeSeries.time, imagePairTimeSeries.x1V, nImagePairs, ox, oy + plotHeight + dy, plotWidth, plotHeight, dayStart, dayEnd, 25, 55, "", "", 1, 13, "", "", false, dotSize, 12, false);
 
-    drawTimeSeries(imageBuf, imagePairTimeSeries.time, imagePairTimeSeries.y1H, nImagePairs, ox, oy + 2*plotHeight + 2*dy, plotWidth, plotHeight, dayStart, dayEnd, 25, 45, xlabel, "y1", 1, MAX_COLOR_VALUE + 1, "25", "55", false, dotSize, 12, true);
+    drawTimeSeries(imageBuf, imagePairTimeSeries.time, imagePairTimeSeries.y1H, nImagePairs, ox, oy + 2*plotHeight + 2*dy, plotWidth, plotHeight, dayStart, dayEnd, 25, 45, xlabel, "y1", 1, MAX_COLOR_VALUE + 1, "25", "45", false, dotSize, 12, true);
     drawTimeSeries(imageBuf, imagePairTimeSeries.time, imagePairTimeSeries.y1V, nImagePairs, ox, oy + 2*plotHeight + 2*dy, plotWidth, plotHeight, dayStart, dayEnd, 25, 45, "", "", 1, 13, "", "", false, dotSize, 12, false);
 
     for (int c = 0; c < 3.0 * VIDEO_FPS; c++)
