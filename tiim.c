@@ -165,7 +165,7 @@ int main(int argc, char **argv)
     // Frame-by-frame H
     int xoffset = 0;
     int yoffset = 0;
-    insertTransition(imageBuf, "Frame-by-frame Horizontal sensor", IMAGE_WIDTH/2, IMAGE_HEIGHT/2-16, 24, 2.0, &frameCounter);
+    insertTransition(imageBuf, "Frame-by-frame Horizontal sensor", IMAGE_WIDTH/2, IMAGE_HEIGHT/2-16, 24, 3.0, &frameCounter);
 
     nImagePairs = 0;
     for (int i = 0; i < imagePackets.numberOfImages-1;)
@@ -179,8 +179,12 @@ int main(int argc, char **argv)
         if (ignoreTime(imagePair.secondsSince1970, dayStart, dayEnd))
             continue;
 
-
-        drawImage(imageBuf, imagePair.pixelsH, imagePair.gotImageH, imagePairTimeSeries.maxValueH[nImagePairs], xborder+(xoffset++)*dx, yborder+yoffset*dy, 1, &identityFilter, NULL);
+        if (xoffset == 0 && imagePair.gotImageH)
+            drawTimestamp(imageBuf, 15, yborder + yoffset * dy + 25, imagePair.auxH, 12);
+        if (xoffset == nAcross-1 && imagePair.gotImageH)
+            drawTimestamp(imageBuf, IMAGE_WIDTH - 8*8-60, yborder + yoffset * dy+25, imagePair.auxH, 12);
+            
+        drawImage(imageBuf, imagePair.pixelsH, imagePair.gotImageH, imagePairTimeSeries.maxValueH[nImagePairs], xborder+(xoffset++)*dx, yborder+yoffset*dy, 1, false, imagePair.auxH, &identityFilter, NULL);
         xoffset %= nAcross;
         if (xoffset == 0) yoffset++;
         // Show for 3 seconds each
@@ -200,7 +204,7 @@ int main(int argc, char **argv)
     // Frame-by-frame V
     xoffset = 0;
     yoffset = 0;
-    insertTransition(imageBuf, "Frame-by-frame Vertical sensor", IMAGE_WIDTH/2, IMAGE_HEIGHT/2-16, 24, 2.0, &frameCounter);
+    insertTransition(imageBuf, "Frame-by-frame Vertical sensor", IMAGE_WIDTH/2, IMAGE_HEIGHT/2-16, 24, 3.0, &frameCounter);
     nImagePairs= 0;
     for (int i = 0; i < imagePackets.numberOfImages-1;)
     {
@@ -214,7 +218,12 @@ int main(int argc, char **argv)
             continue;
 
 
-        drawImage(imageBuf, imagePair.pixelsV, imagePair.gotImageV, imagePairTimeSeries.maxValueV[nImagePairs], xborder+(xoffset++)*dx, yborder+yoffset*dy, 1, &identityFilter, NULL);
+        if (xoffset == 0 && imagePair.gotImageV)
+            drawTimestamp(imageBuf, 15, yborder + yoffset * dy + 25, imagePair.auxV, 12);
+        if (xoffset == nAcross-1 && imagePair.gotImageV)
+            drawTimestamp(imageBuf, IMAGE_WIDTH - 8*8-60, yborder + yoffset * dy+25, imagePair.auxV, 12);
+
+        drawImage(imageBuf, imagePair.pixelsV, imagePair.gotImageV, imagePairTimeSeries.maxValueV[nImagePairs], xborder+(xoffset++)*dx, yborder+yoffset*dy, 1, false, imagePair.auxV, &identityFilter, NULL);
         xoffset %= nAcross;
         if (xoffset == 0) yoffset++;
         // Show for 3 seconds each

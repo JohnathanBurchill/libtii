@@ -162,7 +162,7 @@ void drawFrame(uint8_t * imageBuf, uint8_t *templateBuf, ImagePair *imagePair, L
 }
 
 
-void drawImage(uint8_t *imageBuf, uint16_t * pixels, bool gotImage, double maxValue, int xoff, int yoff, int scale, double (*pixelFilter)(int, void*, bool*, void*), void * filterArgs)
+void drawImage(uint8_t *imageBuf, uint16_t * pixels, bool gotImage, double maxValue, int xoff, int yoff, int scale, bool showTimestamps, ImageAuxData *aux, double (*pixelFilter)(int, void*, bool*, void*), void * filterArgs)
 {
     double v, val;
     double x, y;
@@ -194,6 +194,10 @@ void drawImage(uint8_t *imageBuf, uint16_t * pixels, bool gotImage, double maxVa
             }
         }
     }
+
+    // Add times in images for montages
+    if (gotImage && showTimestamps) drawTimestamp(imageBuf, xoff, yoff, aux, 9);
+
     return;
 }
 
@@ -237,9 +241,9 @@ void drawImagePair(uint8_t *imageBuf, ImagePair *imagePair, double maxH, double 
     int delx = scale * separation;
 
     // H image
-    drawImage(imageBuf, imagePair->pixelsH, imagePair->gotImageH, maxH, x0, y0, scale, pixelFilter, filterArgsH);
+    drawImage(imageBuf, imagePair->pixelsH, imagePair->gotImageH, maxH, x0, y0, scale, showTimestamps, imagePair->auxV, pixelFilter, filterArgsH);
     // V image
-    drawImage(imageBuf, imagePair->pixelsV, imagePair->gotImageV, maxV, x0 + scale * TII_COLS + delx, y0, scale, pixelFilter, filterArgsV);
+    drawImage(imageBuf, imagePair->pixelsV, imagePair->gotImageV, maxV, x0 + scale * TII_COLS + delx, y0, scale, showTimestamps, imagePair->auxV, pixelFilter, filterArgsV);
 
     // color scales
     int scaleHeight = scale * TII_ROWS * 0.7;
@@ -249,10 +253,6 @@ void drawImagePair(uint8_t *imageBuf, ImagePair *imagePair, double maxH, double 
 
     annotate(labelH, 15, x0 + scale * TII_COLS / 2 - 8*15/6, y0 + scale*TII_ROWS, imageBuf);
     annotate(labelV, 15, x0 + scale * TII_COLS*1.5 + delx - 8*15/6, y0 + scale*TII_ROWS, imageBuf);
-
-    // Add times in images for montages
-    if (showTimestamps && imagePair->gotImageH) drawTimestamp(imageBuf, x0, y0, imagePair->auxH, 9);
-    if (showTimestamps && imagePair->gotImageV) drawTimestamp(imageBuf, x0 + scale * TII_COLS + delx, y0, imagePair->auxV, 9);
 
     return;
 }
