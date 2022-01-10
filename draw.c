@@ -23,21 +23,33 @@ void drawFrame(uint8_t * imageBuf, uint8_t *templateBuf, ImagePair *imagePair, L
     int maxPaV = 0;
 
     double *gainmap;
-    int threshold;
-    switch (imagePair->auxH->satellite)
+    // Default values in case there are no config packets
+    static size_t lastConfigIndex = 0;
+    int threshold = 0;
+    int minCol = 33;
+    int maxCol = 64;
+    int nCols = 32;
+    bool agcEnabled = false;
+    int agcLower = -1;
+    int agcUpper = -1;
+    // Get config values if available. All packets must have been sorted.
+    for (size_t i = lastConfigIndex; i < timeSeries->nConfig; i++)
     {
-        case 'A':
-            threshold = 100;
+        lastConfigIndex = i;
+        if (timeSeries->configTime[i] > imagePair->secondsSince1970)
+        {
             break;
-        case 'B':
-            threshold = 100;
-            break;
-        case 'C':
-            threshold = 25;
-            break;
-        default:
-            threshold = 0;
-            break;
+        }
+    }
+    if (timeSeries->nConfig > lastConfigIndex)
+    {
+        threshold = timeSeries->pixelThresholdConfig[lastConfigIndex];
+        minCol = timeSeries->tiiMinimumColumnConfig[lastConfigIndex];
+        maxCol = timeSeries->tiiMaximumColumnConfig[lastConfigIndex];
+        nCols = timeSeries->nColumnsForMomentCalculationsConfig[lastConfigIndex];
+        agcEnabled = timeSeries->agcEnabledConfig[lastConfigIndex];
+        agcLower = timeSeries->agcLowerThresholdConfig[lastConfigIndex];
+        agcUpper = timeSeries->agcUpperThresholdConfig[lastConfigIndex];
     }
 
     char title[255];
@@ -60,7 +72,24 @@ void drawFrame(uint8_t * imageBuf, uint8_t *templateBuf, ImagePair *imagePair, L
     annotate(title, 15, 460, 38, imageBuf);
 
     sprintf(title, "Image pair %d", frameCounter+1);
-    annotate(title, 15, 100, 490, imageBuf);
+    annotate(title, 12, 100, 5, imageBuf);
+
+    sprintf(title, "Pixel threshold: %d", threshold);
+    annotate(title, 9, 20, 490, imageBuf);
+
+    if (agcLower == -1)
+        sprintf(title, "AGC lower threshold: unknown");
+    else
+        sprintf(title, "AGC lower threshold: %d", agcLower);
+    annotate(title, 9, 20, 505, imageBuf);
+    if (agcUpper == -1)
+        sprintf(title, "AGC upper threshold: unknown");
+    else
+        sprintf(title, "AGC upper threshold: %d", agcUpper);
+    annotate(title, 9, 20, 520, imageBuf);
+
+    sprintf(title, "AGC %s", agcEnabled ? "enabled": "disabled");
+    annotate(title, 9, 150, 490, imageBuf);
 
     double maxH = (double)imagePairTimeSeries->maxValueH[imagePairIndex];
     double maxV = (double)imagePairTimeSeries->maxValueV[imagePairIndex];
