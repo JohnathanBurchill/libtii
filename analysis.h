@@ -35,6 +35,4 @@ int getPaBin(double phi);
 
 size_t countImagePairs(ImagePackets *imagePackets, ImagePair *imagePair, double dayStart, double dayEnd);
 
-void analyzeImagePairs(ImagePackets * imagePackets, ImagePair *imagePair, double dayStart, double dayEnd, int max, double *imageTimeSeries);
-
 #endif // _ANALYSIS_H
