@@ -30,6 +30,10 @@ int numberOfPacketGaps(uint8_t* fullImagePackets, uint8_t *continuedPackets, lon
 int importScience(const char *source, SciencePackets *SciencePackets);
 int importScienceFromHdr(const char *hdr, SciencePackets *sciencePackets);
 
+int comparePacketTimes(const void *p1, const void *p2);
+int sortImagePackets(ImagePackets *imagePackets);
+int sortSciencePackets(SciencePackets *sciencePackets);
+
 int arrayResize(uint8_t **array, size_t numRecords, size_t numNewRecords, size_t recordSize);
 
 int readBytes(uint8_t* array, FILE * dblFile, HdrInfo *info, size_t *bytesRead);

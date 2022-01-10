@@ -50,6 +50,7 @@ int main(int argc, char **argv)
     // Data
     ImagePackets imagePackets;
     SciencePackets sciencePackets;
+
     LpTiiTimeSeries timeSeries;
     initLpTiiTimeSeries(&timeSeries);
     ImagePairTimeSeries imagePairTimeSeries;
@@ -123,16 +124,7 @@ int main(int argc, char **argv)
 
     // Ignore result status, as we will display imagery whether or not there are science packets
     importScience(hdr, &sciencePackets);
-
     getLpTiiTimeSeries(satellite, &sciencePackets, &timeSeries);
-    Config cfg;
-    ConfigPacket *pkt;
-    for (int i = 0; i < sciencePackets.numberOfConfigPackets; i++)
-    {
-        pkt = (ConfigPacket*)(sciencePackets.configPackets + i*CONFIG_PACKET_SIZE);
-        getConfigData(pkt, &cfg);
-        printf("Config: MCP H: %d V: %d, AGC: %d pthresh: %d, nCols %d, agc low: %d, agc high: %d, mcpInc %d, sdcInc %d, c1 %d c2 %d\n", cfg.mcpVoltageSettingH, cfg.mcpVoltageSettingV, cfg.agcEnabled, cfg.pixelThreshold, cfg.nColumnsForMomentCalculations, cfg.agcLowerThreshold, cfg.agcUpperThreshold, cfg.agcIncrementMcpVoltage, cfg.agcIncrementShutterDutyCycle, cfg.tiiMinimumColumn, cfg.tiiMaximumColumn);
-    }
 
     // Static content from frame to frame
     drawTemplate(templateBuf, &timeSeries, &imagePairTimeSeries, dayStart, dayEnd);

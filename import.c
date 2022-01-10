@@ -61,6 +61,8 @@ int importImagery(const char *source, ImagePackets *imagePackets)
     else
         return IMPORT_SOURCE;
     
+    sortImagePackets(imagePackets);
+
     // Align packets if there aren't the same number of full image and full image continued packets
     imagePackets->numberOfImages = imagePackets->numberOfFullImagePackets;
     if (imagePackets->numberOfContinuedPackets > imagePackets->numberOfFullImagePackets)
@@ -270,6 +272,7 @@ int importScience(const char *source, SciencePackets *sciencePackets)
     else
         return IMPORT_SOURCE;
     
+    sortSciencePackets(sciencePackets);
     // TODO remove duplicate packets
 
     return status;
@@ -344,6 +347,43 @@ cleanup:
     return status; 
 }
 
+int comparePacketTimes(const void *p1, const void *p2)
+{
+    // offsets for bytes 5 through 12 of each packet's data field header
+    uint8_t *cds1 = ((uint8_t*) p1) + 30;
+    uint8_t *cds2 = ((uint8_t*) p2) + 30;
+
+    double day1 = (double) (cds1[0]*256 + cds1[1] + 10957); // relative to 1970-01-01 00:00:00 UT
+    double ms1 = (double) (cds1[2]*256*256*256 + cds1[3]*256*256 + cds1[4]*256 + cds1[5]);
+    double us1 = (double) (cds1[6]*256 + cds1[7]);
+    double t1 = day1 * 86400. + ms1 / 1.0e3 + us1 / 1.0e6;
+
+    double day2 = (double) (cds2[0]*256 + cds2[1] + 10957); // relative to 1970-01-01 00:00:00 UT
+    double ms2 = (double) (cds2[2]*256*256*256 + cds2[3]*256*256 + cds2[4]*256 + cds2[5]);
+    double us2 = (double) (cds2[6]*256 + cds2[7]);
+    double t2 = day2 * 86400. + ms2 / 1.0e3 + us2 / 1.0e6;
+
+    // printf("t1: %lf t2: %lf, t2-t1: %lf\n", t1, t2, t2-t1);
+    if (t1 > t2)
+        return 1;
+    else if (t1 == t2)
+        return 0;
+    else
+        return -1;
+
+}
+
+int sortImagePackets(ImagePackets *imagePackets)
+{
+    qsort(imagePackets->fullImagePackets, imagePackets->numberOfFullImagePackets, FULL_IMAGE_PACKET_SIZE, &comparePacketTimes);
+    qsort(imagePackets->continuedPackets, imagePackets->numberOfContinuedPackets, FULL_IMAGE_CONT_PACKET_SIZE, &comparePacketTimes);
+}
+
+int sortSciencePackets(SciencePackets *sciencePackets)
+{
+    qsort(sciencePackets->lpTiiSciencePackets, sciencePackets->numberOfLpTiiSciencePackets, LP_TII_SCIENCE_PACKET_SIZE, &comparePacketTimes);
+    qsort(sciencePackets->configPackets, sciencePackets->numberOfConfigPackets, CONFIG_PACKET_SIZE, &comparePacketTimes);
+}
 
 int arrayResize(uint8_t **array, size_t numRecords, size_t numNewRecords, size_t recordSize)
 {

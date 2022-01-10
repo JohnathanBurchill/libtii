@@ -176,8 +176,51 @@ void freeLpTiiTimeSeries(LpTiiTimeSeries * ts)
         free(ts->lpSweepTime);
     if (ts->offsetTime != NULL)
         free(ts->offsetTime);
+
     if (ts->configTime != NULL)
         free(ts->configTime);
+    if (ts->agcIncrementMcpVoltageConfig == NULL)
+        free(ts->agcIncrementMcpVoltageConfig);
+    if (ts->agcIncrementShutterDutyCycleConfig == NULL)
+        free(ts->agcIncrementShutterDutyCycleConfig);
+    if (ts->agcEnabledConfig == NULL)
+        free(ts->agcEnabledConfig);
+    if (ts->nColumnsForMomentCalculationsConfig == NULL)
+        free(ts->nColumnsForMomentCalculationsConfig);
+    if (ts->agcUpperThresholdConfig == NULL)
+        free(ts->agcUpperThresholdConfig);
+    if (ts->agcLowerThresholdConfig == NULL)
+        free(ts->agcLowerThresholdConfig);
+    if (ts->tiiMinimumColumnConfig == NULL)
+        free(ts->tiiMinimumColumnConfig);
+    if (ts->tiiMaximumColumnConfig == NULL)
+        free(ts->tiiMaximumColumnConfig);
+    if (ts->pixelThresholdConfig == NULL)
+        free(ts->pixelThresholdConfig);
+    if (ts->phosphorVoltageSettingHConfig == NULL)
+        free(ts->phosphorVoltageSettingHConfig);
+    if (ts->mcpVoltageSettingHConfig == NULL)
+        free(ts->mcpVoltageSettingHConfig);
+    if (ts->biasGridVoltageSettingHConfig == NULL)
+        free(ts->biasGridVoltageSettingHConfig);
+    if (ts->shutterLowerPlateauVoltageSettingHConfig == NULL)
+        free(ts->shutterLowerPlateauVoltageSettingHConfig);
+    if (ts->shutterDutyCycleHConfig == NULL)
+        free(ts->shutterDutyCycleHConfig);
+    if (ts->gainMapIdHConfig == NULL)
+        free(ts->gainMapIdHConfig);
+    if (ts->phosphorVoltageSettingVConfig == NULL)
+        free(ts->phosphorVoltageSettingVConfig);
+    if (ts->mcpVoltageSettingVConfig == NULL)
+        free(ts->mcpVoltageSettingVConfig);
+    if (ts->biasGridVoltageSettingVConfig == NULL)
+        free(ts->biasGridVoltageSettingVConfig);
+    if (ts->shutterLowerPlateauVoltageSettingVConfig == NULL)
+        free(ts->shutterLowerPlateauVoltageSettingVConfig);
+    if (ts->shutterDutyCycleVConfig == NULL)
+        free(ts->shutterDutyCycleVConfig);
+    if (ts->gainMapIdVConfig == NULL)
+        free(ts->gainMapIdVConfig);
 
 }
 
@@ -440,8 +483,29 @@ void initLpTiiTimeSeries(LpTiiTimeSeries * timeSeries)
     timeSeries->faceplateCurrent = NULL;
     timeSeries->lpSweepTime = NULL;
     timeSeries->offsetTime = NULL;
-    timeSeries->configTime = NULL;
 
+    timeSeries->configTime = NULL;
+    timeSeries->agcIncrementMcpVoltageConfig = NULL;
+    timeSeries->agcIncrementShutterDutyCycleConfig = NULL;
+    timeSeries->agcEnabledConfig = NULL;
+    timeSeries->nColumnsForMomentCalculationsConfig = NULL;
+    timeSeries->agcUpperThresholdConfig = NULL;
+    timeSeries->agcLowerThresholdConfig = NULL;
+    timeSeries->tiiMinimumColumnConfig = NULL;
+    timeSeries->tiiMaximumColumnConfig = NULL;
+    timeSeries->pixelThresholdConfig = NULL;
+    timeSeries->phosphorVoltageSettingHConfig = NULL;
+    timeSeries->mcpVoltageSettingHConfig = NULL;
+    timeSeries->biasGridVoltageSettingHConfig = NULL;
+    timeSeries->shutterLowerPlateauVoltageSettingHConfig = NULL;
+    timeSeries->shutterDutyCycleHConfig = NULL;
+    timeSeries->gainMapIdHConfig = NULL;
+    timeSeries->phosphorVoltageSettingVConfig = NULL;
+    timeSeries->mcpVoltageSettingVConfig = NULL;
+    timeSeries->biasGridVoltageSettingVConfig = NULL;
+    timeSeries->shutterLowerPlateauVoltageSettingVConfig = NULL;
+    timeSeries->shutterDutyCycleVConfig = NULL;
+    timeSeries->gainMapIdVConfig = NULL;
 }
 
 int getLpTiiTimeSeries(char satellite, SciencePackets *packets, LpTiiTimeSeries * timeSeries)
@@ -452,6 +516,8 @@ int getLpTiiTimeSeries(char satellite, SciencePackets *packets, LpTiiTimeSeries 
 
     LpTiiSciencePacket *pkt;
     LpTiiScience science;
+    ConfigPacket *cfg;
+    Config config;
 
     double minTime = 1e20;
     double maxTime = -1;
@@ -541,17 +607,110 @@ int getLpTiiTimeSeries(char satellite, SciencePackets *packets, LpTiiTimeSeries 
 
 
     }
-    else
+    if (packets->numberOfConfigPackets > 0)
     {
-        timeSeries->lpTiiTime2Hz = NULL;
-        timeSeries->ionDensity1 = NULL;
-        timeSeries->ionDensity2 = NULL;
-        timeSeries->y2H = NULL;
-        timeSeries->y2V = NULL;
-        timeSeries->minTime2Hz = 0.0;
-        timeSeries->maxTime2Hz = 0.0;
+        timeSeries->nConfig = packets->numberOfConfigPackets;
+        timeSeries->configTime = (double*) malloc(timeSeries->nConfig * sizeof(double));
+        if (timeSeries->configTime == NULL)
+            return TIME_SERIES_MALLOC;
+
+        timeSeries->agcIncrementMcpVoltageConfig = (uint8_t *) malloc(timeSeries->nConfig * sizeof(uint8_t));
+        if (timeSeries->agcIncrementMcpVoltageConfig == NULL)
+            return TIME_SERIES_MALLOC;
+        timeSeries->agcIncrementShutterDutyCycleConfig = (uint8_t *) malloc(timeSeries->nConfig * sizeof(uint8_t));
+        if (timeSeries->agcIncrementShutterDutyCycleConfig == NULL)
+            return TIME_SERIES_MALLOC;
+        timeSeries->agcEnabledConfig = (bool *) malloc(timeSeries->nConfig * sizeof(bool));
+        if (timeSeries->agcEnabledConfig == NULL)
+            return TIME_SERIES_MALLOC;
+        timeSeries->nColumnsForMomentCalculationsConfig = (uint8_t *) malloc(timeSeries->nConfig * sizeof(uint8_t));
+        if (timeSeries->nColumnsForMomentCalculationsConfig == NULL)
+            return TIME_SERIES_MALLOC;
+        timeSeries->agcUpperThresholdConfig = (uint16_t *) malloc(timeSeries->nConfig * sizeof(uint16_t));
+        if (timeSeries->agcUpperThresholdConfig == NULL)
+            return TIME_SERIES_MALLOC;
+        timeSeries->agcLowerThresholdConfig = (uint16_t *) malloc(timeSeries->nConfig * sizeof(uint16_t));
+        if (timeSeries->agcLowerThresholdConfig == NULL)
+            return TIME_SERIES_MALLOC;
+        timeSeries->tiiMinimumColumnConfig = (uint8_t *) malloc(timeSeries->nConfig * sizeof(uint8_t));
+        if (timeSeries->tiiMinimumColumnConfig == NULL)
+            return TIME_SERIES_MALLOC;
+        timeSeries->tiiMaximumColumnConfig = (uint8_t *) malloc(timeSeries->nConfig * sizeof(uint8_t));
+        if (timeSeries->tiiMaximumColumnConfig == NULL)
+            return TIME_SERIES_MALLOC;
+        timeSeries->pixelThresholdConfig = (uint16_t *) malloc(timeSeries->nConfig * sizeof(uint16_t));
+        if (timeSeries->pixelThresholdConfig == NULL)
+            return TIME_SERIES_MALLOC;
+        timeSeries->phosphorVoltageSettingHConfig = (uint8_t *) malloc(timeSeries->nConfig * sizeof(uint8_t));
+        if (timeSeries->phosphorVoltageSettingHConfig == NULL)
+            return TIME_SERIES_MALLOC;
+        timeSeries->mcpVoltageSettingHConfig = (uint8_t *) malloc(timeSeries->nConfig * sizeof(uint8_t));
+        if (timeSeries->mcpVoltageSettingHConfig == NULL)
+            return TIME_SERIES_MALLOC;
+        timeSeries->biasGridVoltageSettingHConfig = (uint8_t *) malloc(timeSeries->nConfig * sizeof(uint8_t));
+        if (timeSeries->biasGridVoltageSettingHConfig == NULL)
+            return TIME_SERIES_MALLOC;
+        timeSeries->shutterLowerPlateauVoltageSettingHConfig = (uint8_t *) malloc(timeSeries->nConfig * sizeof(uint8_t));
+        if (timeSeries->shutterLowerPlateauVoltageSettingHConfig == NULL)
+            return TIME_SERIES_MALLOC;
+        timeSeries->shutterDutyCycleHConfig = (uint16_t *) malloc(timeSeries->nConfig * sizeof(uint16_t));
+        if (timeSeries->shutterDutyCycleHConfig == NULL)
+            return TIME_SERIES_MALLOC;
+        timeSeries->gainMapIdHConfig = (uint8_t *) malloc(timeSeries->nConfig * sizeof(uint8_t));
+        if (timeSeries->gainMapIdHConfig == NULL)
+            return TIME_SERIES_MALLOC;
+        timeSeries->phosphorVoltageSettingVConfig = (uint8_t *) malloc(timeSeries->nConfig * sizeof(uint8_t));
+        if (timeSeries->phosphorVoltageSettingVConfig == NULL)
+            return TIME_SERIES_MALLOC;
+        timeSeries->mcpVoltageSettingVConfig = (uint8_t *) malloc(timeSeries->nConfig * sizeof(uint8_t));
+        if (timeSeries->mcpVoltageSettingVConfig == NULL)
+            return TIME_SERIES_MALLOC;
+        timeSeries->biasGridVoltageSettingVConfig = (uint8_t *) malloc(timeSeries->nConfig * sizeof(uint8_t));
+        if (timeSeries->biasGridVoltageSettingVConfig == NULL)
+            return TIME_SERIES_MALLOC;
+        timeSeries->shutterLowerPlateauVoltageSettingVConfig = (uint8_t *) malloc(timeSeries->nConfig * sizeof(uint8_t));
+        if (timeSeries->shutterLowerPlateauVoltageSettingVConfig == NULL)
+            return TIME_SERIES_MALLOC;
+        timeSeries->shutterDutyCycleVConfig = (uint16_t *) malloc(timeSeries->nConfig * sizeof(uint16_t));
+        if (timeSeries->shutterDutyCycleVConfig == NULL)
+            return TIME_SERIES_MALLOC;
+        timeSeries->gainMapIdVConfig = (uint8_t *) malloc(timeSeries->nConfig * sizeof(uint8_t));
+        if (timeSeries->gainMapIdVConfig == NULL)
+            return TIME_SERIES_MALLOC;
+
+        for (long i = 0; i < packets->numberOfConfigPackets; i++)
+        {
+            cfg = (ConfigPacket*)(packets->configPackets + i*CONFIG_PACKET_SIZE);
+            getConfigData(cfg, &config);
+            timeSeries->configTime[i] = config.dateTime.secondsSince1970;
+
+            timeSeries->agcIncrementMcpVoltageConfig[i] = config.agcIncrementMcpVoltage;
+            timeSeries->agcIncrementShutterDutyCycleConfig[i] = config.agcIncrementShutterDutyCycle;
+            timeSeries->agcEnabledConfig[i] = config.agcEnabled;
+            timeSeries->nColumnsForMomentCalculationsConfig[i] = config.nColumnsForMomentCalculations;
+            timeSeries->agcUpperThresholdConfig[i] = config.agcUpperThreshold;
+            timeSeries->agcLowerThresholdConfig[i] = config.agcLowerThreshold;
+            timeSeries->tiiMinimumColumnConfig[i] = config.tiiMinimumColumn;
+            timeSeries->tiiMaximumColumnConfig[i] = config.tiiMaximumColumn;
+            timeSeries->pixelThresholdConfig[i] = config.pixelThreshold;
+            timeSeries->phosphorVoltageSettingHConfig[i] = config.phosphorVoltageSettingH;
+            timeSeries->mcpVoltageSettingHConfig[i] = config.mcpVoltageSettingH;
+            timeSeries->biasGridVoltageSettingHConfig[i] = config.biasGridVoltageSettingH;
+            timeSeries->shutterLowerPlateauVoltageSettingHConfig[i] = config.shutterLowerPlateauVoltageSettingH;
+            timeSeries->shutterDutyCycleHConfig[i] = config.shutterDutyCycleH;
+            timeSeries->gainMapIdHConfig[i] = config.gainMapIdH;
+            timeSeries->phosphorVoltageSettingVConfig[i] = config.phosphorVoltageSettingV;
+            timeSeries->mcpVoltageSettingVConfig[i] = config.mcpVoltageSettingV;
+            timeSeries->biasGridVoltageSettingVConfig[i] = config.biasGridVoltageSettingV;
+            timeSeries->shutterLowerPlateauVoltageSettingVConfig[i] = config.shutterLowerPlateauVoltageSettingV;
+            timeSeries->shutterDutyCycleVConfig[i] = config.shutterDutyCycleV;
+            timeSeries->gainMapIdVConfig[i] = config.gainMapIdV;
+        }
+
     }
 
     return TIME_SERIES_OK;
 
 }
+
+

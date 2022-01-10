@@ -45,6 +45,28 @@ typedef struct LpTiiTimeSeries
     
     size_t nConfig;
     double *configTime;
+    uint8_t *agcIncrementMcpVoltageConfig;
+    uint8_t *agcIncrementShutterDutyCycleConfig;
+    bool *agcEnabledConfig;
+    uint8_t *nColumnsForMomentCalculationsConfig;
+    uint16_t *agcUpperThresholdConfig;
+    uint16_t *agcLowerThresholdConfig;
+    uint8_t *tiiMinimumColumnConfig;
+    uint8_t *tiiMaximumColumnConfig;
+    uint16_t *pixelThresholdConfig;
+    uint8_t *phosphorVoltageSettingHConfig;
+    uint8_t *mcpVoltageSettingHConfig;
+    uint8_t *biasGridVoltageSettingHConfig;
+    uint8_t *shutterLowerPlateauVoltageSettingHConfig;
+    uint16_t *shutterDutyCycleHConfig;
+    uint8_t *gainMapIdHConfig;
+    uint8_t *phosphorVoltageSettingVConfig;
+    uint8_t *mcpVoltageSettingVConfig;
+    uint8_t *biasGridVoltageSettingVConfig;
+    uint8_t *shutterLowerPlateauVoltageSettingVConfig;
+    uint16_t *shutterDutyCycleVConfig;
+    uint8_t *gainMapIdVConfig;
+
 
 } LpTiiTimeSeries;
 
