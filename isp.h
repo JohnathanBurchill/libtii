@@ -250,6 +250,29 @@ typedef struct Config {
     char satellite;
     IspDateTime dateTime;
 
+    uint8_t agcIncrementMcpVoltage;
+    uint8_t agcIncrementShutterDutyCycle;
+    bool agcEnabled;
+    uint8_t nColumnsForMomentCalculations;
+    uint16_t agcUpperThreshold;
+    uint16_t agcLowerThreshold;
+    uint8_t tiiMinimumColumn;
+    uint8_t tiiMaximumColumn;
+    uint16_t pixelThreshold;
+
+    uint8_t phosphorVoltageSettingH;
+    uint8_t mcpVoltageSettingH;
+    uint8_t biasGridVoltageSettingH;
+    uint8_t shutterLowerPlateauVoltageSettingH;
+    uint16_t shutterDutyCycleH;
+    uint8_t gainMapIdH;
+
+    uint8_t phosphorVoltageSettingV;
+    uint8_t mcpVoltageSettingV;
+    uint8_t biasGridVoltageSettingV;
+    uint8_t shutterLowerPlateauVoltageSettingV;
+    uint16_t shutterDutyCycleV;
+    uint8_t gainMapIdV;
 
 } Config;
 
@@ -307,6 +330,9 @@ void initializeImagePair(ImagePair *imagePair, ImageAuxData *auxH, uint16_t *pix
 void setDateTime(IspDateTime * dateTime, uint8_t *dataFieldHeader);
 
 void getLpTiiScienceData(LpTiiSciencePacket * pkt, LpTiiScience * science);
+
+void getConfigData(ConfigPacket * pkt, Config * config);
+
 
 uint16_t getu16(uint8_t *bytes, int offset);
 int16_t gets16(uint8_t *bytes, int offset);
