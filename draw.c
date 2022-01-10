@@ -344,7 +344,7 @@ void drawMonitors(uint8_t *imageBuf, ImagePair *imagePair, int x0, int y0)
 
 }
 
-void drawTemplate(uint8_t * templateBuf, LpTiiTimeSeries *timeSeries, ImagePairTimeSeries *imagePairTimeSeries, double dayStart, double dayEnd)
+void drawTemplate(uint8_t * templateBuf, LpTiiTimeSeries *timeSeries, ImagePairTimeSeries *imagePairTimeSeries, double dayStart, double dayEnd, bool fullDay)
 {
 
     // Time series
@@ -360,6 +360,11 @@ void drawTemplate(uint8_t * templateBuf, LpTiiTimeSeries *timeSeries, ImagePairT
     int plotY3 = plotY2 + plotHeight0 + plotdy;
     int plotY4 = plotY3 + plotHeight1 + plotdy;
     int plotY5 = plotY4 + plotHeight1 + plotdy;
+
+    char xlabel[255];
+    sprintf(xlabel, "%s", "Hours from start of file");
+    if (fullDay)
+        sprintf(xlabel, "%s", "UT hours");
 
     memset(templateBuf, BACKGROUND_COLOR, IMAGE_BUFFER_SIZE);
     // y2
@@ -383,7 +388,7 @@ void drawTemplate(uint8_t * templateBuf, LpTiiTimeSeries *timeSeries, ImagePairT
     drawTimeSeries(templateBuf, timeSeries->lpTiiTime2Hz, timeSeries->phosphorVoltageSettingV, timeSeries->n2Hz, plotX0, plotY4, plotWidth, plotHeight1, dayStart, dayEnd, 0, 7000.0, "", "", 4, 13, "", "", false, 1, 9, false);
 
     // VBIASGRID
-    drawTimeSeries(templateBuf, timeSeries->lpTiiTime2Hz, timeSeries->biasGridVoltageSettingH, timeSeries->n2Hz, plotX0, plotY5, plotWidth, plotHeight1, dayStart, dayEnd, -100.0, 0.0, "Hours from start of file", "VBias (V)", 4, MAX_COLOR_VALUE+1, "-100", "0", false, 1, 9, true);
+    drawTimeSeries(templateBuf, timeSeries->lpTiiTime2Hz, timeSeries->biasGridVoltageSettingH, timeSeries->n2Hz, plotX0, plotY5, plotWidth, plotHeight1, dayStart, dayEnd, -100.0, 0.0, xlabel, "VBias (V)", 4, MAX_COLOR_VALUE+1, "-100", "0", false, 1, 9, true);
     drawTimeSeries(templateBuf, timeSeries->lpTiiTime2Hz, timeSeries->biasGridVoltageSettingV, timeSeries->n2Hz, plotX0, plotY5, plotWidth, plotHeight1, dayStart, dayEnd, -100.0, 0.0, "", "", 4, 13, "", "", false, 1, 9, false);
 
 }

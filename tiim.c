@@ -127,7 +127,8 @@ int main(int argc, char **argv)
     getLpTiiTimeSeries(satellite, &sciencePackets, &timeSeries);
 
     // Static content from frame to frame
-    drawTemplate(templateBuf, &timeSeries, &imagePairTimeSeries, dayStart, dayEnd);
+    bool fullDay = sourceLen == 9;
+    drawTemplate(templateBuf, &timeSeries, &imagePairTimeSeries, dayStart, dayEnd, fullDay);
 
     int nImagePairs = 0;
 
@@ -246,24 +247,42 @@ int main(int argc, char **argv)
     int ox = 100;
     int oy = 140;
     int dotSize = 2;
-    if (sourceLen == 9) dotSize = 2; // full day
+    char xlabel[255];
+    sprintf(xlabel, "%s", "Hours from start of file");
+    if (sourceLen == 9)
+    {
+        dotSize = 2; // full day
+        sprintf(xlabel, "%s", "UT hours");
+    }
+     
     insertTransition(imageBuf, "Anomaly overview", IMAGE_WIDTH/2, IMAGE_HEIGHT/2-16, 24, 3.0, &frameCounter);
     drawIntTimeSeries(imageBuf, imagePairTimeSeries.time, imagePairTimeSeries.paCountH, nImagePairs, ox, oy, plotWidth, plotHeight, dayStart, dayEnd, 0, 1000, "", "PA Level", 1, MAX_COLOR_VALUE + 1, "0", "1000", false, dotSize, 12, true);
     drawIntTimeSeries(imageBuf, imagePairTimeSeries.time, imagePairTimeSeries.paCountV, nImagePairs, ox, oy, plotWidth, plotHeight, dayStart, dayEnd, 0, 1000, "", "", 1, 13, "", "", false, dotSize, 12, false);
     
-    drawIntTimeSeries(imageBuf, imagePairTimeSeries.time, imagePairTimeSeries.measlesCountH, nImagePairs, ox, oy + plotHeight + 50, plotWidth, plotHeight, dayStart, dayEnd, 0, 200, "Hours from start of file", "Measles Level", 1, MAX_COLOR_VALUE + 1, "0", "200", false, dotSize, 12, true);
+    drawIntTimeSeries(imageBuf, imagePairTimeSeries.time, imagePairTimeSeries.measlesCountH, nImagePairs, ox, oy + plotHeight + 50, plotWidth, plotHeight, dayStart, dayEnd, 0, 200, xlabel, "Measles Level", 1, MAX_COLOR_VALUE + 1, "0", "200", false, dotSize, 12, true);
     drawIntTimeSeries(imageBuf, imagePairTimeSeries.time, imagePairTimeSeries.measlesCountV, nImagePairs, ox, oy + plotHeight + 50, plotWidth, plotHeight, dayStart, dayEnd, 0, 200, "", "", 1, 13, "", "", false, dotSize, 12, false);
     for (int c = 0; c < 3.0 * VIDEO_FPS; c++)
         generateFrame(imageBuf, frameCounter++);
 
-    // AGC review
-    ox = 100;
-    oy = 120;
-    insertTransition(imageBuf, "AGC overview", IMAGE_WIDTH/2, IMAGE_HEIGHT/2-16, 24, 3.0, &frameCounter);
+    // Onboard processing review
+    plotWidth = 500;
+    plotHeight = 80;
+    ox = 20;
+    oy = 110;
+    dy = 35;
+    insertTransition(imageBuf, "Onboard processing overview", IMAGE_WIDTH/2, IMAGE_HEIGHT/2-16, 24, 3.0, &frameCounter);
     drawIntTimeSeries(imageBuf, timeSeries.configTime, timeSeries.agcLowerThresholdConfig, timeSeries.nConfig, ox, oy, plotWidth, plotHeight, dayStart, dayEnd, 0, 700, "", "", 1, MAX_COLOR_VALUE + 2, "0", "", false, 1, 12, false);
     drawIntTimeSeries(imageBuf, timeSeries.configTime, timeSeries.agcUpperThresholdConfig, timeSeries.nConfig, ox, oy, plotWidth, plotHeight, dayStart, dayEnd, 0, 700, "", "", 1, MAX_COLOR_VALUE + 2, "0", "", false, 1, 12, false);
+
     drawTimeSeries(imageBuf, imagePairTimeSeries.time, imagePairTimeSeries.agcControlValueH, nImagePairs, ox, oy, plotWidth, plotHeight, dayStart, dayEnd, 0, 700, "", "AGC control", 1, MAX_COLOR_VALUE + 1, "0", "700", false, dotSize, 12, true);
     drawTimeSeries(imageBuf, imagePairTimeSeries.time, imagePairTimeSeries.agcControlValueV, nImagePairs, ox, oy, plotWidth, plotHeight, dayStart, dayEnd, 0, 700, "", "", 1, 13, "", "", false, dotSize, 12, false);
+
+    drawTimeSeries(imageBuf, imagePairTimeSeries.time, imagePairTimeSeries.x1H, nImagePairs, ox, oy + plotHeight + dy, plotWidth, plotHeight, dayStart, dayEnd, 25, 55, "", "x1", 1, MAX_COLOR_VALUE + 1, "25", "55", false, dotSize, 12, true);
+    drawTimeSeries(imageBuf, imagePairTimeSeries.time, imagePairTimeSeries.x1V, nImagePairs, ox, oy + plotHeight + dy, plotWidth, plotHeight, dayStart, dayEnd, 25, 55, "", "", 1, 13, "", "", false, dotSize, 12, false);
+
+    drawTimeSeries(imageBuf, imagePairTimeSeries.time, imagePairTimeSeries.y1H, nImagePairs, ox, oy + 2*plotHeight + 2*dy, plotWidth, plotHeight, dayStart, dayEnd, 25, 45, xlabel, "y1", 1, MAX_COLOR_VALUE + 1, "25", "55", false, dotSize, 12, true);
+    drawTimeSeries(imageBuf, imagePairTimeSeries.time, imagePairTimeSeries.y1V, nImagePairs, ox, oy + 2*plotHeight + 2*dy, plotWidth, plotHeight, dayStart, dayEnd, 25, 45, "", "", 1, 13, "", "", false, dotSize, 12, false);
+
     for (int c = 0; c < 3.0 * VIDEO_FPS; c++)
         generateFrame(imageBuf, frameCounter++);
 
