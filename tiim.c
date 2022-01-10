@@ -242,19 +242,31 @@ int main(int argc, char **argv)
 
     // Draw PA and measles time series
     int plotWidth = 500;
-    int plotHeight = 120;
-    int ox = 200;
-    int oy = 200;
-    int dotSize = 3;
+    int plotHeight = 100;
+    int ox = 100;
+    int oy = 140;
+    int dotSize = 2;
     if (sourceLen == 9) dotSize = 2; // full day
-    insertTransition(imageBuf, "Anomaly overview", IMAGE_WIDTH/2, IMAGE_HEIGHT/2-16, 24, 2.0, &frameCounter);
+    insertTransition(imageBuf, "Anomaly overview", IMAGE_WIDTH/2, IMAGE_HEIGHT/2-16, 24, 3.0, &frameCounter);
     drawIntTimeSeries(imageBuf, imagePairTimeSeries.time, imagePairTimeSeries.paCountH, nImagePairs, ox, oy, plotWidth, plotHeight, dayStart, dayEnd, 0, 1000, "", "PA Level", 1, MAX_COLOR_VALUE + 1, "0", "1000", false, dotSize, 12, true);
     drawIntTimeSeries(imageBuf, imagePairTimeSeries.time, imagePairTimeSeries.paCountV, nImagePairs, ox, oy, plotWidth, plotHeight, dayStart, dayEnd, 0, 1000, "", "", 1, 13, "", "", false, dotSize, 12, false);
     
     drawIntTimeSeries(imageBuf, imagePairTimeSeries.time, imagePairTimeSeries.measlesCountH, nImagePairs, ox, oy + plotHeight + 50, plotWidth, plotHeight, dayStart, dayEnd, 0, 200, "Hours from start of file", "Measles Level", 1, MAX_COLOR_VALUE + 1, "0", "200", false, dotSize, 12, true);
     drawIntTimeSeries(imageBuf, imagePairTimeSeries.time, imagePairTimeSeries.measlesCountV, nImagePairs, ox, oy + plotHeight + 50, plotWidth, plotHeight, dayStart, dayEnd, 0, 200, "", "", 1, 13, "", "", false, dotSize, 12, false);
-    for (int c = 0; c < 1.0 * VIDEO_FPS; c++)
+    for (int c = 0; c < 3.0 * VIDEO_FPS; c++)
         generateFrame(imageBuf, frameCounter++);
+
+    // AGC review
+    ox = 100;
+    oy = 120;
+    insertTransition(imageBuf, "AGC overview", IMAGE_WIDTH/2, IMAGE_HEIGHT/2-16, 24, 3.0, &frameCounter);
+    drawIntTimeSeries(imageBuf, timeSeries.configTime, timeSeries.agcLowerThresholdConfig, timeSeries.nConfig, ox, oy, plotWidth, plotHeight, dayStart, dayEnd, 0, 700, "", "", 1, MAX_COLOR_VALUE + 2, "0", "", false, 1, 12, false);
+    drawIntTimeSeries(imageBuf, timeSeries.configTime, timeSeries.agcUpperThresholdConfig, timeSeries.nConfig, ox, oy, plotWidth, plotHeight, dayStart, dayEnd, 0, 700, "", "", 1, MAX_COLOR_VALUE + 2, "0", "", false, 1, 12, false);
+    drawTimeSeries(imageBuf, imagePairTimeSeries.time, imagePairTimeSeries.agcControlValueH, nImagePairs, ox, oy, plotWidth, plotHeight, dayStart, dayEnd, 0, 700, "", "AGC control", 1, MAX_COLOR_VALUE + 1, "0", "700", false, dotSize, 12, true);
+    drawTimeSeries(imageBuf, imagePairTimeSeries.time, imagePairTimeSeries.agcControlValueV, nImagePairs, ox, oy, plotWidth, plotHeight, dayStart, dayEnd, 0, 700, "", "", 1, 13, "", "", false, dotSize, 12, false);
+    for (int c = 0; c < 3.0 * VIDEO_FPS; c++)
+        generateFrame(imageBuf, frameCounter++);
+
 
     finishVideo();
 

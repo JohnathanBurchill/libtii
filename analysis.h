@@ -23,6 +23,11 @@ typedef struct imageStats
     int paAngularSpectrumTotal[PA_ANGULAR_NUM_BINS];
     int paAngularSpectrumCumulativeFrameCount[PA_ANGULAR_NUM_BINS];
 
+    double totalCounts;
+    double x1;
+    double y1;
+    double agcControlValue;
+
 } ImageStats;
 
 void initializeImageStats(ImageStats *stats);
@@ -34,5 +39,9 @@ double getMaxValue(uint16_t *pixels, double requestedMaxValue);
 int getPaBin(double phi);
 
 size_t countImagePairs(ImagePackets *imagePackets, ImagePair *imagePair, double dayStart, double dayEnd);
+
+void onboardProcessing(uint16_t *correctedPixels, bool gotImage, uint16_t minCol, uint16_t maxCol, uint16_t nCols, double *totalCounts, double *x1, double *y1, double *agcControlValue);
+
+int reverseSortDouble(const void * first, const void *second);
 
 #endif // _ANALYSIS_H

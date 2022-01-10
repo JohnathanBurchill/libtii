@@ -24,8 +24,8 @@ double paAngularSpectrumFilter(int k, void *pixelBuf, bool *missing, void *args)
     double dx, dy, r, r1, phidx, phidy, phi;
     int paBin;
     
-    x = k / 66;
-    y = 65 - (k % 66);
+    x = k / TII_ROWS;
+    y = (TII_ROWS-1) - (k % TII_ROWS);
     dx = (double) x - OPTICAL_CENTER_X;
     dy = OPTICAL_CENTER_Y - (double) y; // y increases downward, switch to match graphics in case needed for other analysis
     r = hypot(dx, dy);

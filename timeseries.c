@@ -55,6 +55,15 @@ void initImagePairTimeSeries(ImagePairTimeSeries *ts)
     ts->paAngularSpectrumTotalV = NULL;
     ts->paAngularSpectrumCumulativeFrameCountV = NULL;
 
+    ts->totalCountsH = NULL;
+    ts->x1H = NULL;
+    ts->y1H = NULL;
+    ts->agcControlValueH = NULL;
+    ts->totalCountsV = NULL;
+    ts->x1V = NULL;
+    ts->y1V = NULL;
+    ts->agcControlValueV = NULL;
+
 }
 
 void freeImagePairTimeSeries(ImagePairTimeSeries * ts)
@@ -138,6 +147,22 @@ void freeImagePairTimeSeries(ImagePairTimeSeries * ts)
     if (ts->paAngularSpectrumCumulativeFrameCountV != NULL)
         free(ts->paAngularSpectrumCumulativeFrameCountV);
 
+    if (ts->totalCountsH != NULL)
+        free(ts->totalCountsH);
+    if (ts->x1H != NULL)
+        free(ts->x1H);
+    if (ts->y1H != NULL)
+        free(ts->y1H);
+    if (ts->agcControlValueH != NULL)
+        free(ts->agcControlValueH);
+    if (ts->totalCountsV != NULL)
+        free(ts->totalCountsV);
+    if (ts->x1V != NULL)
+        free(ts->x1V);
+    if (ts->y1V != NULL)
+        free(ts->y1V);
+    if (ts->agcControlValueV != NULL)
+        free(ts->agcControlValueV);
 }
 
 void freeLpTiiTimeSeries(LpTiiTimeSeries * ts)
@@ -358,6 +383,33 @@ int getImagePairTimeSeries(char satellite, ImagePackets * imagePackets, ImagePai
             return TIME_SERIES_MALLOC;
         ts->paAngularSpectrumCumulativeFrameCountV = (int *) malloc(PA_ANGULAR_NUM_BINS * numberOfImagePairs * sizeof(int));
         if (ts->paAngularSpectrumCumulativeFrameCountV == NULL)
+            return TIME_SERIES_MALLOC;
+
+
+        // onboard processing results
+        ts->totalCountsH = (double *)malloc(numberOfImagePairs * sizeof(double));
+        if (ts->totalCountsH == NULL)
+            return TIME_SERIES_MALLOC;
+        ts->x1H = (double *)malloc(numberOfImagePairs * sizeof(double));
+        if (ts->x1H == NULL)
+            return TIME_SERIES_MALLOC;
+        ts->y1H = (double *)malloc(numberOfImagePairs * sizeof(double));
+        if (ts->y1H == NULL)
+            return TIME_SERIES_MALLOC;
+        ts->agcControlValueH = (double *)malloc(numberOfImagePairs * sizeof(double));
+        if (ts->agcControlValueH == NULL)
+            return TIME_SERIES_MALLOC;
+        ts->totalCountsV = (double *)malloc(numberOfImagePairs * sizeof(double));
+        if (ts->totalCountsV == NULL)
+            return TIME_SERIES_MALLOC;
+        ts->x1V = (double *)malloc(numberOfImagePairs * sizeof(double));
+        if (ts->x1V == NULL)
+            return TIME_SERIES_MALLOC;
+        ts->y1V = (double *)malloc(numberOfImagePairs * sizeof(double));
+        if (ts->y1V == NULL)
+            return TIME_SERIES_MALLOC;
+        ts->agcControlValueV = (double *)malloc(numberOfImagePairs * sizeof(double));
+        if (ts->agcControlValueV == NULL)
             return TIME_SERIES_MALLOC;
 
 
@@ -614,67 +666,67 @@ int getLpTiiTimeSeries(char satellite, SciencePackets *packets, LpTiiTimeSeries 
         if (timeSeries->configTime == NULL)
             return TIME_SERIES_MALLOC;
 
-        timeSeries->agcIncrementMcpVoltageConfig = (uint8_t *) malloc(timeSeries->nConfig * sizeof(uint8_t));
+        timeSeries->agcIncrementMcpVoltageConfig = (int *) malloc(timeSeries->nConfig * sizeof(int));
         if (timeSeries->agcIncrementMcpVoltageConfig == NULL)
             return TIME_SERIES_MALLOC;
-        timeSeries->agcIncrementShutterDutyCycleConfig = (uint8_t *) malloc(timeSeries->nConfig * sizeof(uint8_t));
+        timeSeries->agcIncrementShutterDutyCycleConfig = (int *) malloc(timeSeries->nConfig * sizeof(int));
         if (timeSeries->agcIncrementShutterDutyCycleConfig == NULL)
             return TIME_SERIES_MALLOC;
-        timeSeries->agcEnabledConfig = (bool *) malloc(timeSeries->nConfig * sizeof(bool));
+        timeSeries->agcEnabledConfig = (int *) malloc(timeSeries->nConfig * sizeof(int));
         if (timeSeries->agcEnabledConfig == NULL)
             return TIME_SERIES_MALLOC;
-        timeSeries->nColumnsForMomentCalculationsConfig = (uint8_t *) malloc(timeSeries->nConfig * sizeof(uint8_t));
+        timeSeries->nColumnsForMomentCalculationsConfig = (int *) malloc(timeSeries->nConfig * sizeof(int));
         if (timeSeries->nColumnsForMomentCalculationsConfig == NULL)
             return TIME_SERIES_MALLOC;
-        timeSeries->agcUpperThresholdConfig = (uint16_t *) malloc(timeSeries->nConfig * sizeof(uint16_t));
+        timeSeries->agcUpperThresholdConfig = (int *) malloc(timeSeries->nConfig * sizeof(int));
         if (timeSeries->agcUpperThresholdConfig == NULL)
             return TIME_SERIES_MALLOC;
-        timeSeries->agcLowerThresholdConfig = (uint16_t *) malloc(timeSeries->nConfig * sizeof(uint16_t));
+        timeSeries->agcLowerThresholdConfig = (int *) malloc(timeSeries->nConfig * sizeof(int));
         if (timeSeries->agcLowerThresholdConfig == NULL)
             return TIME_SERIES_MALLOC;
-        timeSeries->tiiMinimumColumnConfig = (uint8_t *) malloc(timeSeries->nConfig * sizeof(uint8_t));
+        timeSeries->tiiMinimumColumnConfig = (int *) malloc(timeSeries->nConfig * sizeof(int));
         if (timeSeries->tiiMinimumColumnConfig == NULL)
             return TIME_SERIES_MALLOC;
-        timeSeries->tiiMaximumColumnConfig = (uint8_t *) malloc(timeSeries->nConfig * sizeof(uint8_t));
+        timeSeries->tiiMaximumColumnConfig = (int *) malloc(timeSeries->nConfig * sizeof(int));
         if (timeSeries->tiiMaximumColumnConfig == NULL)
             return TIME_SERIES_MALLOC;
-        timeSeries->pixelThresholdConfig = (uint16_t *) malloc(timeSeries->nConfig * sizeof(uint16_t));
+        timeSeries->pixelThresholdConfig = (int *) malloc(timeSeries->nConfig * sizeof(int));
         if (timeSeries->pixelThresholdConfig == NULL)
             return TIME_SERIES_MALLOC;
-        timeSeries->phosphorVoltageSettingHConfig = (uint8_t *) malloc(timeSeries->nConfig * sizeof(uint8_t));
+        timeSeries->phosphorVoltageSettingHConfig = (int *) malloc(timeSeries->nConfig * sizeof(int));
         if (timeSeries->phosphorVoltageSettingHConfig == NULL)
             return TIME_SERIES_MALLOC;
-        timeSeries->mcpVoltageSettingHConfig = (uint8_t *) malloc(timeSeries->nConfig * sizeof(uint8_t));
+        timeSeries->mcpVoltageSettingHConfig = (int *) malloc(timeSeries->nConfig * sizeof(int));
         if (timeSeries->mcpVoltageSettingHConfig == NULL)
             return TIME_SERIES_MALLOC;
-        timeSeries->biasGridVoltageSettingHConfig = (uint8_t *) malloc(timeSeries->nConfig * sizeof(uint8_t));
+        timeSeries->biasGridVoltageSettingHConfig = (int *) malloc(timeSeries->nConfig * sizeof(int));
         if (timeSeries->biasGridVoltageSettingHConfig == NULL)
             return TIME_SERIES_MALLOC;
-        timeSeries->shutterLowerPlateauVoltageSettingHConfig = (uint8_t *) malloc(timeSeries->nConfig * sizeof(uint8_t));
+        timeSeries->shutterLowerPlateauVoltageSettingHConfig = (int *) malloc(timeSeries->nConfig * sizeof(int));
         if (timeSeries->shutterLowerPlateauVoltageSettingHConfig == NULL)
             return TIME_SERIES_MALLOC;
-        timeSeries->shutterDutyCycleHConfig = (uint16_t *) malloc(timeSeries->nConfig * sizeof(uint16_t));
+        timeSeries->shutterDutyCycleHConfig = (int *) malloc(timeSeries->nConfig * sizeof(int));
         if (timeSeries->shutterDutyCycleHConfig == NULL)
             return TIME_SERIES_MALLOC;
-        timeSeries->gainMapIdHConfig = (uint8_t *) malloc(timeSeries->nConfig * sizeof(uint8_t));
+        timeSeries->gainMapIdHConfig = (int *) malloc(timeSeries->nConfig * sizeof(int));
         if (timeSeries->gainMapIdHConfig == NULL)
             return TIME_SERIES_MALLOC;
-        timeSeries->phosphorVoltageSettingVConfig = (uint8_t *) malloc(timeSeries->nConfig * sizeof(uint8_t));
+        timeSeries->phosphorVoltageSettingVConfig = (int *) malloc(timeSeries->nConfig * sizeof(int));
         if (timeSeries->phosphorVoltageSettingVConfig == NULL)
             return TIME_SERIES_MALLOC;
-        timeSeries->mcpVoltageSettingVConfig = (uint8_t *) malloc(timeSeries->nConfig * sizeof(uint8_t));
+        timeSeries->mcpVoltageSettingVConfig = (int *) malloc(timeSeries->nConfig * sizeof(int));
         if (timeSeries->mcpVoltageSettingVConfig == NULL)
             return TIME_SERIES_MALLOC;
-        timeSeries->biasGridVoltageSettingVConfig = (uint8_t *) malloc(timeSeries->nConfig * sizeof(uint8_t));
+        timeSeries->biasGridVoltageSettingVConfig = (int *) malloc(timeSeries->nConfig * sizeof(int));
         if (timeSeries->biasGridVoltageSettingVConfig == NULL)
             return TIME_SERIES_MALLOC;
-        timeSeries->shutterLowerPlateauVoltageSettingVConfig = (uint8_t *) malloc(timeSeries->nConfig * sizeof(uint8_t));
+        timeSeries->shutterLowerPlateauVoltageSettingVConfig = (int *) malloc(timeSeries->nConfig * sizeof(int));
         if (timeSeries->shutterLowerPlateauVoltageSettingVConfig == NULL)
             return TIME_SERIES_MALLOC;
-        timeSeries->shutterDutyCycleVConfig = (uint16_t *) malloc(timeSeries->nConfig * sizeof(uint16_t));
+        timeSeries->shutterDutyCycleVConfig = (int *) malloc(timeSeries->nConfig * sizeof(int));
         if (timeSeries->shutterDutyCycleVConfig == NULL)
             return TIME_SERIES_MALLOC;
-        timeSeries->gainMapIdVConfig = (uint8_t *) malloc(timeSeries->nConfig * sizeof(uint8_t));
+        timeSeries->gainMapIdVConfig = (int *) malloc(timeSeries->nConfig * sizeof(int));
         if (timeSeries->gainMapIdVConfig == NULL)
             return TIME_SERIES_MALLOC;
 

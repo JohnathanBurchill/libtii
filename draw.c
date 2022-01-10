@@ -112,13 +112,13 @@ void drawFrame(uint8_t * imageBuf, uint8_t *templateBuf, ImagePair *imagePair, L
 
     drawImagePair(imageBuf, imagePair, maxH, maxV, GAIN_CORRECTED_OFFSET_X, GAIN_CORRECTED_OFFSET_Y, GAIN_CORRECTED_IMAGE_SCALE, RAW_IMAGE_SEPARATION_X, "GC H", "GC V", false, &identityFilter, NULL, NULL);
 
-    // Intensity scaling for PA region imagery
-//    for (int b = 0; b < PA_ANGULAR_NUM_BINS; b++)
-//    {
-//        paBin = PA_ANGULAR_NUM_BINS * imagePairIndex + b;
-//        if (imagePairTimeSeries->paAngularSpectrumCumulativeFrameCountH[paBin] > maxPaH) maxPaH = imagePairTimeSeries->paAngularSpectrumCumulativeFrameCountH[paBin];
-//        if (imagePairTimeSeries->paAngularSpectrumCumulativeFrameCountV[paBin] > maxPaV) maxPaV = imagePairTimeSeries->paAngularSpectrumCumulativeFrameCountV[paBin];
-//    }
+    // Onboard processing
+    onboardProcessing(imagePair->pixelsH, imagePair->gotImageH, minCol, maxCol, nCols, &imagePairTimeSeries->totalCountsH[imagePairIndex], &imagePairTimeSeries->x1H[imagePairIndex], &imagePairTimeSeries->y1H[imagePairIndex], &imagePairTimeSeries->agcControlValueH[imagePairIndex]);
+    onboardProcessing(imagePair->pixelsV, imagePair->gotImageV, minCol, maxCol, nCols, &imagePairTimeSeries->totalCountsV[imagePairIndex], &imagePairTimeSeries->x1V[imagePairIndex], &imagePairTimeSeries->y1V[imagePairIndex], &imagePairTimeSeries->agcControlValueV[imagePairIndex]);
+
+    // printf("onboard: totalH: %0lf x1H: %7.3lf y1H: %7.3lf agcH: %6.1lf\n", imagePairTimeSeries->totalCountsH[imagePairIndex], imagePairTimeSeries->x1H[imagePairIndex], imagePairTimeSeries->y1H[imagePairIndex], imagePairTimeSeries->agcControlValueH[imagePairIndex]);
+
+    // printf("onboard: totalV: %0lf x1V: %7.3lf y1V: %7.3lf agcV: %6.1lf\n", imagePairTimeSeries->totalCountsV[imagePairIndex], imagePairTimeSeries->x1V[imagePairIndex], imagePairTimeSeries->y1V[imagePairIndex], imagePairTimeSeries->agcControlValueV[imagePairIndex]);
 
     maxPaH = 500;
     maxPaV = 500;
@@ -180,8 +180,8 @@ void drawImage(uint8_t *imageBuf, uint16_t * pixels, bool gotImage, double maxVa
         if (v < MIN_COLOR_VALUE) v = MIN_COLOR_VALUE;
         if (!gotImage || missing)
             v = BACKGROUND_COLOR;
-        x = k / 66;
-        y = 65 - (k % 66);
+        x = k / TII_ROWS;
+        y = (TII_ROWS-1) - (k % TII_ROWS);
         for (int sx = 0; sx < scale; sx++)
         {
             for (int sy = 0; sy < scale; sy++)

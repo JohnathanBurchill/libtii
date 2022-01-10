@@ -5,6 +5,7 @@
 #include "utility.h"
 
 #include <math.h>
+#include <stdlib.h>
 
 void initializeImageStats(ImageStats *stats)
 {
@@ -18,6 +19,11 @@ void initializeImageStats(ImageStats *stats)
         stats->paAngularSpectrumTotal[b] = 0;
     }
 
+    // Image processing results
+    stats->totalCounts = 0.0;
+    stats->x1 = 0.0;
+    stats->y1 = 0.0;
+    stats->agcControlValue = 0.0;
 }
 
 
@@ -41,8 +47,8 @@ void analyzeImage(uint16_t *pixels, bool gotImage, double requestedMaxValue, Ima
             if (pixels[k] == 4095)
                 measlesCounter++;
 
-            x = k / 66;
-            y = 65 - (k % 66);
+            x = k / TII_ROWS;
+            y = (TII_ROWS - 1) - (k % TII_ROWS);
             dx = (double) x - OPTICAL_CENTER_X;
             dy = OPTICAL_CENTER_Y - (double) y; // y increases downward, switch to match graphics in case needed for other analysis
             r = hypot(dx, dy);
@@ -133,4 +139,89 @@ size_t countImagePairs(ImagePackets *imagePackets, ImagePair *imagePair, double 
 
     return nImagePairs;
 
+}
+
+void onboardProcessing(uint16_t *correctedPixels, bool gotImage, uint16_t minCol, uint16_t maxCol, uint16_t nCols, double *totalCounts, double *x1, double *y1, double *agcControlValue)
+{
+    // image total
+    double total = 0.;
+    double x1Total = 0.;
+    double y1Total = 0.;
+    double columnSum[TII_COLS];
+    // column sum values and number of nonzero pixels
+    // In one array for easy sorting
+    double columnSumsAndNonZeroPixels[TII_COLS*2];
+    for (int i = 0; i < TII_COLS; i++)
+    {
+        columnSum[i] = 0;
+        columnSumsAndNonZeroPixels[2*i] = 0;
+        columnSumsAndNonZeroPixels[2*i+1] = 0;
+    }
+
+    if (!gotImage)
+    {
+        *totalCounts = 0.0;
+        *x1 = 0.0;
+        *y1 = 0.0;
+        *agcControlValue = 0.0;
+    }
+
+    double x, y, value, agcValue;
+    for (int i = 0; i < NUM_FULL_IMAGE_PIXELS; i++)
+    {
+        value = (double)correctedPixels[i];
+        total += value;
+        if (value > 0)
+        {
+            columnSum[i / TII_ROWS] += value;
+            columnSumsAndNonZeroPixels[2*(i / TII_ROWS)] += value;
+            columnSumsAndNonZeroPixels[2*(i / TII_ROWS) + 1] ++;
+        }
+        
+        x = 65.0 - (double) (i/TII_ROWS);
+        y = 65.0 - (double) (i % TII_ROWS);
+        if (x >= minCol && x <= maxCol && y >=1 && y <= 64)
+        {
+            x1Total += x * value;
+            y1Total += y * value;
+        }
+    }
+    // moments
+    if (total > 0.0)
+    {
+        *x1 = x1Total / total;
+        *y1 = y1Total / total;
+        *totalCounts = total;
+    }
+    else
+    {
+        *x1 = 0.0;
+        *y1 = 0.0;
+        *totalCounts = 0.0;
+    }
+
+    // Takes into account that analysis is done only between minCol and maxCol since the columnSumSorted is 0 outsize this anyway
+    // Reverse sort so largest is at beginning of array
+    if (total > 0)
+    {
+        qsort(columnSumsAndNonZeroPixels + 2, TII_COLS-1, 2*sizeof(double), &reverseSortDouble);
+        *agcControlValue = columnSumsAndNonZeroPixels[2] / columnSumsAndNonZeroPixels[3];
+    }
+    else
+    {
+        *agcControlValue = 0.0;
+    }
+
+    return;
+}
+
+int reverseSortDouble(const void * first, const void *second)
+{
+    double a = *((double*)first);
+    double b = *((double*)second);
+    if (a > b)
+        return -1;
+    else if (a == b)
+        return 0;
+    else return 1;
 }
