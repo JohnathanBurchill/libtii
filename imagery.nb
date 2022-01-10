@@ -182,8 +182,8 @@ Cell[BoxData[
 Cell[BoxData[
  TemplateBox[{
   "Part", "partd", 
-   "\"Part specification \\!\\(\\*RowBox[{\\\"i\\\", \\\"\[LeftDoubleBracket]\
-\\\", \\\"1\\\", \\\"\[RightDoubleBracket]\\\"}]\\) is longer than depth of \
+   "\"Part specification \\!\\(\\*RowBox[{\\\"i\\\", \\\"\[LeftfloatBracket]\
+\\\", \\\"1\\\", \\\"\[RightfloatBracket]\\\"}]\\) is longer than depth of \
 object.\"", 2, 1, 1, 25770339628852943921, "Local"},
   "MessageTemplate"]], "Message", "MSG",
  CellChangeTimes->{3.848596032605071*^9},
@@ -192,8 +192,8 @@ object.\"", 2, 1, 1, 25770339628852943921, "Local"},
 Cell[BoxData[
  TemplateBox[{
   "Part", "partd", 
-   "\"Part specification \\!\\(\\*RowBox[{\\\"i\\\", \\\"\[LeftDoubleBracket]\
-\\\", \\\"1\\\", \\\"\[RightDoubleBracket]\\\"}]\\) is longer than depth of \
+   "\"Part specification \\!\\(\\*RowBox[{\\\"i\\\", \\\"\[LeftfloatBracket]\
+\\\", \\\"1\\\", \\\"\[RightfloatBracket]\\\"}]\\) is longer than depth of \
 object.\"", 2, 94, 27, 25770339628852943921, "Local"},
   "MessageTemplate"]], "Message", "MSG",
  CellChangeTimes->{3.848602204651538*^9},
@@ -202,8 +202,8 @@ object.\"", 2, 94, 27, 25770339628852943921, "Local"},
 Cell[BoxData[
  TemplateBox[{
   "Part", "partd", 
-   "\"Part specification \\!\\(\\*RowBox[{\\\"i\\\", \\\"\[LeftDoubleBracket]\
-\\\", \\\"1\\\", \\\"\[RightDoubleBracket]\\\"}]\\) is longer than depth of \
+   "\"Part specification \\!\\(\\*RowBox[{\\\"i\\\", \\\"\[LeftfloatBracket]\
+\\\", \\\"1\\\", \\\"\[RightfloatBracket]\\\"}]\\) is longer than depth of \
 object.\"", 2, 104, 28, 25770339628852943921, "Local"},
   "MessageTemplate"]], "Message", "MSG",
  CellChangeTimes->{3.848604719711784*^9},
@@ -212,8 +212,8 @@ object.\"", 2, 104, 28, 25770339628852943921, "Local"},
 Cell[BoxData[
  TemplateBox[{
   "Part", "partd", 
-   "\"Part specification \\!\\(\\*RowBox[{\\\"i\\\", \\\"\[LeftDoubleBracket]\
-\\\", \\\"1\\\", \\\"\[RightDoubleBracket]\\\"}]\\) is longer than depth of \
+   "\"Part specification \\!\\(\\*RowBox[{\\\"i\\\", \\\"\[LeftfloatBracket]\
+\\\", \\\"1\\\", \\\"\[RightfloatBracket]\\\"}]\\) is longer than depth of \
 object.\"", 2, 446, 36, 25770339628852943921, "Local"},
   "MessageTemplate"]], "Message", "MSG",
  CellChangeTimes->{3.8486808654232073`*^9},
