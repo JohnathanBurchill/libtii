@@ -1,5 +1,3 @@
 Include stats in movie generator and export stats to daily files. Can be read by Mathematica, etc.
 
-Calculate onboard processing and display on image and calculate histograms and display at movie end the AGC histograms.
-
 
