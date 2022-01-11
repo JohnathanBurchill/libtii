@@ -1,8 +1,13 @@
 #!/bin/bash
 
-# Generates EFI TII image statistics the given input dates. 
+# Generates EFI TII image statistics for the given input dates. 
 
 # http://stackoverflow.com/questions/28226229/how-to-loop-through-dates-using-bash
+
+if test "$#" -ne "4"; then
+  echo "Usage: $0 satelliteLetter startDate stopDate stride"
+  exit 1
+fi
 
 satellite=$1
 startDate=$(date -d "$2" +%s)
@@ -50,8 +55,8 @@ while [ "$dateToProcess" -le "$stopDate" ]; do
 	day=$(date -d "@$dateToProcess" +%d)
 	daysProcessed=$((daysProcessed + 1))
 	datestring=`date -I -d "@$dateToProcess"`
-	draw_progress_bar $daysProcessed $daysToProcess "days: TIIM ${satellite} $datestring"
- 	tiim_stats ${satellite}${year}${month}${day} /data/Movies/Swarm
+	draw_progress_bar $daysProcessed $daysToProcess "days: TIIM_STATS ${satellite} $datestring"
+ 	tiim_stats ${satellite}${year}${month}${day} /data/Movies/Swarm/image_stats
 	dateToProcess=$((dateToProcess + stride * 86400))
 done
 )

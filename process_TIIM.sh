@@ -4,6 +4,11 @@
 
 # http://stackoverflow.com/questions/28226229/how-to-loop-through-dates-using-bash
 
+if test "$#" -ne "4"; then
+  echo "Usage: $0 satelliteLetter startDate stopDate stride"
+  exit 1
+fi
+
 satellite=$1
 startDate=$(date -d "$2" +%s)
 stopDate=$(date -d "$3" +%s)
