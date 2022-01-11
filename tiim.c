@@ -291,6 +291,7 @@ int main(int argc, char **argv)
     double agcBinMax = 800;
     int histWidth = 200;
     int histHeight = 150;
+    // TODO Only include AGC enabled data?
     drawHistogram(imageBuf, imagePairTimeSeries.agcControlValueH, imagePairTimeSeries.nImagePairs, agcBinWidth, agcBinMin, agcBinMax, histWidth, histHeight, ox, oy, HISTOGRAM_PEAK_EQUALS_ONE, "AGC control value H");
 
     drawHistogram(imageBuf, imagePairTimeSeries.agcControlValueV, imagePairTimeSeries.nImagePairs, agcBinWidth, agcBinMin, agcBinMax, histWidth, histHeight, ox, oy + histHeight + 50, HISTOGRAM_PEAK_EQUALS_ONE, "AGC control value V");
@@ -321,20 +322,3 @@ cleanup:
     exit(0);
 }
 
-void usage(char * name)
-{
-    printf("\nTII Movie Generator Version %s compiled %s %s UTC\n", TIIM_VERSION, __DATE__, __TIME__);
-    printf("\nLicense: GPL 3.0 ");
-    printf("Copyright 2021 University of Calgary\n");
-    printf("\nUsage:\n");
-    printf("\n  %s SW_OPER_EFIXDDD_0__yyyyMMddThhmmss_yyyyMMddThhmmss_vvvv.HDR maxSignal outputDir [-f] \n", name);
-    printf("\nor\n");
-    printf("\n  %s Xyyyymmdd maxSignal outputDir [-f]\n", name);
-    printf("\n");
-    printf("In the first form DDD is either \"NOM\" or \"TIC\"\n");
-    printf("In the second form X designates the Swarm satellite (A, B or C).\n");
-    printf("Set maxSignal to -1 for autoscaling the TII imagery.\n");
-    printf("\"-f\" forces overwriting an extant TII movie file.\n");
-
-    return;
-}

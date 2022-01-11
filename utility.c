@@ -54,3 +54,21 @@ bool ignoreTime(double time, double dayStart, double dayEnd)
         // discard packets that are not of this day
         return (time < dayStart || time > dayEnd);
 }
+
+void usage(const char * name)
+{
+    printf("\nTII Movie Generator Version %s compiled %s %s UTC\n", TIIM_VERSION, __DATE__, __TIME__);
+    printf("\nLicense: GPL 3.0 ");
+    printf("Copyright 2022 Johnathan Kerr Burchill\n");
+    printf("\nUsage:\n");
+    printf("\n  %s SW_OPER_EFIXDDD_0__yyyyMMddThhmmss_yyyyMMddThhmmss_vvvv.HDR maxSignal outputDir [-f] \n", name);
+    printf("\nor\n");
+    printf("\n  %s Xyyyymmdd maxSignal outputDir [-f]\n", name);
+    printf("\n");
+    printf("In the first form DDD is either \"NOM\" or \"TIC\"\n");
+    printf("In the second form X designates the Swarm satellite (A, B or C).\n");
+    printf("Set maxSignal to -1 for autoscaling the TII imagery.\n");
+    printf("\"-f\" forces overwriting an extant TII movie file.\n");
+
+    return;
+}

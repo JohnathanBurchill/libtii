@@ -19,4 +19,6 @@ int dateToSecondsSince1970(const char * yyyymmdd, double *seconds);
 
 bool ignoreTime(double time, double dayStart, double dayEnd);
 
+void usage(const char * name);
+
 #endif // _UTILITY_H
