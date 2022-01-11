@@ -24,8 +24,8 @@ int main(int argc, char **argv)
 
     int status = 0;
 
-    char * hdr = argv[1];
-    size_t sourceLen = strlen(hdr);
+    char * satDate = argv[1];
+    size_t sourceLen = strlen(satDate);
 
     // Daily image statistics only
     if (sourceLen != 9)
@@ -42,7 +42,7 @@ int main(int argc, char **argv)
     ImagePairTimeSeries imagePairTimeSeries;
     initImagePairTimeSeries(&imagePairTimeSeries);
 
-    status = importImagery(hdr, &imagePackets);
+    status = importImagery(satDate, &imagePackets);
     if (status)
     {
         fprintf(stderr, "Could not import image data.\n");
@@ -50,10 +50,7 @@ int main(int argc, char **argv)
     }
     if (imagePackets.numberOfImages == 0)
     {
-        if (sourceLen == 9)
-            fprintf(stderr, "No images found for satellite %c for date %s\n", hdr[0], hdr+1);
-        else
-            fprintf(stderr, "No images found in file %s\n", hdr);
+        fprintf(stderr, "No images found for satellite %c on %s\n", satDate[0], satDate+1);
         goto cleanup;
     }
     
@@ -74,9 +71,9 @@ int main(int argc, char **argv)
     double dayEnd = imagePair.secondsSince1970;
     // Filter images based on time of day if yyyymmdd was passed
     // Seconds since 1970
-    if (dateToSecondsSince1970(hdr + 1, &dayStart))
+    if (dateToSecondsSince1970(satDate + 1, &dayStart))
     {
-        fprintf(stderr, "Could not parse %s to a date.\n", hdr);
+        fprintf(stderr, "Could not parse %s to a date.\n", satDate);
         goto cleanup;
     }
     dayEnd = dayStart + 86400.0; // ignore leap second on this day
@@ -107,8 +104,8 @@ int main(int argc, char **argv)
 
     // Per image measles and PA stats
     char measlesPaFilename[FILENAME_MAX];
-    sprintf(measlesPaFilename, "%s/SW_EFI%c_image_stats_timeseries.txt", outputDir, hdr[0]);
-    FILE *measlesPaFile = fopen(measlesPaFilename, "a");
+    sprintf(measlesPaFilename, "%s/SW_EFI%s_image_stats.txt", outputDir, satDate);
+    FILE *measlesPaFile = fopen(measlesPaFilename, "w");
     if (measlesPaFile == NULL)
     {
         fprintf(stderr, "Could not open stats file.\n");
