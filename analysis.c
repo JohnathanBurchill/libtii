@@ -225,3 +225,71 @@ int reverseSortDouble(const void * first, const void *second)
         return 0;
     else return 1;
 }
+
+int histogram(double* values, size_t nValues, double binWidth, double minValue, double maxValue, double **binnedValues, double **binnedCounts, size_t *nBins, int normalization)
+{
+    int bins = 0;
+    *binnedValues = NULL;
+    *binnedCounts = NULL;
+    if (binWidth <= 0)
+        return ANALYSIS_HISTOGRAM_NO_DATA;
+
+    // From min to max inclusive, center of bin first bin is minValue + binWidth/2
+    // include in bin at lower bin value and up to and not including upper bin value
+    bins = (size_t) ((maxValue - minValue) / binWidth) ;
+    *nBins = bins;
+
+    *binnedValues = (double*)malloc(bins * sizeof(double));
+    if (*binnedValues == NULL)
+        return ANALYSIS_HISTOGRAM_MALLOC;
+    *binnedCounts = (double*)malloc(bins * sizeof(size_t));
+    if (*binnedCounts == NULL)
+        return ANALYSIS_HISTOGRAM_MALLOC;
+
+    for (size_t i = 0; i < bins; i++)
+    {
+        (*binnedValues)[i] = minValue + binWidth * i;
+        (*binnedCounts)[i] = 0;
+    }
+
+    size_t bin;
+    for (size_t i = 0; i < nValues; i++)
+    {
+        if (values[i] >= minValue && values[i] < maxValue)
+        {
+            bin = (size_t) floor((values[i] - minValue) / binWidth);
+            (*binnedCounts)[bin]++;
+        }        
+    }
+
+    double max = 0.0;
+    double total = 0.0;
+    switch (normalization)
+    {
+        case HISTOGRAM_PEAK_EQUALS_ONE:
+            for (int i = 0; i < bins; i++)
+            {
+                if ((*binnedCounts)[i] > max)
+                    max = (*binnedCounts)[i];
+            }
+            if (max > 0)
+                for (int i = 0; i < bins; i++)
+                    (*binnedCounts)[i] /= max;
+            else
+                return ANALYSIS_HISTOGRAM_UNNORMALIZED;
+            break;
+        case HISTOGRAM_AREA_EQUALS_ONE:
+            for (int i = 0; i < bins; i++)
+                total += (*binnedCounts)[i];
+            if (total > 0)
+                for (int i = 0; i < bins; i++)
+                    (*binnedCounts)[i] /= total;
+            else
+                return ANALYSIS_HISTOGRAM_UNNORMALIZED;
+            break;
+        default:
+            break;
+    }
+
+    return ANALYSIS_OK;
+}

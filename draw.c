@@ -545,3 +545,75 @@ void drawFill(uint8_t *imageBuf, int colorIndex)
 {
     memset(imageBuf, colorIndex, IMAGE_BUFFER_SIZE);
 }
+
+
+void drawHistogram(uint8_t *imageBuf, double *values, size_t nValues, double binWidth, double minValue, double maxValue, size_t plotWidth, size_t plotHeight, size_t plotLeft, size_t plotBottom, int normalization, const char *xLabel)
+{
+    double *bins = NULL;
+    double *binCounts = NULL;
+    size_t nBins;
+    int barWidth;
+    int barGap = 1;
+    int x, y;
+    if (!histogram(values, nValues, binWidth, minValue, maxValue, &bins, &binCounts, &nBins, normalization))
+    {
+        double max = 0.0;
+        for (int i = 0; i < nBins; i++)
+            if (binCounts[i] > max)
+                max = binCounts[i];
+        barWidth = (int)((double)plotWidth / (double)nBins - (double)barGap);
+        for (int i = 0; i < nBins; i++)
+        {
+            for (int j = 0; j < barWidth; j++)
+            {
+                x = plotLeft + i * (barWidth + barGap) + j;
+                y = rescaleAsInteger(binCounts[i], 0, max, plotBottom, plotBottom-plotHeight);
+                for (int k = plotBottom; k > y; k--)
+                {
+                    setBufferColorIndex(imageBuf, x, k, FOREGROUND_COLOR);
+                }
+            }
+        }
+
+        annotate(xLabel, 12, plotLeft + plotWidth / 2 - strlen(xLabel) / 2 * 8, plotBottom + 15, imageBuf);
+        char label[255];
+
+        char *yLabel;
+        switch(normalization)
+        {
+            case HISTOGRAM_PEAK_EQUALS_ONE:
+                yLabel = "# / max";
+                break;
+            case HISTOGRAM_AREA_EQUALS_ONE:
+                yLabel = "# / total";
+                break;
+            default:
+                yLabel = "#";
+                break;
+        }
+        annotate(yLabel, 12, plotLeft + plotWidth + 40, plotBottom - plotHeight/2 - 7, imageBuf);
+        sprintf(label, "%.2f", max);
+        for (int y = plotBottom; y >= plotBottom - plotHeight; y--)
+        {
+            setBufferColorIndex(imageBuf, plotLeft+plotWidth, y, MAX_COLOR_VALUE + 2);
+            if ((plotBottom - y) % (plotHeight / 5) == 0)
+            {
+                sprintf(label, "%.1f", (double)(plotBottom - y) / (double)plotHeight * max);
+                annotate(label, 9, plotLeft + plotWidth + 5, y - 6, imageBuf);
+            }
+        }
+        for (int x = plotLeft; x <= plotLeft + plotWidth; x++)
+            setBufferColorIndex(imageBuf, x, plotBottom, MAX_COLOR_VALUE + 2);
+        for (int i = 0; i < nBins; i+=2)
+        {
+            double v = bins[i] + binWidth/2.0;
+            sprintf(label, "%.0f", v);
+            annotate(label, 9, rescaleAsInteger(v, bins[0] + binWidth/2.0, bins[nBins-1] + binWidth/2.0, plotLeft + barWidth / 2, plotLeft + nBins * (barWidth + barGap)) - (int)(strlen(label) * 3.75), plotBottom + 1, imageBuf);
+        }
+
+    }
+
+    free(bins);
+    free(binCounts);
+
+}

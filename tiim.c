@@ -283,6 +283,18 @@ int main(int argc, char **argv)
     drawTimeSeries(imageBuf, imagePairTimeSeries.time, imagePairTimeSeries.y1H, nImagePairs, ox, oy + 2*plotHeight + 2*dy, plotWidth, plotHeight, dayStart, dayEnd, 20, 45, xlabel, "y1", 1, MAX_COLOR_VALUE + 1, "20", "45", false, dotSize, 12, true);
     drawTimeSeries(imageBuf, imagePairTimeSeries.time, imagePairTimeSeries.y1V, nImagePairs, ox, oy + 2*plotHeight + 2*dy, plotWidth, plotHeight, dayStart, dayEnd, 20, 45, "", "", 1, 13, "", "", false, dotSize, 12, false);
 
+    // AGC histograms
+    ox = 640;
+    oy = 220;
+    double agcBinWidth = 50;
+    double agcBinMin = 25;
+    double agcBinMax = 800;
+    int histWidth = 200;
+    int histHeight = 150;
+    drawHistogram(imageBuf, imagePairTimeSeries.agcControlValueH, imagePairTimeSeries.nImagePairs, agcBinWidth, agcBinMin, agcBinMax, histWidth, histHeight, ox, oy, HISTOGRAM_PEAK_EQUALS_ONE, "AGC control value H");
+
+    drawHistogram(imageBuf, imagePairTimeSeries.agcControlValueV, imagePairTimeSeries.nImagePairs, agcBinWidth, agcBinMin, agcBinMax, histWidth, histHeight, ox, oy + histHeight + 50, HISTOGRAM_PEAK_EQUALS_ONE, "AGC control value V");
+
     for (int c = 0; c < 3.0 * VIDEO_FPS; c++)
         generateFrame(imageBuf, frameCounter++);
 

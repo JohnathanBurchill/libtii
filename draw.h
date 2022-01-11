@@ -34,4 +34,6 @@ void drawHorizontalLine(uint8_t *imageBuf, int x0, int x1, int y);
 
 void drawFill(uint8_t *imageBuf, int colorIndex);
 
+void drawHistogram(uint8_t *imageBuf, double *values, size_t nValues, double binWidth, double minValue, double maxValue, size_t plotWidth, size_t plotHeight, size_t plotLeft, size_t plotBottom, int normalization, const char *xLabel);
+
 #endif // _DRAW_H
