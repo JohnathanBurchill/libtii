@@ -17,6 +17,7 @@ int main( int argc, char **argv)
     double *values = NULL;
     double *avgTimes = NULL;
     double *avgValues = NULL;
+    FILE *file = NULL;
 
     if (argc != 7)
     {
@@ -63,7 +64,6 @@ int main( int argc, char **argv)
     
     size_t nValues = 0;
     double t, mh, mv, pah, pav, vph, vpv, vmh, vmv, vbh, vbv, vf;
-    FILE *file = NULL;
     int valuesRead = 0;
     double epoch1970 = 2208988800.0;
 
