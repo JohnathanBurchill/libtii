@@ -22,6 +22,7 @@ int main( int argc, char **argv)
     if (argc != 7)
     {
         parserUsage(argv[0]);
+        goto cleanup;
     }
 
     char satLetter = argv[1][0];
