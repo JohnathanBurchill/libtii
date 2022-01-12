@@ -166,14 +166,14 @@ int main( int argc, char **argv)
     }
 
 
-    // for (size_t i = 0; i < avgInd; i++)
-    // {
-    //     printf("%lf %lf\n", avgTimes[i], avgValues[i]);
-    // }
-    for (size_t i = 0; i < nValues; i++)
+    for (size_t i = 0; i < avgInd; i++)
     {
-        printf("%lf %lf\n", timesValues[2*i], timesValues[2*i+1]);
+        printf("%lf %lf\n", avgTimes[i], avgValues[i]);
     }
+    // for (size_t i = 0; i < nValues; i++)
+    // {
+    //     printf("%lf %lf\n", timesValues[2*i], timesValues[2*i+1]);
+    // }
 
     cleanup:
     if (file != NULL)
@@ -206,11 +206,11 @@ void parserUsage(const char *program)
 
 int sortEm(const void *first, const void *second)
 {
-    double a = *(double*)first;
-    double b = *(double*)second;
-    if (first > second)
+    double a = *((double*)first);
+    double b = *((double*)second);
+    if (a > b)
         return 1;
-    else if (first == second)
+    else if (a == b)
         return 0;
     else
         return -1;
