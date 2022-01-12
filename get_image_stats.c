@@ -85,35 +85,36 @@ int main( int argc, char **argv)
             {
                 if (valuesRead != 12)
                     break;
-                nValues++;
-                times = (double*) realloc(times, nValues * sizeof(double));
-                values = (double*) realloc(values, nValues * sizeof(double));
-                if (times == NULL || values == NULL)
-                {
-                    printf("Could not allocate memory.");
-                    fts_close(fts);
-                    goto cleanup;
-                }
                 if (scienceOnly == 0 || (vph >= 4700.0 && vph <= 5300.0 && vpv >= 4700.0 && vpv <= 5300.0 && vmh <= -1000.0 && vmv <= -1000.0 && vbh <= -50.0 && vbv <= -50.0))
-                times[nValues-1] = t + epoch1970;
-                switch(paramToRead)
                 {
-                    case 1:
-                        values[nValues-1] = mh;
-                        break;
-                    case 2:
-                        values[nValues-1] = mv;
-                        break;
-                    case 3:
-                        values[nValues-1] = pah;
-                        break;
-                    case 4:
-                        values[nValues-1] = pav;
-                        break;
-                    default:
-                        break;
+                    nValues++;
+                    times = (double*) realloc(times, nValues * sizeof(double));
+                    values = (double*) realloc(values, nValues * sizeof(double));
+                    if (times == NULL || values == NULL)
+                    {
+                        printf("Could not allocate memory.");
+                        fts_close(fts);
+                        goto cleanup;
+                    }
+                    times[nValues-1] = t + epoch1970;
+                    switch(paramToRead)
+                    {
+                        case 1:
+                            values[nValues-1] = mh;
+                            break;
+                        case 2:
+                            values[nValues-1] = mv;
+                            break;
+                        case 3:
+                            values[nValues-1] = pah;
+                            break;
+                        case 4:
+                            values[nValues-1] = pav;
+                            break;
+                        default:
+                            break;
+                    }
                 }
-
             }
             fclose(file);
             file = NULL;
@@ -126,6 +127,7 @@ int main( int argc, char **argv)
     size_t avgInd = 0;
     size_t intervalSamples = 0;
     double firstT;
+    double t0; // average times relative to first time
     double deltaT = 60.0 * averageIntervalMinutes;
     if (nValues > 0)
     {
@@ -138,25 +140,26 @@ int main( int argc, char **argv)
         }
         memset(avgTimes, 0, nValues * sizeof(double));
         memset(avgValues, 0, nValues * sizeof(double));
-        firstT = times[0];
-        for (size_t i = 0; i < nValues; i++)
+        t0 = firstT = times[0];
+        for (size_t i = 0; i < nValues;)
         {
-            if (times[i] >= firstT + deltaT)
+            if (times[i] - firstT < deltaT)
+            {
+                avgTimes[avgInd] += (times[i] - t0);
+                avgValues[avgInd] += values[i];
+                intervalSamples++;
+                i++;
+            }
+            if (times[i] - firstT >= deltaT || i == nValues)
             {
                 if (intervalSamples > 0)
                 {
-                    avgTimes[avgInd] /= (double)intervalSamples;
+                    avgTimes[avgInd] = avgTimes[avgInd] / (double)intervalSamples + t0;
                     avgValues[avgInd] /= (double)intervalSamples;
                     avgInd++;
                 }
                 intervalSamples = 0;
                 firstT += deltaT;
-            }
-            else
-            {
-                avgTimes[avgInd] += times[i];
-                avgValues[avgInd] += values[i];
-                intervalSamples++;
             }
         }
     }
