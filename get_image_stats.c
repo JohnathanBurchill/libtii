@@ -166,9 +166,13 @@ int main( int argc, char **argv)
     }
 
 
-    for (size_t i = 0; i < avgInd; i++)
+    // for (size_t i = 0; i < avgInd; i++)
+    // {
+    //     printf("%lf %lf\n", avgTimes[i], avgValues[i]);
+    // }
+    for (size_t i = 0; i < nValues; i++)
     {
-        printf("%lf %lf\n", avgTimes[i], avgValues[i]);
+        printf("%lf %lf\n", timesValues[2*i], timesValues[2*i+1]);
     }
 
     cleanup:
