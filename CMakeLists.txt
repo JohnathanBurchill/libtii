@@ -40,8 +40,12 @@ TARGET_LINK_LIBRARIES(tiim ${LIBS})
 ADD_EXECUTABLE(tiim_stats tiim_stats.c isp.c xml.c analysis.c import.c utility.c filters.c timeseries.c)
 TARGET_LINK_LIBRARIES(tiim_stats ${LIBS})
 
+ADD_EXECUTABLE(get_image_stats get_image_stats.c)
+TARGET_LINK_LIBRARIES(tiim_stats -lm)
+
 install(TARGETS tiim DESTINATION $ENV{HOME}/bin)
 install(TARGETS tiim_stats DESTINATION $ENV{HOME}/bin)
+install(TARGETS get_image_stats DESTINATION $ENV{HOME}/bin)
 
 install(PROGRAMS parallel_process_TIIM.sh DESTINATION $ENV{HOME}/bin)
 install(PROGRAMS process_TIIM.sh DESTINATION $ENV{HOME}/bin)
