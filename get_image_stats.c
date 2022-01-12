@@ -13,6 +13,10 @@ void parserUsage(const char *program);
 
 int main( int argc, char **argv)
 {
+    double *times = NULL;
+    double *values = NULL;
+    double *avgTimes = NULL;
+    double *avgValues = NULL;
 
     if (argc != 7)
     {
@@ -57,8 +61,6 @@ int main( int argc, char **argv)
     FTSENT * f = fts_read(fts);
     int nameLength;
     
-    double *times = NULL;
-    double *values = NULL;
     size_t nValues = 0;
     double t, mh, mv, pah, pav, vph, vpv, vmh, vmv, vbh, vbv, vf;
     FILE *file = NULL;
@@ -124,8 +126,6 @@ int main( int argc, char **argv)
     size_t intervalSamples = 0;
     double firstT;
     double deltaT = 60.0 * averageIntervalMinutes;
-    double *avgTimes = NULL;
-    double *avgValues = NULL;
     if (nValues > 0)
     {
         avgTimes = (double*)malloc(nValues * sizeof(double));
