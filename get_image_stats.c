@@ -91,6 +91,7 @@ int main( int argc, char **argv)
                     fts_close(fts);
                     goto cleanup;
                 }
+                if (scienceOnly == 0 || (vph >= 4700.0 && vph <= 5300.0 && vpv >= 4700.0 && vpv <= 5300.0 && vmh <= -1000.0 && vmv <= -1000.0 && vbh <= -50.0 && vbv <= -50.0))
                 times[nValues-1] = t + epoch1970;
                 switch(paramToRead)
                 {
@@ -118,9 +119,51 @@ int main( int argc, char **argv)
     }
     fts_close(fts);
 
-    for (size_t i = 0; i < nValues; i++)
+    // Average the data
+    size_t avgInd = 0;
+    size_t intervalSamples = 0;
+    double firstT;
+    double deltaT = 60.0 * averageIntervalMinutes;
+    double *avgTimes = NULL;
+    double *avgValues = NULL;
+    if (nValues > 0)
     {
-        printf("%lf %lf\n", times[i], values[i]);
+        avgTimes = (double*)malloc(nValues * sizeof(double));
+        avgValues = (double*)malloc(nValues * sizeof(double));
+        if (avgTimes == NULL || avgValues == NULL)
+        {
+            printf("Cannot remember the averages.\n");
+            goto cleanup;
+        }
+        memset(avgTimes, 0, nValues * sizeof(double));
+        memset(avgValues, 0, nValues * sizeof(double));
+        firstT = times[0];
+        for (size_t i = 0; i < nValues; i++)
+        {
+            if (times[i] >= firstT + deltaT)
+            {
+                if (intervalSamples > 0)
+                {
+                    avgTimes[avgInd] /= (double)intervalSamples;
+                    avgValues[avgInd] /= (double)intervalSamples;
+                    avgInd++;
+                }
+                intervalSamples = 0;
+                firstT += deltaT;
+            }
+            else
+            {
+                avgTimes[avgInd] += times[i];
+                avgValues[avgInd] += values[i];
+                intervalSamples++;
+            }
+        }
+    }
+
+
+    for (size_t i = 0; i < avgInd; i++)
+    {
+        printf("%lf %lf\n", avgTimes[i], avgValues[i]);
     }
 
     cleanup:
@@ -132,6 +175,10 @@ int main( int argc, char **argv)
         free(times);
     if (values != NULL)
         free(values);
+    if (avgTimes != NULL)
+        free(avgTimes);
+    if (avgValues != NULL)
+        free(avgValues);
 
     return 0;
 }
