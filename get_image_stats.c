@@ -10,11 +10,11 @@
 // read image stats text files between date range, select data for science only imaging mode or all imagery, and average
 void parserUsage(const char *program);
 
+int sortEm(const void *, const void *);
 
 int main( int argc, char **argv)
 {
-    double *times = NULL;
-    double *values = NULL;
+    double *timesValues = NULL;
     double *avgTimes = NULL;
     double *avgValues = NULL;
     FILE *file = NULL;
@@ -88,28 +88,27 @@ int main( int argc, char **argv)
                 if (scienceOnly == 0 || (vph >= 4700.0 && vph <= 5300.0 && vpv >= 4700.0 && vpv <= 5300.0 && vmh <= -1000.0 && vmv <= -1000.0 && vbh <= -50.0 && vbv <= -50.0))
                 {
                     nValues++;
-                    times = (double*) realloc(times, nValues * sizeof(double));
-                    values = (double*) realloc(values, nValues * sizeof(double));
-                    if (times == NULL || values == NULL)
+                    timesValues = (double*) realloc(timesValues, 2*nValues * sizeof(double));
+                    if (timesValues == NULL)
                     {
-                        printf("Could not allocate memory.");
+                        printf("Cannot remember times and values.");
                         fts_close(fts);
                         goto cleanup;
                     }
-                    times[nValues-1] = t + epoch1970;
+                    timesValues[2*(nValues-1)] = t + epoch1970;
                     switch(paramToRead)
                     {
                         case 1:
-                            values[nValues-1] = mh;
+                            timesValues[2*(nValues-1)+1] = mh;
                             break;
                         case 2:
-                            values[nValues-1] = mv;
+                            timesValues[2*(nValues-1)+1] = mv;
                             break;
                         case 3:
-                            values[nValues-1] = pah;
+                            timesValues[2*(nValues-1)+1] = pah;
                             break;
                         case 4:
-                            values[nValues-1] = pav;
+                            timesValues[2*(nValues-1)+1] = pav;
                             break;
                         default:
                             break;
@@ -131,6 +130,8 @@ int main( int argc, char **argv)
     double deltaT = 60.0 * averageIntervalMinutes;
     if (nValues > 0)
     {
+        qsort(timesValues, nValues, 2*sizeof(double), &sortEm);
+
         avgTimes = (double*)malloc(nValues * sizeof(double));
         avgValues = (double*)malloc(nValues * sizeof(double));
         if (avgTimes == NULL || avgValues == NULL)
@@ -140,17 +141,17 @@ int main( int argc, char **argv)
         }
         memset(avgTimes, 0, nValues * sizeof(double));
         memset(avgValues, 0, nValues * sizeof(double));
-        t0 = firstT = times[0];
+        t0 = firstT = timesValues[0];
         for (size_t i = 0; i < nValues;)
         {
-            if (times[i] - firstT < deltaT)
+            if (timesValues[2*i] - firstT < deltaT)
             {
-                avgTimes[avgInd] += (times[i] - t0);
-                avgValues[avgInd] += values[i];
+                avgTimes[avgInd] += (timesValues[2*i] - t0);
+                avgValues[avgInd] += timesValues[2*i+1];
                 intervalSamples++;
                 i++;
             }
-            if (times[i] - firstT >= deltaT || i == nValues)
+            if (timesValues[2*i] - firstT >= deltaT || i == nValues)
             {
                 if (intervalSamples > 0)
                 {
@@ -175,10 +176,8 @@ int main( int argc, char **argv)
     {
         fclose(file);
     }
-    if (times != NULL)
-        free(times);
-    if (values != NULL)
-        free(values);
+    if (timesValues != NULL)
+        free(timesValues);
     if (avgTimes != NULL)
         free(avgTimes);
     if (avgValues != NULL)
@@ -199,4 +198,16 @@ void parserUsage(const char *program)
     printf(" 2: measles count V\n");
     printf(" 3: PA count H\n");
     printf(" 4: PA count V\n");
+}
+
+int sortEm(const void *first, const void *second)
+{
+    double a = *(double*)first;
+    double b = *(double*)second;
+    if (first > second)
+        return 1;
+    else if (first == second)
+        return 0;
+    else
+        return -1;
 }
