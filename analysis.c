@@ -17,6 +17,7 @@ void initializeImageStats(ImageStats *stats)
     {
         stats->paAngularSpectrumCumulativeFrameCount[b] = 0;
         stats->paAngularSpectrumTotal[b] = 0;
+        stats->paAngularSpectrumMax[b] = 0;
     }
 
     // Image processing results
