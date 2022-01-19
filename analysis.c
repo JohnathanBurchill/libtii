@@ -242,7 +242,7 @@ int histogram(double* values, size_t nValues, double binWidth, double minValue, 
     *binnedValues = (double*)malloc(bins * sizeof(double));
     if (*binnedValues == NULL)
         return ANALYSIS_HISTOGRAM_MALLOC;
-    *binnedCounts = (double*)malloc(bins * sizeof(size_t));
+    *binnedCounts = (double*)malloc(bins * sizeof(double));
     if (*binnedCounts == NULL)
         return ANALYSIS_HISTOGRAM_MALLOC;
 
