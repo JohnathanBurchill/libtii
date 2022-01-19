@@ -252,12 +252,12 @@ int histogram(double* values, size_t nValues, double binWidth, double minValue, 
         (*binnedCounts)[i] = 0;
     }
 
-    size_t bin;
+    long bin;
     for (size_t i = 0; i < nValues; i++)
     {
-        if (values[i] >= minValue && values[i] < maxValue)
+        bin = (long) floor((values[i] - minValue) / binWidth); 
+        if (bin >= 0 && bin < bins)
         {
-            bin = (size_t) floor((values[i] - minValue) / binWidth);
             (*binnedCounts)[bin]++;
         }        
     }
