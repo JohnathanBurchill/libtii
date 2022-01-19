@@ -19,7 +19,7 @@ double identityFilter(int k, void *pixelBuf, bool* missing, void* args)
 
 double paAngularSpectrumFilter(int k, void *pixelBuf, bool *missing, void *args)
 {
-    double v;
+    double v = 0;
     int x, y;
     double dx, dy, r, r1, phidx, phidy, phi;
     int paBin;
