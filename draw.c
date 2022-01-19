@@ -613,7 +613,9 @@ void drawHistogram(uint8_t *imageBuf, double *values, size_t nValues, double bin
 
     }
 
-    free(bins);
-    free(binCounts);
+    if (bins != NULL)
+        free(bins);
+    if (binCounts != NULL)
+        free(binCounts);
 
 }
