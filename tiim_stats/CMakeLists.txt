@@ -1,0 +1,15 @@
+CMAKE_MINIMUM_REQUIRED(VERSION 3.0)
+
+PROJECT(tiim_stats)
+
+# SET(LIBS ${LIBS} ${MATH} ${LIBXML2_LIBRARIES} ${ZLIB_LIBRARIES})
+INCLUDE_DIRECTORIES(${INCLUDE_DIRS} ${LIBXML2_INCLUDE_DIR})
+
+ADD_EXECUTABLE(tiim_stats tiim_stats.c)
+TARGET_LINK_LIBRARIES(tiim_stats ${LIBS} tii -lm)
+
+install(TARGETS tiim_stats DESTINATION $ENV{HOME}/bin)
+
+install(PROGRAMS parallel_process_TIIM_stats.sh DESTINATION $ENV{HOME}/bin)
+install(PROGRAMS process_TIIM_stats.sh DESTINATION $ENV{HOME}/bin)
+

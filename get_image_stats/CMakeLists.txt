@@ -1,0 +1,12 @@
+CMAKE_MINIMUM_REQUIRED(VERSION 3.0)
+
+PROJECT(get_image_stats)
+
+SET(LIBS ${LIBS} ${MATH} ${LIBXML2_LIBRARIES} ${ZLIB_LIBRARIES})
+INCLUDE_DIRECTORIES(${INCLUDE_DIRS} ${LIBXML2_INCLUDE_DIR})
+
+ADD_EXECUTABLE(get_image_stats get_image_stats.c)
+TARGET_LINK_LIBRARIES(get_image_stats ${LIBS} tii -lm)
+
+install(TARGETS get_image_stats DESTINATION $ENV{HOME}/bin)
+

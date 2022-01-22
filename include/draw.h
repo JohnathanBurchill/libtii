@@ -1,6 +1,8 @@
 #ifndef _DRAW_H
 #define _DRAW_H
 
+#include "tii.h"
+
 #include "isp.h"
 #include "analysis.h"
 #include "timeseries.h"

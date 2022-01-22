@@ -1,5 +1,6 @@
 #include "isp.h"
-#include "tiim.h"
+
+// #include "tiim.h"
 
 #include <math.h>
 #include <stdio.h>
@@ -172,7 +173,7 @@ int alignImages(ImagePair *imagePair)
         uint16_t *buf = imagePair->pixelsV;
         imagePair->pixelsV = imagePair->pixelsH;
         imagePair->pixelsH = buf;
-        memset(imagePair->pixelsH, FOREGROUND_COLOR, NUM_FULL_IMAGE_PIXELS * sizeof(uint16_t));
+        memset(imagePair->pixelsH, MISSING_PIXEL_VALUE, NUM_FULL_IMAGE_PIXELS * sizeof(uint16_t));
         ImageAuxData *abuf = imagePair->auxV;
         imagePair->auxV = imagePair->auxH;
         imagePair->auxH = abuf;
@@ -183,7 +184,7 @@ int alignImages(ImagePair *imagePair)
         imagePair->gotImageH = true;
         imagePair->gotImageV = false;
         // Zero out V pixels
-        memset(imagePair->pixelsV, FOREGROUND_COLOR, NUM_FULL_IMAGE_PIXELS * sizeof(uint16_t));
+        memset(imagePair->pixelsV, MISSING_PIXEL_VALUE, NUM_FULL_IMAGE_PIXELS * sizeof(uint16_t));
         status = ISP_H_IMAGE;
     }
     return status;

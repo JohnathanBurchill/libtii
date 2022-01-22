@@ -1,4 +1,4 @@
-#include "tiim.h"
+#include "tii.h"
 
 #include "isp.h"
 #include "import.h"
@@ -55,8 +55,6 @@ int main(int argc, char **argv)
     }
     
     uint16_t pixelsH[NUM_FULL_IMAGE_PIXELS], pixelsV[NUM_FULL_IMAGE_PIXELS];
-    uint8_t templateBuf[IMAGE_BUFFER_SIZE];
-    uint8_t imageBuf[IMAGE_BUFFER_SIZE];
     FullImagePacket * fip1, *fip2;
     FullImageContinuedPacket *cip1, *cip2;
     ImagePair imagePair;
@@ -133,7 +131,7 @@ cleanup:
 
 void statsusage(const char * name)
 {
-    printf("\nTII Daily Image Statistics %s compiled %s %s UTC\n", TIIM_VERSION, __DATE__, __TIME__);
+    printf("\nTII Daily Image Statistics %s compiled %s %s UTC\n", TII_LIB_VERSION_STRING, __DATE__, __TIME__);
     printf("\nLicense: GPL 3.0 ");
     printf("Copyright 2022 Johnathan Kerr Burchill\n");
     printf("\nUsage:\n");

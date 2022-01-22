@@ -1,6 +1,6 @@
 #include "video.h"
 
-#include "tiim.h"
+#include "tiigraphics.h"
 #include "colortable.h"
 #include "fonts.h"
 #include "draw.h"

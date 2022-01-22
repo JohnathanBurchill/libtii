@@ -1,12 +1,13 @@
 #include "draw.h"
 
-#include "tiim.h"
+#include "tiigraphics.h"
+
 #include "analysis.h"
 #include "isp.h"
 #include "gainmap.h"
-#include "fonts.h"
 #include "filters.h"
 #include "utility.h"
+#include "fonts.h"
 
 #include <stdio.h>
 #include <string.h>

@@ -1,9 +1,10 @@
 #ifndef _ANALYSIS_H
 #define _ANALYSIS_H
 
-#include "tiim.h"
+#include "settings.h"
 #include "isp.h"
 
+#include <stdlib.h>
 #include <stdint.h>
 #include <stdbool.h>
 

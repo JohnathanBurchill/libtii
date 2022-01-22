@@ -1,4 +1,4 @@
-#include "tiim.h"
+#include "tii.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -192,7 +192,7 @@ int main( int argc, char **argv)
 
 void parserUsage(const char *program)
 {
-    printf("\nTII Daily Image Statistics Parser %s compiled %s %s UTC\n", TIIM_VERSION, __DATE__, __TIME__);
+    printf("\nTII Daily Image Statistics Parser %s compiled %s %s UTC\n", TII_LIB_VERSION_STRING, __DATE__, __TIME__);
     printf("\nLicense: GPL 3.0 ");
     printf("Copyright 2022 Johnathan Kerr Burchill\n");
     printf("Usage: %s satelliteLetter startDate endDate scienceOnly averagingIntervalMinutes paramToRead\n", program);

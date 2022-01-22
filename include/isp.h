@@ -1,6 +1,8 @@
 #ifndef _ISP_H
 #define _ISP_H
 
+#include "tii.h"
+
 #include <stdint.h>
 #include <stdbool.h>
 
@@ -16,6 +18,7 @@
 #define TII_ROWS 66
 #define TII_COLS 40
 #define NUM_FULL_IMAGE_PIXELS 2640
+#define MISSING_PIXEL_VALUE -4
 
 typedef struct imagePackets
 {
@@ -178,6 +181,7 @@ typedef struct imagePair
     double secondsSince1970;
     
 } ImagePair;
+
 
 typedef struct LpTiiScience
 {

@@ -1,10 +1,12 @@
 #include "fonts.h"
-#include "tiim.h"
+
+#include "tiigraphics.h"
 
 #include "fonts9_to_24.h"
 
 #include <stdint.h>
 #include <string.h>
+#include <stdio.h>
 
 // Draw text in the image buffer
 int annotate(const char * text, int fontsize, int x, int y, uint8_t *imageBuffer)
