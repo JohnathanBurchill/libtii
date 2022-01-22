@@ -1,0 +1,10 @@
+# CMakeLists.txt file for processor
+
+CMAKE_MINIMUM_REQUIRED(VERSION 3.0)
+
+PROJECT(tii_tools)
+
+ADD_SUBDIRECTORY(tiim)
+ADD_SUBDIRECTORY(tiim_stats)
+add_SUBDIRECTORY(get_image_stats)
+
