@@ -63,4 +63,6 @@ int reverseSortDouble(const void * first, const void *second);
 
 int histogram(double* values, size_t nValues, double binWidth, double minValue, double maxValue, double **binnedValues, double **binnedCounts, size_t *nBins, int normalization);
 
+void applyImagePairGainMaps(ImagePair *imagePair, int pixelThreshold, double *maxH, double *maxV);
+
 #endif // _ANALYSIS_H

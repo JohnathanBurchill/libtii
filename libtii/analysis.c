@@ -1,8 +1,10 @@
 #include "analysis.h"
 
-// #include "tiim.h"
 #include "isp.h"
+#include "timeseries.h"
 #include "utility.h"
+
+#include "gainmap.h"
 
 #include <math.h>
 #include <stdlib.h>
@@ -293,4 +295,23 @@ int histogram(double* values, size_t nValues, double binWidth, double minValue, 
     }
 
     return ANALYSIS_OK;
+}
+
+
+void applyImagePairGainMaps(ImagePair *imagePair, int pixelThreshold, double *maxH, double *maxV)
+{
+    double *gainmap = NULL;
+
+    gainmap = getGainMap(imagePair->auxH->EfiInstrumentId, H_SENSOR, imagePair->auxH->dateTime.secondsSince1970);
+    if (gainmap != NULL)
+    {
+        applyGainMap(imagePair->pixelsH, gainmap, pixelThreshold, maxH);
+    }
+
+    gainmap = getGainMap(imagePair->auxV->EfiInstrumentId, V_SENSOR, imagePair->auxV->dateTime.secondsSince1970);
+    if (gainmap != NULL)
+    {
+        applyGainMap(imagePair->pixelsV, gainmap, pixelThreshold, maxV);
+    }
+
 }

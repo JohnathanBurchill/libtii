@@ -57,5 +57,6 @@ void applyGainMap(uint16_t *pixels, double *gainMap, int pixelThreshold, double 
         pixels[k] = (uint16_t) val;
         if (pixels[k] > maxValueTmp) maxValueTmp = (double) pixels[k];
     }
-    *maxValue = maxValueTmp;
+    if (maxValue != NULL)
+        *maxValue = maxValueTmp;
 }

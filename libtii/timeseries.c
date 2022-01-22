@@ -765,4 +765,56 @@ int getLpTiiTimeSeries(char satellite, SciencePackets *packets, LpTiiTimeSeries 
 
 }
 
+void latestConfigValues(ImagePair *imagePair, LpTiiTimeSeries *timeSeries, int *pixelThreshold, int *minCol, int *maxCol, int *nCols, bool *agcEnabled, int *agcLower, int *agcUpper)
+{
+    // Default values in case there are no config packets
+    static size_t lastConfigIndex = 0;
+    static double lastTime = 0;
+    // Init to reasonable defaults
+    if (pixelThreshold != NULL)
+        *pixelThreshold = 0;
+    if (minCol != NULL)
+        *minCol = 33;
+    if (maxCol != NULL)
+        *maxCol = 64;
+    if (nCols != NULL)
+        *nCols = 32;
+    if (agcEnabled != NULL)
+        *agcEnabled = false;
+    if (agcLower != NULL)
+        *agcLower = -1;
+    if (agcUpper != NULL)
+        *agcUpper = -1;
 
+    // Get config values if available. All packets must have been sorted.
+    // Search from beginning if this image is older than last one
+    if (imagePair->secondsSince1970 < lastTime)
+        lastConfigIndex = 0;
+    lastTime = imagePair->secondsSince1970;
+    for (size_t i = lastConfigIndex; i < timeSeries->nConfig; i++)
+    {
+        lastConfigIndex = i;
+        if (timeSeries->configTime[i] > imagePair->secondsSince1970)
+        {
+            break;
+        }
+    }
+    if (timeSeries->nConfig > lastConfigIndex)
+    {
+        if (pixelThreshold != NULL)
+            *pixelThreshold = timeSeries->pixelThresholdConfig[lastConfigIndex];
+        if (minCol != NULL)
+            *minCol = timeSeries->tiiMinimumColumnConfig[lastConfigIndex];
+        if (maxCol != NULL)
+            *maxCol = timeSeries->tiiMaximumColumnConfig[lastConfigIndex];
+        if (nCols != NULL)
+            *nCols = timeSeries->nColumnsForMomentCalculationsConfig[lastConfigIndex];
+        if (agcEnabled != NULL)
+            *agcEnabled = timeSeries->agcEnabledConfig[lastConfigIndex];
+        if (agcLower != NULL)
+            *agcLower = timeSeries->agcLowerThresholdConfig[lastConfigIndex];
+        if (agcUpper != NULL)
+            *agcUpper = timeSeries->agcUpperThresholdConfig[lastConfigIndex];
+    }
+
+}

@@ -23,36 +23,6 @@ void drawFrame(uint8_t * imageBuf, uint8_t *templateBuf, ImagePair *imagePair, L
     int maxPaH = 0;
     int maxPaV = 0;
 
-    double *gainmap;
-    // Default values in case there are no config packets
-    static size_t lastConfigIndex = 0;
-    int threshold = 0;
-    int minCol = 33;
-    int maxCol = 64;
-    int nCols = 32;
-    bool agcEnabled = false;
-    int agcLower = -1;
-    int agcUpper = -1;
-    // Get config values if available. All packets must have been sorted.
-    for (size_t i = lastConfigIndex; i < timeSeries->nConfig; i++)
-    {
-        lastConfigIndex = i;
-        if (timeSeries->configTime[i] > imagePair->secondsSince1970)
-        {
-            break;
-        }
-    }
-    if (timeSeries->nConfig > lastConfigIndex)
-    {
-        threshold = timeSeries->pixelThresholdConfig[lastConfigIndex];
-        minCol = timeSeries->tiiMinimumColumnConfig[lastConfigIndex];
-        maxCol = timeSeries->tiiMaximumColumnConfig[lastConfigIndex];
-        nCols = timeSeries->nColumnsForMomentCalculationsConfig[lastConfigIndex];
-        agcEnabled = timeSeries->agcEnabledConfig[lastConfigIndex];
-        agcLower = timeSeries->agcLowerThresholdConfig[lastConfigIndex];
-        agcUpper = timeSeries->agcUpperThresholdConfig[lastConfigIndex];
-    }
-
     char title[255];
 
     int s = RAW_IMAGE_SCALE;
@@ -75,7 +45,16 @@ void drawFrame(uint8_t * imageBuf, uint8_t *templateBuf, ImagePair *imagePair, L
     sprintf(title, "Image pair %d", frameCounter+1);
     annotate(title, 12, 100, 5, imageBuf);
 
-    sprintf(title, "Pixel threshold: %d", threshold);
+    int pixelThreshold = 0;
+    int minCol = 0;
+    int maxCol = 0;
+    int nCols = 0;
+    bool agcEnabled = false;
+    int agcLower = 0;
+    int agcUpper = 0;
+    latestConfigValues(imagePair, timeSeries, &pixelThreshold, &minCol, &maxCol, &nCols, &agcEnabled, &agcLower, &agcUpper);
+
+    sprintf(title, "Pixel threshold: %d", pixelThreshold);
     annotate(title, 9, 20, 490, imageBuf);
 
     if (agcLower == -1)
@@ -99,27 +78,13 @@ void drawFrame(uint8_t * imageBuf, uint8_t *templateBuf, ImagePair *imagePair, L
     drawImagePair(imageBuf, imagePair, maxH, maxV, x0, y0, RAW_IMAGE_SCALE, RAW_IMAGE_SEPARATION_X, "Raw H", "Raw V", false, &identityFilter, NULL, NULL);
 
     // Gain corrected
-    gainmap = getGainMap(imagePair->auxH->EfiInstrumentId, H_SENSOR, imagePair->auxH->dateTime.secondsSince1970);
-    if (gainmap != NULL)
-    {
-        applyGainMap(imagePair->pixelsH, gainmap, threshold, &maxH);
-    }
-
-    gainmap = getGainMap(imagePair->auxV->EfiInstrumentId, V_SENSOR, imagePair->auxV->dateTime.secondsSince1970);
-    if (gainmap != NULL)
-    {
-        applyGainMap(imagePair->pixelsV, gainmap, threshold, &maxV);
-    }
+    applyImagePairGainMaps(imagePair, pixelThreshold, &maxH, &maxV);
 
     drawImagePair(imageBuf, imagePair, maxH, maxV, GAIN_CORRECTED_OFFSET_X, GAIN_CORRECTED_OFFSET_Y, GAIN_CORRECTED_IMAGE_SCALE, RAW_IMAGE_SEPARATION_X, "GC H", "GC V", false, &identityFilter, NULL, NULL);
 
     // Onboard processing
     onboardProcessing(imagePair->pixelsH, imagePair->gotImageH, minCol, maxCol, nCols, &imagePairTimeSeries->totalCountsH[imagePairIndex], &imagePairTimeSeries->x1H[imagePairIndex], &imagePairTimeSeries->y1H[imagePairIndex], &imagePairTimeSeries->agcControlValueH[imagePairIndex]);
     onboardProcessing(imagePair->pixelsV, imagePair->gotImageV, minCol, maxCol, nCols, &imagePairTimeSeries->totalCountsV[imagePairIndex], &imagePairTimeSeries->x1V[imagePairIndex], &imagePairTimeSeries->y1V[imagePairIndex], &imagePairTimeSeries->agcControlValueV[imagePairIndex]);
-
-    // printf("onboard: totalH: %0lf x1H: %7.3lf y1H: %7.3lf agcH: %6.1lf\n", imagePairTimeSeries->totalCountsH[imagePairIndex], imagePairTimeSeries->x1H[imagePairIndex], imagePairTimeSeries->y1H[imagePairIndex], imagePairTimeSeries->agcControlValueH[imagePairIndex]);
-
-    // printf("onboard: totalV: %0lf x1V: %7.3lf y1V: %7.3lf agcV: %6.1lf\n", imagePairTimeSeries->totalCountsV[imagePairIndex], imagePairTimeSeries->x1V[imagePairIndex], imagePairTimeSeries->y1V[imagePairIndex], imagePairTimeSeries->agcControlValueV[imagePairIndex]);
 
     maxPaH = 500;
     maxPaV = 500;
@@ -132,16 +97,6 @@ void drawFrame(uint8_t * imageBuf, uint8_t *templateBuf, ImagePair *imagePair, L
     // Aux data
     drawMonitors(imageBuf, imagePair, MONITOR_LABEL_OFFSET_X, MONITOR_LABEL_OFFSET_Y);
 
-
-    // annotate("# frames", 12, pxoff+pcbarWidth + pcbarSeparation/2 - 25, pyoff + 7, imageBuf);
-    // annotate("H", 12, pxoff-1, pyoff - MAX_COLOR_VALUE / 3 - 20, imageBuf);
-    // annotate("V", 12, pxoff-1 + pcbarWidth + cbarSeparation, pyoff - MAX_COLOR_VALUE / 3 - 20, imageBuf);
-    // annotate("0", 9, pxoff+pcbarWidth+3, pyoff-10, imageBuf);
-    // annotate("0", 9, pxoff + pcbarWidth + cbarSeparation + pcbarWidth+3, pyoff-10, imageBuf);
-    // sprintf(title, "%d", maxPaH);
-    // annotate(title, 9, pxoff+pcbarWidth+3, pyoff - MAX_COLOR_VALUE/3 - 2, imageBuf);
-    // sprintf(title, "%d", maxPaV);
-    // annotate(title, 9, pxoff + pcbarWidth + cbarSeparation + pcbarWidth+3, pyoff - MAX_COLOR_VALUE/3 - 2, imageBuf);
     int plotWidth = 430;
     int plotHeight0 = 45;
     int plotHeight1 = 30;
