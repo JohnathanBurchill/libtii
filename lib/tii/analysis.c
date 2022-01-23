@@ -315,3 +315,189 @@ void applyImagePairGainMaps(ImagePair *imagePair, int pixelThreshold, double *ma
     }
 
 }
+
+
+void analyzeRawImageAnomalies(uint16_t *pixels, bool gotImage, char satellite, ImageAnomalies *anomalies)
+{
+    size_t measlesCounter = 0;
+    size_t paCounter = 0;
+
+    int x, y; // pixel coordinates
+    double dx, dy, r, phidx, phidy, phi;
+    int paBin;
+    if (gotImage)
+    {
+        // Measles, PA
+        for (int k = 0; k < NUM_FULL_IMAGE_PIXELS; k++)
+        {
+            if (pixels[k] == 4095)
+                measlesCounter++;
+
+            x = k / TII_ROWS;
+            y = (TII_ROWS - 1) - (k % TII_ROWS);
+            dx = (double) x - OPTICAL_CENTER_X;
+            dy = OPTICAL_CENTER_Y - (double) y; // y increases downward, switch to match graphics in case needed for other analysis
+            r = hypot(dx, dy);
+            phidx = (double) x - PA_ANGULAR_X0;
+            phidy = PA_ANGULAR_X0 - (double) y; // y increases downward, switch to match graphics in case needed for other analysis
+            phi = atan2(phidy, phidx) * 180.0 / M_PI;
+            if (r >= PA_MINIMUM_RADIUS && r <= PA_MAXIMUM_RADIUS && pixels[k] != 4095 && pixels[k] > PA_MINIMUM_VALUE)
+                paCounter++;
+        }
+        if (measlesCounter >= MEASLES_COUNT_THRESHOLD)
+            anomalies->measlesAnomaly = true;
+
+        if (paCounter > PA_COUNT_THRESHOLD)
+            anomalies->peripheralAnomaly = true;
+
+        // upper angel's wing anomaly
+        // Take a vertical line of pixels at upper right
+        // If we have counts all along the line, upper angel's wing
+
+
+        // lower angel's wing anomaly
+        // Take a vertical line of pixels at lower right
+        // If we have counts all along the line, lower angel's wing
+
+        // Ring anomaly
+        // Sum pixels in five regions around an arc at left of image. 
+        // If all regions have counts greater than some threshold
+        // and central region has higher count than any other
+        // and each adjacent region has higher count than the adjacent arc tip regions
+        // class ring anomaly 
+
+    }
+
+    return;
+
+}
+
+void analyzeGainCorrectedImageAnomalies(uint16_t *pixels, bool gotImage, char satellite, ImageAnomalies *anomalies)
+{
+
+    int ix = 0;
+    int iy = 0;
+
+    double value = 0;
+    double total = 0;
+    double x = 0;
+    double y = 0;
+    double x1 = 0;
+    double y1 = 0;
+    double x2 = 0;
+    double y2 = 0;
+
+    int imageIndex = 0;
+
+    double bifurcationTopTotal = 0;
+    double bifurcationBottomTotal = 0;
+    double bifurcationMiddleTotal = 0;
+    double peakValue = 0;
+
+    if (gotImage)
+    {
+
+        // Get first moment
+        // Using custom min and max columns to isolate nominal O+ signal
+        // Calculate 2nd y moment in box around 1st moment if this is the O+ signal
+        for (int i = MOMENT_MIN_X; i <= MOMENT_MAX_X; i++)
+            for (int j = MOMENT_MIN_Y; j <= MOMENT_MAX_Y; j++)
+            {
+                imageIndex = i * TII_ROWS + ((TII_ROWS-1) - j);
+                value = (double)pixels[imageIndex];
+                total += value;        
+                x1 += i * value;
+                y1 += j * value;
+            }
+
+        // moments
+        if (total > 0.0)
+        {
+            x1 /= total;
+            y1 /= total;
+
+            ix = (int) floor(x1);
+            iy = (int) floor(y1);
+
+            total = 0;
+            for (int i = ix - Y2_BOX_HALF_WIDTH; i < ix + Y2_BOX_HALF_HEIGHT; i++)
+                for (int j = iy - Y2_BOX_HALF_HEIGHT; j < iy + Y2_BOX_HALF_HEIGHT; j++)
+                {
+                    imageIndex = i * TII_ROWS + ((TII_ROWS-1) - j);
+                    if (imageIndex < NUM_FULL_IMAGE_PIXELS)
+                    {
+                        value = (double)pixels[imageIndex];
+                        total += value;
+                        x2 += (i - x1) * (i - x1) * value;
+                        y2 += (j - y1) * (j - y1) * value;
+                    }
+                }
+            if (total > 0)
+            {
+                x2 /= total;
+                y2 /= total;
+
+                // classic wing anomaly
+                if (y2 > CLASSIC_WING_ANOMALY_Y2_THRESHOLD)
+                    anomalies->classicWingAnomaly = true;
+            }
+
+            // Bifurcation anomaly
+            // Get pixel counts above and below y1. 
+            // If those values are both larger than pixel count at y1, bifurcation is probable
+            for (int i = ix - BIFURCATION_ANALYSIS_WIDTH/2; i <= ix + BIFURCATION_ANALYSIS_WIDTH/2; i++)
+            {
+                imageIndex = i * TII_ROWS + ((TII_ROWS-1) - (iy - BIFURCATION_ANALYSIS_DY));
+                if (imageIndex < NUM_FULL_IMAGE_PIXELS)
+                {
+                    value = (double)pixels[imageIndex];
+                    bifurcationBottomTotal += value;
+                    if (value > peakValue)
+                    {
+                        peakValue = value;
+                    }
+                }
+                imageIndex = i * TII_ROWS + ((TII_ROWS-1) + (iy + BIFURCATION_ANALYSIS_DY));
+                if (imageIndex < NUM_FULL_IMAGE_PIXELS)
+                {
+                    value = (double)pixels[imageIndex];
+                    bifurcationTopTotal += value;
+                    if (value > peakValue)
+                    {
+                        peakValue = value;
+                    }
+                }
+                imageIndex = i * TII_ROWS + ((TII_ROWS-1) - iy);
+                if (imageIndex < NUM_FULL_IMAGE_PIXELS)
+                {
+                    value = (double)pixels[imageIndex];
+                    bifurcationMiddleTotal += value;
+                    if (value > peakValue)
+                    {
+                        peakValue = value;
+                    }
+                }
+            }
+            if (peakValue >= BIFURCATION_MINIMUM_PEAK_VALUE && bifurcationBottomTotal > bifurcationMiddleTotal && bifurcationTopTotal > bifurcationMiddleTotal)
+                anomalies->bifurcationAnomaly = true;
+
+        }
+
+    }
+
+    return;
+
+}
+
+void initializeAnomalyData(ImageAnomalies *anomalies)
+{
+    anomalies->peripheralAnomaly = false;
+    anomalies->upperAngelsWingAnomaly = false;
+    anomalies->lowerAngelsWingAnomaly = false;
+    anomalies->classicWingAnomaly = false;
+    anomalies->bifurcationAnomaly = false;
+    anomalies->ringAnomaly = false;
+    anomalies->measlesAnomaly = false;
+
+    return;
+}

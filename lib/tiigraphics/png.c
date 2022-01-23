@@ -1,6 +1,6 @@
 #include "png.h"
 
-#include "tiim.h"
+#include "tiigraphics.h"
 #include "colortable.h"
 #include "fonts.h"
 #include "spng.h"

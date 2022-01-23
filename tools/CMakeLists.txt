@@ -7,6 +7,6 @@ PROJECT(tii_tools)
 ADD_SUBDIRECTORY(tiim)
 ADD_SUBDIRECTORY(tiim_stats)
 ADD_SUBDIRECTORY(anomaly_stats)
+ADD_SUBDIRECTORY(tii_look)
 
-add_SUBDIRECTORY(get_image_stats)
-
+ADD_SUBDIRECTORY(get_image_stats)

@@ -1,0 +1,11 @@
+CMAKE_MINIMUM_REQUIRED(VERSION 3.0)
+
+PROJECT(tii_look)
+
+INCLUDE_DIRECTORIES(${INCLUDE_DIRS} ${LIBXML2_INCLUDE_DIR})
+
+ADD_EXECUTABLE(tii_look tii_look.c)
+TARGET_LINK_LIBRARIES(tii_look ${LIBS} tii tiigraphics -lm)
+
+install(TARGETS tii_look DESTINATION $ENV{HOME}/bin)
+

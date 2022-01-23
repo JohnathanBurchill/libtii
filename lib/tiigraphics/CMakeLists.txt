@@ -4,7 +4,7 @@ INCLUDE(GNUInstallDirs)
 SET(LIBS ${LIBS} ${MATH} ${LIBXML2_LIBRARIES})
 INCLUDE_DIRECTORIES(${INCLUDE_DIRS} ${LIBXML2_INCLUDE_DIR})
 
-ADD_LIBRARY(tiigraphics fonts.c draw.c video.c)
+ADD_LIBRARY(tiigraphics fonts.c draw.c video.c png.c spng.c)
 SET_TARGET_PROPERTIES(tiigraphics PROPERTIES 
     VERSION ${PROJECT_VERSION}
     SOVERSION 1
