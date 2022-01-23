@@ -1,6 +1,7 @@
 #include "draw.h"
 
 #include "tiigraphics.h"
+#include "colors.h"
 
 #include "analysis.h"
 #include "isp.h"
@@ -197,7 +198,7 @@ void drawImagePair(uint8_t *imageBuf, ImagePair *imagePair, double maxH, double 
     int delx = scale * separation;
 
     // H image
-    drawImage(imageBuf, imagePair->pixelsH, imagePair->gotImageH, maxH, x0, y0, scale, showTimestamps, imagePair->auxV, pixelFilter, filterArgsH);
+    drawImage(imageBuf, imagePair->pixelsH, imagePair->gotImageH, maxH, x0, y0, scale, showTimestamps, imagePair->auxH, pixelFilter, filterArgsH);
     // V image
     drawImage(imageBuf, imagePair->pixelsV, imagePair->gotImageV, maxV, x0 + scale * TII_COLS + delx, y0, scale, showTimestamps, imagePair->auxV, pixelFilter, filterArgsV);
 
