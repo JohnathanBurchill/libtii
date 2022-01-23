@@ -7,7 +7,8 @@
 #include <stdint.h>
 
 #define CLASSIC_WING_ANOMALY_Y2_THRESHOLD 3
-
+#define MEASLES_COUNT_THRESHOLD 10
+#define PA_COUNT_THRESHOLD 10
 
 #define MOMENT_MIN_X 10
 #define MOMENT_MAX_X 30

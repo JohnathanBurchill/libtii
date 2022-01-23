@@ -162,10 +162,10 @@ void analyzeRawImageAnomalies(uint16_t *pixels, bool gotImage, char satellite, I
             if (r >= PA_MINIMUM_RADIUS && r <= PA_MAXIMUM_RADIUS && pixels[k] != 4095 && pixels[k] > PA_MINIMUM_VALUE)
                 paCounter++;
         }
-        if (measlesCounter >= 10)
+        if (measlesCounter >= MEASLES_COUNT_THRESHOLD)
             anomalies->measlesAnomaly = true;
 
-        if (paCounter > 10)
+        if (paCounter > PA_COUNT_THRESHOLD)
             anomalies->peripheralAnomaly = true;
 
         // upper angel's wing anomaly
@@ -182,16 +182,6 @@ void analyzeRawImageAnomalies(uint16_t *pixels, bool gotImage, char satellite, I
         // and central region has higher count than any other
         // and each adjacent region has higher count than the adjacent arc tip regions
         // class ring anomaly 
-
-        // Get first moment
-        // Calculate 2nd y moment in box 15x15 box around 1st moment if this is the O+ signal
-        // classic wing anomaly
-        // if 2nd y moment > 5? Only works for gain-corrected images
-
-        // Bifurcation anomaly
-        // Get pixel counts at sqrt(2ndy moment) above and below y1
-        // If those values are both larger than pixel count at y1, bifurcation is probable
-
 
     }
 
