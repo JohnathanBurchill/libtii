@@ -19,4 +19,6 @@ int dateToSecondsSince1970(const char * yyyymmdd, double *seconds);
 
 bool ignoreTime(double time, double dayStart, double dayEnd);
 
+bool scienceMode(ImageAuxData *aux);
+
 #endif // _UTILITY_H

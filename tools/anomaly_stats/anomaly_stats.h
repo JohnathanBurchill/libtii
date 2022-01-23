@@ -40,8 +40,6 @@ void analyzeGainCorrectedImageAnomalies(uint16_t *pixels, bool gotImage, char sa
 
 void initializeAnomalyData(ImageAnomalies *anomalies);
 
-bool scienceMode(ImageAuxData *aux);
-
 void statsusage(const char * name);
 
 #endif // _ANOMALY_STATS_H

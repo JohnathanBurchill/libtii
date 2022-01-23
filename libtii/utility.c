@@ -55,3 +55,12 @@ bool ignoreTime(double time, double dayStart, double dayEnd)
         return (time < dayStart || time > dayEnd);
 }
 
+bool scienceMode(ImageAuxData *aux)
+{
+    // Unable to check AGC from image ISPs. Should be on for science mode, but will allow non-AGC ops.
+    // MCP voltage less than -1000 V
+    // Phosphor voltage > 3900 V
+    // Bias voltage < -50 V
+    return aux->McpVoltageMonitor < -1000.0 && aux->PhosphorVoltageMonitor > 3900 && aux->BiasGridVoltageMonitor < -50.0;
+
+}

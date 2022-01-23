@@ -172,6 +172,7 @@ void analyzeRawImageAnomalies(uint16_t *pixels, bool gotImage, char satellite, I
         // Take a vertical line of pixels at upper right
         // If we have counts all along the line, upper angel's wing
 
+
         // lower angel's wing anomaly
         // Take a vertical line of pixels at lower right
         // If we have counts all along the line, lower angel's wing
@@ -317,16 +318,6 @@ void initializeAnomalyData(ImageAnomalies *anomalies)
     anomalies->measlesAnomaly = false;
 
     return;
-}
-
-bool scienceMode(ImageAuxData *aux)
-{
-    // Unable to check AGC from image ISPs. Should be on for science mode, but will allow non-AGC ops.
-    // MCP voltage less than -1000 V
-    // Phosphor voltage > 3900 V
-    // Bias voltage < -50 V
-    return aux->McpVoltageMonitor < -1000.0 && aux->PhosphorVoltageMonitor > 3900 && aux->BiasGridVoltageMonitor < -50.0;
-
 }
 
 void statsusage(const char * name)
