@@ -101,7 +101,7 @@ int main(int argc, char **argv)
     int imagesRead = 0;
 
     // time in sec since 1970, PA H, PA V, measles H, measles V, classic wing H, classic wing V, angel's wing upper H, angel's wing upper V, angel's wing lower H, angel's wing lower V
-    fprintf(dailyAnomalyFile, "secondsSince1970 PAH PAV MH MV CWH CWV UAWH UAWV LAWH LAWV UAX1H UAX1V UAY1H UAY1V UAX2H UAX2V UAY2H UAY2V LAX1H LAX1V LAY1H LAY1V LAX2H LAX2V LAY2H LAY2V\n");
+    fprintf(dailyAnomalyFile, "secondsSince1970 PAH PAV MH MV CWH CWV BAH BAV UAWH UAWV LAWH LAWV UAX1H UAX1V UAY1H UAY1V UAX2H UAX2V UAY2H UAY2V LAX1H LAX1V LAY1H LAY1V LAX2H LAX2V LAY2H LAY2V\n");
     for (size_t i = 0; i < numberOfImagePairs; i++)
     {
 
