@@ -330,6 +330,13 @@ void analyzeRawImageAnomalies(uint16_t *pixels, bool gotImage, char satellite, I
     double value = 0, x1 = 0, y1 = 0, x2 = 0, y2 = 0;
     int imageIndex = 0;
 
+    int awmincol = 29;
+    int awmaxcol = 38;
+    int awlowerminrow = 14;
+    int awlowermaxrow = 26;
+    int awupperminrow = 38;
+    int awuppermaxrow = 50;
+
     if (gotImage)
     {
         // Measles, PA
@@ -361,8 +368,8 @@ void analyzeRawImageAnomalies(uint16_t *pixels, bool gotImage, char satellite, I
         angelsWingCounter = 0;
         x1 = 0;
         y1 = 0;
-        for (int c = 32; c <= 38; c++)
-            for (int r = 38; r <= 50; r++)
+        for (int c = awmincol; c <= awmaxcol; c++)
+            for (int r = awupperminrow; r <= awuppermaxrow; r++)
             {
                 imageIndex = c * TII_ROWS + ((TII_ROWS) - r);
                 value = (double)pixels[imageIndex];
@@ -378,8 +385,8 @@ void analyzeRawImageAnomalies(uint16_t *pixels, bool gotImage, char satellite, I
             anomalies->upperAngelsWingY1 = y1;
             x2 = 0;
             y2 = 0;
-            for (int c = 32; c <= 38; c++)
-                for (int r = 38; r <= 50; r++)
+            for (int c = awmincol; c <= awmaxcol; c++)
+                for (int r = awupperminrow; r <= awuppermaxrow; r++)
                 {
                     imageIndex = c * TII_ROWS + ((TII_ROWS) - r);
                     value = (double)pixels[imageIndex];
@@ -398,8 +405,8 @@ void analyzeRawImageAnomalies(uint16_t *pixels, bool gotImage, char satellite, I
         angelsWingCounter = 0;
         x1 = 0;
         y1 = 0;
-        for (int c = 32; c <= 38; c++)
-            for (int r = 14; r <= 26; r++)
+        for (int c = awmincol; c <= awmaxcol; c++)
+            for (int r = awlowerminrow; r <= awlowermaxrow; r++)
             {
                 imageIndex = c * TII_ROWS + ((TII_ROWS) - r);
                 value = (double)pixels[imageIndex];
@@ -415,8 +422,8 @@ void analyzeRawImageAnomalies(uint16_t *pixels, bool gotImage, char satellite, I
             anomalies->lowerAngelsWingY1 = y1;
             x2 = 0;
             y2 = 0;
-            for (int c = 32; c <= 38; c++)
-                for (int r = 14; r <= 26; r++)
+            for (int c = awmincol; c <= awmaxcol; c++)
+                for (int r = awlowerminrow; r <= awlowermaxrow; r++)
                 {
                     imageIndex = c * TII_ROWS + ((TII_ROWS) - r);
                     value = (double)pixels[imageIndex];

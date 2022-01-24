@@ -11,7 +11,7 @@
 #define CLASSIC_WING_ANOMALY_Y2_THRESHOLD 10
 #define MEASLES_COUNT_THRESHOLD 10
 #define PA_COUNT_THRESHOLD 10
-#define ANGELS_WING_THRESHOLD 4550 // average of 91 pixels in 13x7 region exceeds 50 DN
+#define ANGELS_WING_THRESHOLD 6500 // average of 130 pixels in 13x10 region exceeds 50 DN
 
 #define MOMENT_MIN_X 10
 #define MOMENT_MAX_X 30
