@@ -330,12 +330,12 @@ void analyzeRawImageAnomalies(uint16_t *pixels, bool gotImage, char satellite, I
     double value = 0, x1 = 0, y1 = 0, x2 = 0, y2 = 0;
     int imageIndex = 0;
 
-    int awmincol = 29;
-    int awmaxcol = 38;
-    int awlowerminrow = 14;
-    int awlowermaxrow = 26;
-    int awupperminrow = 38;
-    int awuppermaxrow = 50;
+    int awmincol = AWMINCOL;
+    int awmaxcol = AWMAXCOL;
+    int awlowerminrow = AWLOWERMINROW;
+    int awlowermaxrow = AWLOWERMAXROW;
+    int awupperminrow = AWUPPERMINROW;
+    int awuppermaxrow = AWUPPERMAXROW;
 
     if (gotImage)
     {
