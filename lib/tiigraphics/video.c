@@ -181,7 +181,7 @@ int generateFrame(Image *image, int frameNumber)
     int status;
     int got_output;
     int color;
-    if (image->pixels != NULL)
+    if (image != NULL)
     {
         for (int i = 0; i < image->numberOfBytes; i++)
         {
