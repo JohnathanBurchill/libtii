@@ -101,13 +101,12 @@ int main(int argc, char **argv)
     int imagesRead = 0;
 
     // time in sec since 1970, PA H, PA V, measles H, measles V, classic wing H, classic wing V, angel's wing upper H, angel's wing upper V, angel's wing lower H, angel's wing lower V
-    fprintf(dailyAnomalyFile, "secondsSince1970 PAH PAV MH MV CWH CWV UAWH UAWV LAWH LAWV\n");
+    fprintf(dailyAnomalyFile, "secondsSince1970 PAH PAV MH MV CWH CWV UAWH UAWV LAWH LAWV UAX1H UAX1V UAY1H UAY1V UAX2H UAX2V UAY2H UAY2V LAX1H LAX1V LAY1H LAY1V LAX2H LAX2V LAY2H LAY2V\n");
     for (size_t i = 0; i < numberOfImagePairs; i++)
     {
 
         getAlignedImagePair(&imagePackets, 2*i, &imagePair, &imagesRead);
 
-        printf("time: %ld\n", (time_t)floor(imagePair.secondsSince1970));
         if (scienceMode(imagePair.auxH) && scienceMode(imagePair.auxV))
         {
             initializeAnomalyData(&h);
@@ -124,7 +123,7 @@ int main(int argc, char **argv)
             analyzeGainCorrectedImageAnomalies(imagePair.pixelsV, imagePair.gotImageV, imagePair.auxV->satellite, &v);
 
             // time in sec since 1970, PA H, PA V, measles H, measles V, classic wing H, classic wing V, angel's wing upper H, angel's wing upper V, angel's wing lower H, angel's wing lower V
-            fprintf(dailyAnomalyFile, "%ld %d %d %d %d %d %d %d %d %d %d %d %d\n", (time_t)floor(imagePair.secondsSince1970), h.peripheralAnomaly, v.peripheralAnomaly, h.measlesAnomaly, v.measlesAnomaly, h.classicWingAnomaly, v.classicWingAnomaly, h.bifurcationAnomaly, v.bifurcationAnomaly, h.upperAngelsWingAnomaly, v.upperAngelsWingAnomaly, h.lowerAngelsWingAnomaly, v.lowerAngelsWingAnomaly);
+            fprintf(dailyAnomalyFile, "%ld %d %d %d %d %d %d %d %d %d %d %d %d %.3lf %.3lf %.3lf %.3lf %.3lf %.3lf %.3lf %.3lf %.3lf %.3lf %.3lf %.3lf %.3lf %.3lf %.3lf %.3lf\n", (time_t)floor(imagePair.secondsSince1970), h.peripheralAnomaly, v.peripheralAnomaly, h.measlesAnomaly, v.measlesAnomaly, h.classicWingAnomaly, v.classicWingAnomaly, h.bifurcationAnomaly, v.bifurcationAnomaly, h.upperAngelsWingAnomaly, v.upperAngelsWingAnomaly, h.lowerAngelsWingAnomaly, v.lowerAngelsWingAnomaly, h.upperAngelsWingX1, v.upperAngelsWingX1, h.upperAngelsWingY1, v.upperAngelsWingY1, h.upperAngelsWingX2, v.upperAngelsWingX2, h.upperAngelsWingY2, v.upperAngelsWingY2, h.lowerAngelsWingX1, v.lowerAngelsWingX1, h.lowerAngelsWingY1, v.lowerAngelsWingY1, h.lowerAngelsWingX2, v.lowerAngelsWingX2, h.lowerAngelsWingY2, v.lowerAngelsWingY2);
         }
     }
     fclose(dailyAnomalyFile);
