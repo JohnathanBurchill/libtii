@@ -8,6 +8,7 @@
 
 #include <math.h>
 #include <stdlib.h>
+#include <stdio.h>
 
 void initializeImageStats(ImageStats *stats)
 {
@@ -322,9 +323,13 @@ void analyzeRawImageAnomalies(uint16_t *pixels, bool gotImage, char satellite, I
     size_t measlesCounter = 0;
     size_t paCounter = 0;
 
+    size_t angelsWingCounter = 0;
+
     int x, y; // pixel coordinates
     double dx, dy, r, phidx, phidy, phi;
-    int paBin;
+    double value = 0, x1 = 0, y1 = 0, x2 = 0, y2 = 0;
+    int imageIndex = 0;
+
     if (gotImage)
     {
         // Measles, PA
@@ -351,15 +356,84 @@ void analyzeRawImageAnomalies(uint16_t *pixels, bool gotImage, char satellite, I
             anomalies->peripheralAnomaly = true;
 
         // upper angel's wing anomaly
-        // Take a vertical line of pixels at upper right
-        // If we have counts all along the line, upper angel's wing
-
+        // Take a vertical rectangle of pixels at upper right
+        // If total exceeds threshold, upper angel's wing
+        angelsWingCounter = 0;
+        x1 = 0;
+        y1 = 0;
+        for (int c = 32; c <= 38; c++)
+            for (int r = 38; r <= 50; r++)
+            {
+                imageIndex = c * TII_ROWS + ((TII_ROWS) - r);
+                value = (double)pixels[imageIndex];
+                angelsWingCounter += (size_t) value;
+                x1 += c * value;
+                y1 += r * value;
+            }
+        if (angelsWingCounter > 0)
+        {
+            x1 /= angelsWingCounter;
+            y1 /= angelsWingCounter;
+            anomalies->upperAngelsWingX1 = x1;
+            anomalies->upperAngelsWingY1 = y1;
+            x2 = 0;
+            y2 = 0;
+            for (int c = 32; c <= 38; c++)
+                for (int r = 38; r <= 50; r++)
+                {
+                    imageIndex = c * TII_ROWS + ((TII_ROWS) - r);
+                    value = (double)pixels[imageIndex];
+                    x2 += (c - x1) * (c - x1) * value;
+                    y2 += (r - y1) * (r - y1) * value;
+                }
+            anomalies->upperAngelsWingX2 = x2 / angelsWingCounter;
+            anomalies->upperAngelsWingY2 = y2 / angelsWingCounter;
+        }
+        if (angelsWingCounter > ANGELS_WING_THRESHOLD)
+            anomalies->upperAngelsWingAnomaly = true;
 
         // lower angel's wing anomaly
-        // Take a vertical line of pixels at lower right
-        // If we have counts all along the line, lower angel's wing
+        // Take a vertical rectangle of pixels at lower right
+        // If total exceeds threshold, lower angel's wing
+        angelsWingCounter = 0;
+        x1 = 0;
+        y1 = 0;
+        for (int c = 32; c <= 38; c++)
+            for (int r = 14; r <= 26; r++)
+            {
+                imageIndex = c * TII_ROWS + ((TII_ROWS) - r);
+                value = (double)pixels[imageIndex];
+                angelsWingCounter += (size_t) value;
+                x1 += c * value;
+                y1 += r * value;
+            }
+        if (angelsWingCounter > 0)
+        {
+            x1 /= angelsWingCounter;
+            y1 /= angelsWingCounter;
+            anomalies->lowerAngelsWingX1 = x1;
+            anomalies->lowerAngelsWingY1 = y1;
+            x2 = 0;
+            y2 = 0;
+            for (int c = 32; c <= 38; c++)
+                for (int r = 14; r <= 26; r++)
+                {
+                    imageIndex = c * TII_ROWS + ((TII_ROWS) - r);
+                    value = (double)pixels[imageIndex];
+                    x2 += (c - x1) * (c - x1) * value;
+                    y2 += (r - y1) * (r - y1) * value;
+                }
+            anomalies->lowerAngelsWingX2 = x2 / angelsWingCounter;
+            anomalies->lowerAngelsWingY2 = y2 / angelsWingCounter;
+        }
+        if (angelsWingCounter > ANGELS_WING_THRESHOLD)
+            anomalies->lowerAngelsWingAnomaly = true;
+
 
         // Ring anomaly
+        // Not calculated fo now as there is PAs and ring anomaly 
+        // have similar effects, if any, on the image's moments.
+
         // Sum pixels in five regions around an arc at left of image. 
         // If all regions have counts greater than some threshold
         // and central region has higher count than any other
@@ -403,7 +477,7 @@ void analyzeGainCorrectedImageAnomalies(uint16_t *pixels, bool gotImage, char sa
         for (int i = MOMENT_MIN_X; i <= MOMENT_MAX_X; i++)
             for (int j = MOMENT_MIN_Y; j <= MOMENT_MAX_Y; j++)
             {
-                imageIndex = i * TII_ROWS + ((TII_ROWS-1) - j);
+                imageIndex = i * TII_ROWS + ((TII_ROWS) - j);
                 value = (double)pixels[imageIndex];
                 total += value;        
                 x1 += i * value;
@@ -416,6 +490,9 @@ void analyzeGainCorrectedImageAnomalies(uint16_t *pixels, bool gotImage, char sa
             x1 /= total;
             y1 /= total;
 
+            anomalies->x1 = x1;
+            anomalies->y1 = y1;
+
             ix = (int) floor(x1);
             iy = (int) floor(y1);
 
@@ -423,7 +500,7 @@ void analyzeGainCorrectedImageAnomalies(uint16_t *pixels, bool gotImage, char sa
             for (int i = ix - Y2_BOX_HALF_WIDTH; i < ix + Y2_BOX_HALF_HEIGHT; i++)
                 for (int j = iy - Y2_BOX_HALF_HEIGHT; j < iy + Y2_BOX_HALF_HEIGHT; j++)
                 {
-                    imageIndex = i * TII_ROWS + ((TII_ROWS-1) - j);
+                    imageIndex = i * TII_ROWS + ((TII_ROWS) - j);
                     if (imageIndex < NUM_FULL_IMAGE_PIXELS)
                     {
                         value = (double)pixels[imageIndex];
@@ -437,6 +514,9 @@ void analyzeGainCorrectedImageAnomalies(uint16_t *pixels, bool gotImage, char sa
                 x2 /= total;
                 y2 /= total;
 
+                anomalies->x2 = x2;
+                anomalies->y2 = y2;
+
                 // classic wing anomaly
                 if (y2 > CLASSIC_WING_ANOMALY_Y2_THRESHOLD)
                     anomalies->classicWingAnomaly = true;
@@ -447,7 +527,7 @@ void analyzeGainCorrectedImageAnomalies(uint16_t *pixels, bool gotImage, char sa
             // If those values are both larger than pixel count at y1, bifurcation is probable
             for (int i = ix - BIFURCATION_ANALYSIS_WIDTH/2; i <= ix + BIFURCATION_ANALYSIS_WIDTH/2; i++)
             {
-                imageIndex = i * TII_ROWS + ((TII_ROWS-1) - (iy - BIFURCATION_ANALYSIS_DY));
+                imageIndex = i * TII_ROWS + ((TII_ROWS) - (iy - BIFURCATION_ANALYSIS_DY));
                 if (imageIndex < NUM_FULL_IMAGE_PIXELS)
                 {
                     value = (double)pixels[imageIndex];
@@ -457,7 +537,7 @@ void analyzeGainCorrectedImageAnomalies(uint16_t *pixels, bool gotImage, char sa
                         peakValue = value;
                     }
                 }
-                imageIndex = i * TII_ROWS + ((TII_ROWS-1) + (iy + BIFURCATION_ANALYSIS_DY));
+                imageIndex = i * TII_ROWS + ((TII_ROWS) + (iy + BIFURCATION_ANALYSIS_DY));
                 if (imageIndex < NUM_FULL_IMAGE_PIXELS)
                 {
                     value = (double)pixels[imageIndex];
@@ -467,7 +547,7 @@ void analyzeGainCorrectedImageAnomalies(uint16_t *pixels, bool gotImage, char sa
                         peakValue = value;
                     }
                 }
-                imageIndex = i * TII_ROWS + ((TII_ROWS-1) - iy);
+                imageIndex = i * TII_ROWS + ((TII_ROWS) - iy);
                 if (imageIndex < NUM_FULL_IMAGE_PIXELS)
                 {
                     value = (double)pixels[imageIndex];
@@ -498,6 +578,12 @@ void initializeAnomalyData(ImageAnomalies *anomalies)
     anomalies->bifurcationAnomaly = false;
     anomalies->ringAnomaly = false;
     anomalies->measlesAnomaly = false;
+
+    anomalies->x1 = 0.;
+    anomalies->y1 = 0.;
+    anomalies->x2 = 0.;
+    anomalies->y2 = 0.;
+
 
     return;
 }

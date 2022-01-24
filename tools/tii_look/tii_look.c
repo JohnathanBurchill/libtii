@@ -1,4 +1,11 @@
+#include "tii_look.h"
+
 #include "tii.h"
+#include "tiigraphics.h"
+#include "draw.h"
+#include "colors.h"
+#include "filters.h"
+#include "png.h"
 
 #include "isp.h"
 #include "import.h"
@@ -33,7 +40,7 @@ int main(int argc, char **argv)
         usage(argv[0]);
 	    exit(1);
     }
-    double max = atof(argv[2]);
+    double requestedMax = atof(argv[2]);
     long imagePairNumber = atol(argv[3]);
     if (imagePairNumber < 1)
     {
@@ -44,9 +51,6 @@ int main(int argc, char **argv)
 
     // Data
     ImagePackets imagePackets;
-
-    ImagePairTimeSeries imagePairTimeSeries;
-    initImagePairTimeSeries(&imagePairTimeSeries);
 
     status = importImagery(satDate, &imagePackets);
     if (status)
@@ -60,14 +64,20 @@ int main(int argc, char **argv)
         goto cleanup;
     }
     
+    // If there are no config packets we bail, since we need to be able to apply the gain correction maps
+    // and calculate onboard moments.
+    SciencePackets sciencePackets;
+    LpTiiTimeSeries timeSeries;
+    initLpTiiTimeSeries(&timeSeries);
+    importScience(satDate, &sciencePackets);
+    getLpTiiTimeSeries(satDate[0], &sciencePackets, &timeSeries);
+
     uint16_t pixelsH[NUM_FULL_IMAGE_PIXELS], pixelsV[NUM_FULL_IMAGE_PIXELS];
     FullImagePacket * fip1, *fip2;
     FullImageContinuedPacket *cip1, *cip2;
     ImagePair imagePair;
     ImageAuxData auxH, auxV;
     initializeImagePair(&imagePair, &auxH, pixelsH, &auxV, pixelsV);
-    double maxValueH, maxValueV;
-    int imagesRead = 0;
     getFirstImagePair(&imagePackets, &imagePair);
     double dayStart = imagePair.secondsSince1970;
     char satellite = getSatellite(&imagePair);
@@ -83,30 +93,140 @@ int main(int argc, char **argv)
     dayEnd = dayStart + 86400.0; // ignore leap second on this day
  
     size_t numberOfImagePairs = countImagePairs(&imagePackets, &imagePair, dayStart, dayEnd);
-    getImagePairTimeSeries(satellite, &imagePackets, &imagePair, &imagePairTimeSeries, numberOfImagePairs, dayStart, dayEnd, max);
 
-    // Per image measles and PA stats
-    char measlesPaFilename[FILENAME_MAX];
-    sprintf(measlesPaFilename, "%s/SW_EFI%s_image_stats.txt", outputDir, satDate);
-    FILE *measlesPaFile = fopen(measlesPaFilename, "w");
-    if (measlesPaFile == NULL)
+    if (imagePairNumber > numberOfImagePairs)
     {
-        fprintf(stderr, "Could not open stats file.\n");
+        fprintf(stderr, "Image pair %ld not found for %s\n", imagePairNumber, satDate);
         goto cleanup;
     }
 
-    for (size_t i = 0; i < numberOfImagePairs; i++)
+    double maxH = requestedMax;
+    double maxV = requestedMax;
+
+    ImageAnomalies h;
+    ImageAnomalies v;
+    initializeAnomalyData(&h);
+    initializeAnomalyData(&v);
+
+    int pixelThreshold = 0;
+
+    Image imageBuf;
+    if (allocImage(&imageBuf, LOOK_IMAGE_WIDTH, LOOK_IMAGE_HEIGHT, 1) != DRAW_OK)
     {
-        // time in sec since 1970, measles count H, measles count V, PA count H, PA count V, VPhos H, VPhosV, VMcp H, VMcp V, VBias H, VBias V, VFP H
-        fprintf(measlesPaFile, "%ld %d %d %d %d %f %f %f %f %f %f %f\n", (time_t)floor(imagePairTimeSeries.time[i]), imagePairTimeSeries.measlesCountH[i], imagePairTimeSeries.measlesCountV[i], imagePairTimeSeries.paCountH[i], imagePairTimeSeries.paCountV[i], imagePairTimeSeries.PhosphorVoltageMonitorH[i], imagePairTimeSeries.PhosphorVoltageMonitorV[i], imagePairTimeSeries.McpVoltageMonitorH[i], imagePairTimeSeries.McpVoltageMonitorV[i], imagePairTimeSeries.BiasGridVoltageMonitorH[i], imagePairTimeSeries.BiasGridVoltageMonitorV[i], imagePairTimeSeries.FaceplateVoltageMonitorH[i]);
+        printf("Won't be able to remember the image, sorry.\n");
+        goto cleanup;
     }
-    fclose(measlesPaFile);
+
+    getImagePair(&imagePackets, (imagePairNumber-1)*2, &imagePair);
+
+    // Raw image anomalies
+    analyzeRawImageAnomalies(imagePair.pixelsH, imagePair.gotImageH, imagePair.auxH->satellite, &h);
+    analyzeRawImageAnomalies(imagePair.pixelsV, imagePair.gotImageV, imagePair.auxV->satellite, &v);
+
+    // Draw images
+    memset(imageBuf.pixels, BACKGROUND_COLOR, imageBuf.numberOfBytes);
+    maxH = getMaxValue(imagePair.pixelsH, requestedMax);
+    maxV = getMaxValue(imagePair.pixelsV, requestedMax);
+    drawImagePair(&imageBuf, &imagePair, maxH, maxV, LOOK_IMAGE_RAW_X0, LOOK_IMAGE_RAW_Y0, LOOK_IMAGE_SCALE, LOOK_IMAGE_SEPARATION, "Raw H", "Raw V", true, &identityFilter, NULL, NULL);
+
+    // Image processing results
+    // Angel's wing moments
+    if (h.upperAngelsWingAnomaly)
+    {
+        int dxh = (int)round(sqrt(h.upperAngelsWingX2));
+        int dyh = (int)round(sqrt(h.upperAngelsWingY2));
+        int x1h = (int)round(h.upperAngelsWingX1);
+        int y1h = (int)round(h.upperAngelsWingY1);
+        imageHorizontalLine(&imageBuf, false, H_SENSOR, x1h - dxh, x1h + dxh, y1h, FOREGROUND_COLOR, 2);
+        imageVerticalLine(&imageBuf, false, H_SENSOR, x1h, y1h - dyh, y1h + dyh, FOREGROUND_COLOR, 2);
+    }
+    if (h.lowerAngelsWingAnomaly)
+    {
+        int dxh = (int)round(sqrt(h.lowerAngelsWingX2));
+        int dyh = (int)round(sqrt(h.lowerAngelsWingY2));
+        int x1h = (int)round(h.lowerAngelsWingX1);
+        int y1h = (int)round(h.lowerAngelsWingY1);
+        imageHorizontalLine(&imageBuf, false, V_SENSOR, x1h - dxh, x1h + dxh, y1h, FOREGROUND_COLOR, 2);
+        imageVerticalLine(&imageBuf, false, V_SENSOR, x1h, y1h - dyh, y1h + dyh, FOREGROUND_COLOR, 2);
+    }
+    if (v.upperAngelsWingAnomaly)
+    {
+        int dxv = (int)round(sqrt(v.upperAngelsWingX2));
+        int dyv = (int)round(sqrt(v.upperAngelsWingY2));
+        int x1v = (int)round(v.upperAngelsWingX1);
+        int y1v = (int)round(v.upperAngelsWingY1);
+        imageHorizontalLine(&imageBuf, false, V_SENSOR, x1v - dxv, x1v + dxv, y1v, FOREGROUND_COLOR, 2);
+        imageVerticalLine(&imageBuf, false, V_SENSOR, x1v, y1v - dyv, y1v + dyv, FOREGROUND_COLOR, 2);
+    }
+    if (v.lowerAngelsWingAnomaly)
+    {
+        int dxv = (int)round(sqrt(v.lowerAngelsWingX2));
+        int dyv = (int)round(sqrt(v.lowerAngelsWingY2));
+        int x1v = (int)round(v.lowerAngelsWingX1);
+        int y1v = (int)round(v.lowerAngelsWingY1);
+        imageHorizontalLine(&imageBuf, false, V_SENSOR, x1v - dxv, x1v + dxv, y1v, FOREGROUND_COLOR, 2);
+        imageVerticalLine(&imageBuf, false, V_SENSOR, x1v, y1v - dyv, y1v + dyv, FOREGROUND_COLOR, 2);
+    }
+
+    // Testing regions
+    // // Lower Angel's wing H
+    // imageRectangle(&imageBuf, false, H_SENSOR, 32, 38, 38, 50, BACKGROUND_COLOR);
+    // // Upper Angel's wing H
+    // imageRectangle(&imageBuf, false, H_SENSOR, 32, 38, 14, 26, BACKGROUND_COLOR);
+    // // Lower Angel's wing V
+    // imageRectangle(&imageBuf, false, V_SENSOR, 32, 38, 38, 50, BACKGROUND_COLOR);
+    // // Upper Angel's wing V
+    // imageRectangle(&imageBuf, false, V_SENSOR, 32, 38, 14, 26, BACKGROUND_COLOR);
+
+    // Gain corrected image anomalies
+    latestConfigValues(&imagePair, &timeSeries, &pixelThreshold, NULL, NULL, NULL, NULL, NULL, NULL);
+    applyImagePairGainMaps(&imagePair, pixelThreshold, NULL, NULL);
+
+    analyzeGainCorrectedImageAnomalies(imagePair.pixelsH, imagePair.gotImageH, imagePair.auxH->satellite, &h);
+    analyzeGainCorrectedImageAnomalies(imagePair.pixelsV, imagePair.gotImageV, imagePair.auxV->satellite, &v);
+
+    maxH = getMaxValue(imagePair.pixelsH, requestedMax);
+    maxV = getMaxValue(imagePair.pixelsV, requestedMax);
+    drawImagePair(&imageBuf, &imagePair, maxH, maxV, LOOK_IMAGE_GC_X0, LOOK_IMAGE_GC_Y0, LOOK_IMAGE_SCALE, LOOK_IMAGE_SEPARATION, "Corrected H", "Corrected V", false, &identityFilter, NULL, NULL);
+
+    // draw image processing results
+
+    // Nominal O+ Moments
+    // Left hand column and top row are included in x and y values of moments.
+    // Moments are calculated only on pixel data within a rectangular region
+    if (h.x1 > 0.)
+    {
+        int dxh = (int)round(sqrt(h.x2));
+        int dyh = (int)round(sqrt(h.y2));
+        int x1h = (int)round(h.x1);
+        int y1h = (int)round(h.y1);
+        imageHorizontalLine(&imageBuf, true, H_SENSOR, x1h - dxh, x1h + dxh, y1h, FOREGROUND_COLOR, 2);
+        imageVerticalLine(&imageBuf, true, H_SENSOR, x1h, y1h - dyh, y1h + dyh, FOREGROUND_COLOR, 2);
+    }
+    if (v.x1 > 0.)
+    {
+        int dxv = (int)round(sqrt(v.x2));
+        int dyv = (int)round(sqrt(v.y2));
+        int x1v = (int)round(v.x1);
+        int y1v = (int)round(v.y1);
+        imageHorizontalLine(&imageBuf, true, V_SENSOR, x1v - dxv, x1v + dxv, y1v, FOREGROUND_COLOR, 2);
+        imageVerticalLine(&imageBuf, true, V_SENSOR, x1v, y1v - dyv, y1v + dyv, FOREGROUND_COLOR, 2);
+    }
+    
+
+    // Export PNG
+    char filename[FILENAME_MAX];
+    sprintf(filename, "%s/%s_%06ld.png", outputDir, satDate, imagePairNumber);
+    struct spng_plte colors = getColorTable();
+    writePng(filename, &imageBuf, &colors);
+    printf("%s\n", filename);
 
 cleanup:
     if (imagePackets.fullImagePackets != NULL) free(imagePackets.fullImagePackets);
     if (imagePackets.continuedPackets != NULL) free(imagePackets.continuedPackets);
+    freeLpTiiTimeSeries(&timeSeries);
 
-    freeImagePairTimeSeries(&imagePairTimeSeries);
+    freeImage(&imageBuf);
 
     fflush(stdout);
 
@@ -129,4 +249,73 @@ void usage(const char * name)
     printf("imagePairNumber starts at 1 for first TII image pair.\n");
 
     return;
+}
+
+void imagePoint(Image *image, bool correctedImage, int sensor, int columnFromLeft, int rowFromTop, int color, int size)
+{
+    if (columnFromLeft < 0 || columnFromLeft > TII_COLS - 1 || rowFromTop < 0 || rowFromTop > TII_ROWS - 1)
+        return;
+    
+    int x0 = 0, y0 = 0;
+    imageOrigin(correctedImage, sensor, &x0, &y0);
+    drawPoint(image, x0 + LOOK_IMAGE_SCALE * columnFromLeft, y0 + LOOK_IMAGE_SCALE * rowFromTop, color, size);
+
+}
+
+void imageVerticalLine(Image *image, bool correctedImage, int sensor, int columnFromLeft, int startRowFromTop, int stopRowFromTop, int color, int size)
+{
+    if (columnFromLeft < 0 || columnFromLeft > TII_COLS - 1)
+        return;
+
+    int x0 = 0, y0 = 0;
+    imageOrigin(correctedImage, sensor, &x0, &y0);
+
+    for (int r = startRowFromTop; r >= 0 && r < stopRowFromTop && r < TII_ROWS; r++)
+        for (int s = 0; s < LOOK_IMAGE_SCALE; s++)
+            drawPoint(image, x0 + LOOK_IMAGE_SCALE * columnFromLeft, y0 + LOOK_IMAGE_SCALE * r + s, color, size);
+}
+
+void imageHorizontalLine(Image *image, bool correctedImage, int sensor, int startColumnFromLeft, int stopColumnFromLeft, int rowFromTop, int color, int size)
+{
+    if (rowFromTop < 0 || rowFromTop > TII_ROWS - 1)
+        return;
+
+    int x0 = 0, y0 = 0;
+    imageOrigin(correctedImage, sensor, &x0, &y0);
+
+    for (int c = startColumnFromLeft; c >= 0 && c < stopColumnFromLeft && c < TII_COLS; c++)
+        for (int s = 0; s < LOOK_IMAGE_SCALE; s++)
+            drawPoint(image, x0 + LOOK_IMAGE_SCALE * c + s, y0 + LOOK_IMAGE_SCALE * rowFromTop, color, size);
+}
+
+void imageRectangle(Image *image, bool correctedImage, int sensor, int startColumnFromLeft, int stopColumnFromLeft, int startRowFromTop, int stopRowFromTop, int color)
+{
+    int x0 = 0, y0 = 0;
+    imageOrigin(correctedImage, sensor, &x0, &y0);
+
+    for (int c = startColumnFromLeft; c >= 0 && c <= stopColumnFromLeft && c < TII_COLS; c++)
+        for (int r =startRowFromTop; r >= 0 && r <= stopRowFromTop && r < TII_ROWS; r++)
+            for (int sc = 0; sc < LOOK_IMAGE_SCALE; sc++)
+                for (int sr = 0; sr < LOOK_IMAGE_SCALE; sr++)
+                    drawPoint(image, x0 + LOOK_IMAGE_SCALE * c + sc, y0 + LOOK_IMAGE_SCALE * r + sr, color, 1);
+}
+
+
+void imageOrigin(bool correctedImage, int sensor, int *x0, int *y0)
+{
+    if (x0 == NULL || y0 == NULL)
+        return;
+
+    *x0 = LOOK_IMAGE_RAW_X0;
+    *y0 = LOOK_IMAGE_RAW_Y0;
+    if (correctedImage)
+    {
+        *x0 = LOOK_IMAGE_GC_X0;
+        *y0 = LOOK_IMAGE_GC_Y0;
+    }
+    if (sensor == V_SENSOR)
+    {
+        *x0 += LOOK_IMAGE_SCALE * (TII_COLS + LOOK_IMAGE_SEPARATION);
+    }
+
 }

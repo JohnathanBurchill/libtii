@@ -21,11 +21,6 @@
 #define GAIN_CORRECTED_OFFSET_X RAW_IMAGE_OFFSET_X
 #define GAIN_CORRECTED_OFFSET_Y RAW_IMAGE_OFFSET_Y + 235
 
-#define FOREGROUND_COLOR 252 // three font colors, with index 252 being the darkest
-#define BACKGROUND_COLOR 255
-#define MIN_COLOR_VALUE 0
-#define MAX_COLOR_VALUE 251
-
 #define LINE_SPACING 16
 
 #define PA_TEXT_X 0

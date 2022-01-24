@@ -14,7 +14,7 @@
 #include <string.h>
 #include <math.h>
 
-void drawFrame(uint8_t * imageBuf, uint8_t *templateBuf, ImagePair *imagePair, LpTiiTimeSeries *timeSeries, ImagePairTimeSeries *imagePairTimeSeries, size_t imagePairIndex, int frameCounter, double dayStart, double dayEnd)
+void drawFrame(Image *imageBuf, Image *templateBuf, ImagePair *imagePair, LpTiiTimeSeries *timeSeries, ImagePairTimeSeries *imagePairTimeSeries, size_t imagePairIndex, int frameCounter, double dayStart, double dayEnd)
 {
     double v;
     int x, y;
@@ -29,6 +29,10 @@ void drawFrame(uint8_t * imageBuf, uint8_t *templateBuf, ImagePair *imagePair, L
     int s = RAW_IMAGE_SCALE;
     int x0 = RAW_IMAGE_OFFSET_X;
     int y0 = RAW_IMAGE_OFFSET_Y;
+
+    // Copy the template into the image
+    memcpy(imageBuf->pixels, templateBuf->pixels, templateBuf->numberOfBytes);
+
 
     // Title (date, time)
     char months[36] = "JanFebMarAprMayJunJulAugSepOctNovDec";
@@ -94,7 +98,6 @@ void drawFrame(uint8_t * imageBuf, uint8_t *templateBuf, ImagePair *imagePair, L
 
     annotate("Number of PA frames", 12, PA_REGION_IMAGE_OFFSET_X + PA_REGION_IMAGE_SCALE * TII_COLS + 28 - strlen("Number of PA frame")*8/2, PA_REGION_IMAGE_OFFSET_Y + PA_REGION_IMAGE_SCALE * TII_ROWS, imageBuf);
 
-
     // Aux data
     drawMonitors(imageBuf, imagePair, MONITOR_LABEL_OFFSET_X, MONITOR_LABEL_OFFSET_Y);
 
@@ -119,7 +122,7 @@ void drawFrame(uint8_t * imageBuf, uint8_t *templateBuf, ImagePair *imagePair, L
 }
 
 
-void drawImage(uint8_t *imageBuf, uint16_t * pixels, bool gotImage, double maxValue, int xoff, int yoff, int scale, bool showTimestamps, ImageAuxData *aux, double (*pixelFilter)(int, void*, bool*, void*), void * filterArgs)
+void drawImage(Image *imageBuf, uint16_t * pixels, bool gotImage, double maxValue, int xoff, int yoff, int scale, bool showTimestamps, ImageAuxData *aux, double (*pixelFilter)(int, void*, bool*, void*), void * filterArgs)
 {
     double v, val;
     double x, y;
@@ -143,10 +146,10 @@ void drawImage(uint8_t *imageBuf, uint16_t * pixels, bool gotImage, double maxVa
         {
             for (int sy = 0; sy < scale; sy++)
             {
-                imageIndex = (IMAGE_WIDTH*(scale*(y)+sy + yoff)+(scale*(x)+sx+xoff));
-                if (imageIndex < IMAGE_BUFFER_SIZE)
+                imageIndex = (imageBuf->width*(scale*(y)+sy + yoff)+(scale*(x)+sx+xoff));
+                if (imageIndex < imageBuf->numberOfBytes)
                 {
-                    imageBuf[imageIndex] = v;
+                    imageBuf->pixels[imageIndex] = v;
                 }
             }
         }
@@ -158,7 +161,7 @@ void drawImage(uint8_t *imageBuf, uint16_t * pixels, bool gotImage, double maxVa
     return;
 }
 
-void drawColorBar(uint8_t *imageBuf, int xoff, int yoff, int width, int height, int min, int max, char *label, int labelFontSize, int tickFontSize)
+void drawColorBar(Image *imageBuf, int xoff, int yoff, int width, int height, int min, int max, char *label, int labelFontSize, int tickFontSize)
 {
     char buf[255];
     int index;
@@ -167,9 +170,9 @@ void drawColorBar(uint8_t *imageBuf, int xoff, int yoff, int width, int height, 
     {
         for (int y = 0; y < height-1; y++)
         {
-            index = IMAGE_WIDTH * (yoff - y) + x;
-            if (index >= 0 && index < IMAGE_BUFFER_SIZE)
-                imageBuf[index] = (uint8_t)(y / ((double)height) * (double)(MAX_COLOR_VALUE - MIN_COLOR_VALUE) + (double)MIN_COLOR_VALUE);
+            index = imageBuf->width * (yoff - y) + x;
+            if (index >= 0 && index < imageBuf->numberOfBytes)
+                imageBuf->pixels[index] = (uint8_t)(y / ((double)height) * (double)(MAX_COLOR_VALUE - MIN_COLOR_VALUE) + (double)MIN_COLOR_VALUE);
         }
     }
 
@@ -182,7 +185,7 @@ void drawColorBar(uint8_t *imageBuf, int xoff, int yoff, int width, int height, 
     return;
 }
 
-void drawTimestamp(uint8_t *imageBuf, int x0, int y0, ImageAuxData *aux, int fontSize)
+void drawTimestamp(Image *imageBuf, int x0, int y0, ImageAuxData *aux, int fontSize)
 {
     char title[255];
     sprintf(title, "%c %02d:%02d:%02d UT", aux->sensor, aux->dateTime.hour, aux->dateTime.minute, aux->dateTime.second);
@@ -192,7 +195,7 @@ void drawTimestamp(uint8_t *imageBuf, int x0, int y0, ImageAuxData *aux, int fon
 }
 
 
-void drawImagePair(uint8_t *imageBuf, ImagePair *imagePair, double maxH, double maxV, int x0, int y0, int scale, int separation, char *labelH, char *labelV, bool showTimestamps, double (*pixelFilter)(int, void*, bool*, void*), void *filterArgsH, void *filterArgsV)
+void drawImagePair(Image *imageBuf, ImagePair *imagePair, double maxH, double maxV, int x0, int y0, int scale, int separation, char *labelH, char *labelV, bool showTimestamps, double (*pixelFilter)(int, void*, bool*, void*), void *filterArgsH, void *filterArgsV)
 {
 
     int delx = scale * separation;
@@ -208,13 +211,18 @@ void drawImagePair(uint8_t *imageBuf, ImagePair *imagePair, double maxH, double 
     drawColorBar(imageBuf, x0 + scale * TII_COLS + 10, y0 + scale * TII_ROWS / 2 + scaleHeight / 2, scaleWidth, scaleHeight, 0, maxH, "", 12, 12);
     drawColorBar(imageBuf, x0 + scale * TII_COLS * 2 + delx + 10, y0 + scale * TII_ROWS / 2 + scaleHeight / 2, scaleWidth, scaleHeight, 0, maxV, "", 12, 12);
 
-    annotate(labelH, 15, x0 + scale * TII_COLS / 2 - 8*15/6, y0 + scale*TII_ROWS, imageBuf);
-    annotate(labelV, 15, x0 + scale * TII_COLS*1.5 + delx - 8*15/6, y0 + scale*TII_ROWS, imageBuf);
+    int fontSize = 9 + 3*((scale-1));
+    if (fontSize < 9) fontSize = 9;
+    if (fontSize > 24) fontSize = 24;
+    int fontWidth = (int)floor(fontSize/9.*6.);
+
+    annotate(labelH, fontSize, (int)floor(x0 + scale * TII_COLS / 2. - fontWidth*strlen(labelH)/2.), y0 + scale*TII_ROWS, imageBuf);
+    annotate(labelV, fontSize, (int)floor(x0 + scale * TII_COLS*1.5 + delx - fontWidth*strlen(labelV)/2.), y0 + scale*TII_ROWS, imageBuf);
 
     return;
 }
 
-void drawMonitors(uint8_t *imageBuf, ImagePair *imagePair, int x0, int y0)
+void drawMonitors(Image *imageBuf, ImagePair *imagePair, int x0, int y0)
 {
 
     char title[255];
@@ -301,7 +309,7 @@ void drawMonitors(uint8_t *imageBuf, ImagePair *imagePair, int x0, int y0)
 
 }
 
-void drawTemplate(uint8_t * templateBuf, LpTiiTimeSeries *timeSeries, ImagePairTimeSeries *imagePairTimeSeries, double dayStart, double dayEnd, bool fullDay)
+void drawTemplate(Image *templateBuf, LpTiiTimeSeries *timeSeries, ImagePairTimeSeries *imagePairTimeSeries, double dayStart, double dayEnd, bool fullDay)
 {
 
     // Time series
@@ -323,7 +331,7 @@ void drawTemplate(uint8_t * templateBuf, LpTiiTimeSeries *timeSeries, ImagePairT
     if (fullDay)
         sprintf(xlabel, "%s", "UT hours");
 
-    memset(templateBuf, BACKGROUND_COLOR, IMAGE_BUFFER_SIZE);
+    memset(templateBuf->pixels, BACKGROUND_COLOR, templateBuf->numberOfBytes);
     // y2
     drawHorizontalLine(templateBuf, plotX0, plotX0 + plotWidth, rescaleAsInteger(10., 0, 20., plotY0, plotY0-plotHeight0));
     drawTimeSeries(templateBuf, timeSeries->lpTiiTime2Hz, timeSeries->y2H, timeSeries->n2Hz, plotX0, plotY0, plotWidth, plotHeight0, dayStart, dayEnd, 0, 20.0, "", "y2 (pix^2)", 4, MAX_COLOR_VALUE+1, "0", "20", false, 1, 9, true);
@@ -352,7 +360,7 @@ void drawTemplate(uint8_t * templateBuf, LpTiiTimeSeries *timeSeries, ImagePairT
 
 
 
-void drawIntTimeSeries(uint8_t *imageBuf, double *times, int *values, size_t nValues, int plotX0, int plotY0, int plotWidth, int plotHeight, double t0, double t1, double minValue, double maxValue, const char *xLabel, const char *yLabel, int stride, int colorIndex, const char *minValueStr, const char *maxValueStr, bool log10Scale, int dotSize, int fontSize, bool axes)
+void drawIntTimeSeries(Image *imageBuf, double *times, int *values, size_t nValues, int plotX0, int plotY0, int plotWidth, int plotHeight, double t0, double t1, double minValue, double maxValue, const char *xLabel, const char *yLabel, int stride, int colorIndex, const char *minValueStr, const char *maxValueStr, bool log10Scale, int dotSize, int fontSize, bool axes)
 {
     double *dVals = NULL;
     dVals = (double*) malloc(nValues * sizeof(double));
@@ -368,7 +376,7 @@ void drawIntTimeSeries(uint8_t *imageBuf, double *times, int *values, size_t nVa
     free(dVals);
 }
 
-void drawTimeSeries(uint8_t *imageBuf, double *times, double *values, size_t nValues, int plotX0, int plotY0, int plotWidth, int plotHeight, double t0, double t1, double minValue, double maxValue, const char *xLabel, const char *yLabel, int stride, int colorIndex, const char *minValueStr, const char *maxValueStr, bool log10Scale, int dotSize, int fontSize, bool axes)
+void drawTimeSeries(Image *imageBuf, double *times, double *values, size_t nValues, int plotX0, int plotY0, int plotWidth, int plotHeight, double t0, double t1, double minValue, double maxValue, const char *xLabel, const char *yLabel, int stride, int colorIndex, const char *minValueStr, const char *maxValueStr, bool log10Scale, int dotSize, int fontSize, bool axes)
 {
     int x0, y0;
     int x, y;
@@ -443,12 +451,43 @@ void drawTimeSeries(uint8_t *imageBuf, double *times, double *values, size_t nVa
     }
 }
 
-void setBufferColorIndex(uint8_t *imageBuf, int x, int y, int colorIndex)
+void drawPoint(Image *imageBuf, int x, int y, int colorIndex, int dotSize)
 {
-    size_t index = IMAGE_WIDTH * y + x;
-    if (index >=0 && index <= IMAGE_BUFFER_SIZE-1 && x < IMAGE_WIDTH && x >=0 && y >=0 && y < IMAGE_HEIGHT)
+    if (x < 0 || x > imageBuf->width || y < 0 || y > imageBuf->height)
+        return;
+
+    switch (dotSize)
     {
-        imageBuf[index] = colorIndex;
+        case 2:
+            setBufferColorIndex(imageBuf, x, y, colorIndex);
+            setBufferColorIndex(imageBuf, x+1, y, colorIndex);
+            setBufferColorIndex(imageBuf, x+1, y+1, colorIndex);
+            setBufferColorIndex(imageBuf, x, y+1, colorIndex);
+            break;
+        case 3:
+            setBufferColorIndex(imageBuf, x, y, colorIndex);
+            setBufferColorIndex(imageBuf, x, y-1, colorIndex);
+            setBufferColorIndex(imageBuf, x, y+1, colorIndex);
+            setBufferColorIndex(imageBuf, x+1, y, colorIndex);
+            setBufferColorIndex(imageBuf, x+1, y-1, colorIndex);
+            setBufferColorIndex(imageBuf, x+1, y+1, colorIndex);
+            setBufferColorIndex(imageBuf, x-1, y, colorIndex);
+            setBufferColorIndex(imageBuf, x-1, y-1, colorIndex);
+            setBufferColorIndex(imageBuf, x-1, y+1, colorIndex);
+            break;
+        default:
+            setBufferColorIndex(imageBuf, x, y, colorIndex);
+            break;
+    }
+}
+
+
+void setBufferColorIndex(Image *imageBuf, int x, int y, int colorIndex)
+{
+    size_t index = imageBuf->width * y + x;
+    if (index >=0 && index < imageBuf->numberOfBytes && x < imageBuf->width && x >=0 && y >=0 && y < imageBuf->height)
+    {
+        imageBuf->pixels[index] = colorIndex;
     }
 }
 
@@ -474,7 +513,7 @@ int rescaleAsInteger(double x, double minX, double maxX, int minScale, int maxSc
     return scaled;
 }
 
-void drawIndicatorLine(uint8_t *imageBuf, int x, int y0, int y1)
+void drawIndicatorLine(Image *imageBuf, int x, int y0, int y1)
 {
     for (int y = y0; y > y1; y--)
     {
@@ -486,7 +525,7 @@ void drawIndicatorLine(uint8_t *imageBuf, int x, int y0, int y1)
     }
 }
 
-void drawHorizontalLine(uint8_t *imageBuf, int x0, int x1, int y)
+void drawHorizontalLine(Image *imageBuf, int x0, int x1, int y)
 {
     for (int x = x0; x < x1; x++)
     {
@@ -498,13 +537,13 @@ void drawHorizontalLine(uint8_t *imageBuf, int x0, int x1, int y)
     }
 }
 
-void drawFill(uint8_t *imageBuf, int colorIndex)
+void drawFill(Image *imageBuf, int colorIndex)
 {
-    memset(imageBuf, colorIndex, IMAGE_BUFFER_SIZE);
+    memset(imageBuf->pixels, colorIndex, imageBuf->numberOfBytes);
 }
 
 
-void drawHistogram(uint8_t *imageBuf, double *values, size_t nValues, double binWidth, double minValue, double maxValue, size_t plotWidth, size_t plotHeight, size_t plotLeft, size_t plotBottom, int normalization, const char *xLabel)
+void drawHistogram(Image *imageBuf, double *values, size_t nValues, double binWidth, double minValue, double maxValue, size_t plotWidth, size_t plotHeight, size_t plotLeft, size_t plotBottom, int normalization, const char *xLabel)
 {
     double *bins = NULL;
     double *binCounts = NULL;
@@ -575,4 +614,28 @@ void drawHistogram(uint8_t *imageBuf, double *values, size_t nValues, double bin
     if (binCounts != NULL)
         free(binCounts);
 
+}
+
+int allocImage(Image *image, int width, int height, int bytesPerPixel)
+{
+    image->width = width;
+    image->height = height;
+    image->bytesPerPixel = bytesPerPixel;
+    image->numberOfPixels = image->width * image->height;
+    image->numberOfBytes = image->numberOfPixels * image->bytesPerPixel;
+    image->pixels = NULL;
+    image->pixels = (uint8_t*) malloc(image->numberOfBytes * sizeof(uint8_t));
+    int status = DRAW_OK;
+    if (image->pixels == NULL)
+        status = DRAW_IMAGE_MEM;
+    return status;
+}
+
+void freeImage(Image *image)
+{
+    if (image->pixels != NULL)
+    {
+        free(image->pixels);
+        image->pixels = NULL;
+    }
 }

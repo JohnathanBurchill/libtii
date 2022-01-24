@@ -8,9 +8,10 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-#define CLASSIC_WING_ANOMALY_Y2_THRESHOLD 3
+#define CLASSIC_WING_ANOMALY_Y2_THRESHOLD 10
 #define MEASLES_COUNT_THRESHOLD 10
 #define PA_COUNT_THRESHOLD 10
+#define ANGELS_WING_THRESHOLD 4550 // average of 91 pixels in 13x7 region exceeds 50 DN
 
 #define MOMENT_MIN_X 10
 #define MOMENT_MAX_X 30
@@ -70,7 +71,23 @@ typedef struct ImageAnomalies {
     bool classicWingAnomaly;
     bool bifurcationAnomaly;
     bool ringAnomaly;
-    bool measlesAnomaly; 
+    bool measlesAnomaly;
+
+    // image peak moments (within a small bounding box of the nominal O+ peak location)
+    double x1;
+    double y1;
+    double x2;
+    double y2;
+
+    // Angel's wings moments
+    double upperAngelsWingX1;
+    double upperAngelsWingY1;
+    double upperAngelsWingX2;
+    double upperAngelsWingY2;
+    double lowerAngelsWingX1;
+    double lowerAngelsWingY1;
+    double lowerAngelsWingX2;
+    double lowerAngelsWingY2;
 
 } ImageAnomalies;
 

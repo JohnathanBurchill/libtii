@@ -1,6 +1,7 @@
 #include "video.h"
 
 #include "tiigraphics.h"
+#include "colors.h"
 #include "colortable.h"
 #include "fonts.h"
 #include "draw.h"
@@ -175,16 +176,16 @@ static void rgbToYuv(uint8_t *rgb) {
             videoFrame->height, videoFrame->data, videoFrame->linesize);
 }
 
-int generateFrame(uint8_t *pixels, int frameNumber)
+int generateFrame(Image *image, int frameNumber)
 {
     int status;
     int got_output;
     int color;
-    if (pixels != NULL)
+    if (image->pixels != NULL)
     {
-        for (int i = 0; i < IMAGE_BUFFER_SIZE; i++)
+        for (int i = 0; i < image->numberOfBytes; i++)
         {
-            color = pixels[i];
+            color = image->pixels[i];
             frameBuffer[3*i + 0] = colorsrgbrgb[3*color];
             frameBuffer[3*i + 1] = colorsrgbrgb[3*color+1];
             frameBuffer[3*i + 2] = colorsrgbrgb[3*color+2];
@@ -250,7 +251,7 @@ void cleanupVideo(void)
 
 
 // Transitions
-void insertTransition(uint8_t *imageBuf, const char *text, int x0, int y0, int fontSize, double durationSeconds, int *frameCounter)
+void insertTransition(Image *imageBuf, const char *text, int x0, int y0, int fontSize, double durationSeconds, int *frameCounter)
 {
     drawFill(imageBuf, BACKGROUND_COLOR);
     annotate(text, fontSize, x0 - (int)((double)strlen(text)/2.*(double)fontSize/12.*8.), y0, imageBuf);

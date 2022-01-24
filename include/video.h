@@ -1,6 +1,8 @@
 #ifndef _VIDEO_H
 #define _VIDEO_H
 
+#include <draw.h>
+
 #include <stdint.h>
 
 enum VIDEO_ERR {
@@ -20,11 +22,11 @@ enum VIDEO_ERR {
 };
 
 int initVideo(const char * filename);
-int generateFrame(uint8_t *pixels, int frameNumber);
+int generateFrame(Image *image, int frameNumber);
 int finishVideo(void);
 void cleanupVideo(void);
 
 // Video transitions
-void insertTransition(uint8_t *imageBuf, const char *text, int x0, int y0, int fontSize, double durationSeconds, int *frameCounter);
+void insertTransition(Image *image, const char *text, int x0, int y0, int fontSize, double durationSeconds, int *frameCounter);
 
 #endif // _VIDEO_H

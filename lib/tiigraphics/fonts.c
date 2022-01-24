@@ -1,6 +1,7 @@
 #include "fonts.h"
 
 #include "tiigraphics.h"
+#include "colors.h"
 
 #include "fonts9_to_24.h"
 
@@ -9,7 +10,7 @@
 #include <stdio.h>
 
 // Draw text in the image buffer
-int annotate(const char * text, int fontsize, int x, int y, uint8_t *imageBuffer)
+int annotate(const char * text, int fontsize, int x, int y, Image *imageBuffer)
 {
     int status = FONTS_OK;
     int8_t *font;
@@ -65,7 +66,7 @@ int annotate(const char * text, int fontsize, int x, int y, uint8_t *imageBuffer
 }
 
 
-int placeCharacter(uint8_t characterNumber, int8_t *font, int x, int y, uint8_t *imageBuffer)
+int placeCharacter(uint8_t characterNumber, int8_t *font, int x, int y, Image *imageBuffer)
 {
     int status = FONTS_OK;
 
@@ -96,20 +97,20 @@ int placeCharacter(uint8_t characterNumber, int8_t *font, int x, int y, uint8_t 
             status = FONTS_FONT_FILE_ISSUE;
             break;
         }
-        imageIndex = (IMAGE_WIDTH*(y + yoffset)+(x + xoffset));
-        if (imageIndex >= 0 && imageIndex < IMAGE_BUFFER_SIZE)
+        imageIndex = (imageBuffer->width*(y + yoffset)+(x + xoffset));
+        if (imageIndex >= 0 && imageIndex < imageBuffer->numberOfBytes)
         {
             // on image data just use darkest level
-            if (imageBuffer[imageIndex] <= MAX_COLOR_VALUE)
+            if (imageBuffer->pixels[imageIndex] <= MAX_COLOR_VALUE)
             {
                 // Otherwise the characters are too bold
                 if (fontColorIndex < 3)
-                   imageBuffer[imageIndex] = MAX_COLOR_VALUE + 1;
+                   imageBuffer->pixels[imageIndex] = MAX_COLOR_VALUE + 1;
             }
             else
             {
                 // On background (white)
-                imageBuffer[imageIndex] = MAX_COLOR_VALUE + fontColorIndex;
+                imageBuffer->pixels[imageIndex] = MAX_COLOR_VALUE + fontColorIndex;
             }
         }
     }

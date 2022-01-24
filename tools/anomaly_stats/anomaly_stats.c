@@ -98,6 +98,8 @@ int main(int argc, char **argv)
 
     int pixelThreshold = 0;
 
+    // time in sec since 1970, PA H, PA V, measles H, measles V, classic wing H, classic wing V, angel's wing upper H, angel's wing upper V, angel's wing lower H, angel's wing lower V
+    fprintf(dailyAnomalyFile, "secondsSince1970 PAH PAV MH MV CWH CWV UAWH UAWV LAWH LAWV\n");
     for (size_t i = 0; i < numberOfImagePairs; i++)
     {
         getImagePair(&imagePackets, i, &imagePair);
@@ -117,8 +119,8 @@ int main(int argc, char **argv)
             analyzeGainCorrectedImageAnomalies(imagePair.pixelsH, imagePair.gotImageH, imagePair.auxH->satellite, &h);
             analyzeGainCorrectedImageAnomalies(imagePair.pixelsV, imagePair.gotImageV, imagePair.auxV->satellite, &v);
 
-            // time in sec since 1970, PA H, PA V, measles H, measles V, classic wing H, classic wing V
-            fprintf(dailyAnomalyFile, "%ld %d %d %d %d %d %d %d %d\n", (time_t)floor(imagePair.secondsSince1970), h.peripheralAnomaly, v.peripheralAnomaly, h.measlesAnomaly, v.measlesAnomaly, h.classicWingAnomaly, v.classicWingAnomaly, h.bifurcationAnomaly, v.bifurcationAnomaly);
+            // time in sec since 1970, PA H, PA V, measles H, measles V, classic wing H, classic wing V, angel's wing upper H, angel's wing upper V, angel's wing lower H, angel's wing lower V
+            fprintf(dailyAnomalyFile, "%ld %d %d %d %d %d %d %d %d %d %d %d %d\n", (time_t)floor(imagePair.secondsSince1970), h.peripheralAnomaly, v.peripheralAnomaly, h.measlesAnomaly, v.measlesAnomaly, h.classicWingAnomaly, v.classicWingAnomaly, h.bifurcationAnomaly, v.bifurcationAnomaly, h.upperAngelsWingAnomaly, v.upperAngelsWingAnomaly, h.lowerAngelsWingAnomaly, v.lowerAngelsWingAnomaly);
         }
     }
     fclose(dailyAnomalyFile);
