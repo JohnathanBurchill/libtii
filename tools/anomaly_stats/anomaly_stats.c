@@ -98,12 +98,16 @@ int main(int argc, char **argv)
 
     int pixelThreshold = 0;
 
+    int imagesRead = 0;
+
     // time in sec since 1970, PA H, PA V, measles H, measles V, classic wing H, classic wing V, angel's wing upper H, angel's wing upper V, angel's wing lower H, angel's wing lower V
     fprintf(dailyAnomalyFile, "secondsSince1970 PAH PAV MH MV CWH CWV UAWH UAWV LAWH LAWV\n");
     for (size_t i = 0; i < numberOfImagePairs; i++)
     {
-        getImagePair(&imagePackets, i, &imagePair);
 
+        getAlignedImagePair(&imagePackets, 2*i, &imagePair, &imagesRead);
+
+        printf("time: %ld\n", (time_t)floor(imagePair.secondsSince1970));
         if (scienceMode(imagePair.auxH) && scienceMode(imagePair.auxV))
         {
             initializeAnomalyData(&h);

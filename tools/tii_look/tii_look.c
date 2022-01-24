@@ -117,7 +117,8 @@ int main(int argc, char **argv)
         goto cleanup;
     }
 
-    getImagePair(&imagePackets, (imagePairNumber-1)*2, &imagePair);
+    int imagesRead = 0;
+    getAlignedImagePair(&imagePackets, (imagePairNumber-1)*2, &imagePair, &imagesRead);
 
     // Raw image anomalies
     analyzeRawImageAnomalies(imagePair.pixelsH, imagePair.gotImageH, imagePair.auxH->satellite, &h);
