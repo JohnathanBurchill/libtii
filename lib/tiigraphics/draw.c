@@ -338,6 +338,7 @@ void drawTemplate(Image *templateBuf, LpTiiTimeSeries *timeSeries, ImagePairTime
     drawTimeSeries(templateBuf, timeSeries->lpTiiTime2Hz, timeSeries->y2V, timeSeries->n2Hz, plotX0, plotY0, plotWidth, plotHeight0, dayStart, dayEnd, 0, 20.0, "", "", 4, 13, "", "", false, 1, 9, false);
 
     // Log 10 density
+    drawHorizontalLine(templateBuf, plotX0, plotX0 + plotWidth, rescaleAsInteger(5.5, 4., 7., plotY1, plotY1-plotHeight0));
     drawTimeSeries(templateBuf, timeSeries->lpTiiTime2Hz, timeSeries->ionDensity2, timeSeries->n2Hz, plotX0, plotY1, plotWidth, plotHeight0, dayStart, dayEnd, 4.0, 7.0, "", "log(Ni/cm^-3)", 4, MAX_COLOR_VALUE+1, "4", "7", true, 1, 9, true);
 
     // PA level
