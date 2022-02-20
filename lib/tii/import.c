@@ -20,6 +20,11 @@ int sortFiles(const FTSENT **first, const FTSENT **second)
 
 int importImagery(const char *source, ImagePackets *imagePackets)
 {
+    return importImageryWithFilenames(source, imagePackets, NULL, NULL);
+}
+
+int importImageryWithFilenames(const char *source, ImagePackets *imagePackets, char **efiFilenames, size_t *nFiles)
+{
     int status = IMPORT_OK;
     int len = strlen(source);
     imagePackets->numberOfImages = 0;
@@ -27,6 +32,10 @@ int importImagery(const char *source, ImagePackets *imagePackets)
     imagePackets->numberOfContinuedPackets = 0;
     imagePackets->fullImagePackets = NULL;
     imagePackets->continuedPackets = NULL;
+
+    // Initialize nFiles
+    if (efiFilenames == NULL && nFiles != NULL)
+        *nFiles = 0;
  
     if (strcmp(source + len - 4, ".HDR") == 0)
     {
@@ -53,6 +62,15 @@ int importImagery(const char *source, ImagePackets *imagePackets)
                 // Very likely got a SW_OPER_EFI?{NOM,TIC}_0__*.HDR file for the correct satellite and date
                 // Ignore errors: we read as many files as we can
                 status = importImageryFromHdr(f->fts_path, imagePackets);
+                if (status == IMPORT_OK && nFiles != NULL)
+                {
+                    *efiFilenames = realloc(*efiFilenames, FILENAME_MAX * (*nFiles + 1));
+                    if (*efiFilenames != NULL)
+                    {
+                        sprintf(*efiFilenames + (*nFiles)*FILENAME_MAX, "%s", f->fts_path);
+                        *nFiles++;
+                    }
+                }
             }
             f = fts_read(fts);
         }

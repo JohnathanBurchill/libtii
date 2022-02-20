@@ -21,6 +21,7 @@ enum IMPORT_ERROR
 };
 
 int importImagery(const char *source, ImagePackets *imagePackets);
+int importImageryWithFilenames(const char *source, ImagePackets *imagePackets, char **efiFilenames, size_t *nFiles);
 int importImageryFromHdr(const char *hdr, ImagePackets *imagePackets);
 
 void alignPackets(uint8_t* fullImagePackets, uint8_t *continuedPackets, long nImages, long nGaps);
