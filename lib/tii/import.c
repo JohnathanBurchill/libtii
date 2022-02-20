@@ -32,10 +32,6 @@ int importImageryWithFilenames(const char *source, ImagePackets *imagePackets, c
     imagePackets->numberOfContinuedPackets = 0;
     imagePackets->fullImagePackets = NULL;
     imagePackets->continuedPackets = NULL;
-
-    // Initialize nFiles
-    if (efiFilenames == NULL && nFiles != NULL)
-        *nFiles = 0;
  
     if (strcmp(source + len - 4, ".HDR") == 0)
     {
@@ -64,11 +60,12 @@ int importImageryWithFilenames(const char *source, ImagePackets *imagePackets, c
                 status = importImageryFromHdr(f->fts_path, imagePackets);
                 if (status == IMPORT_OK && nFiles != NULL)
                 {
-                    *efiFilenames = realloc(*efiFilenames, FILENAME_MAX * (*nFiles + 1));
+                    *efiFilenames = (char *)realloc(*efiFilenames, FILENAME_MAX * (*nFiles + 1));
                     if (*efiFilenames != NULL)
                     {
                         sprintf(*efiFilenames + (*nFiles)*FILENAME_MAX, "%s", f->fts_path);
-                        *nFiles++;
+                        sprintf(*efiFilenames + (*nFiles)*FILENAME_MAX + strlen(f->fts_path)-3, "DBL");
+                        (*nFiles)++;
                     }
                 }
             }
