@@ -115,7 +115,7 @@ void drawFrame(Image *imageBuf, Image *templateBuf, ImagePair *imagePair, LpTiiT
     int plotY5 = plotY4 + plotHeight1 + plotdy;
     
     x = rescaleAsInteger(imagePair->secondsSince1970, dayStart, dayEnd, plotX0, plotX0 + plotWidth);
-    drawIndicatorLine(imageBuf, x, plotY5, plotY0 - plotHeight0);
+    drawIndicatorLine(imageBuf, x, plotY5 + 10, plotY0 - plotHeight0 + 10);
 
     return;
     
@@ -319,7 +319,7 @@ void drawTemplate(Image *templateBuf, LpTiiTimeSeries *timeSeries, ImagePairTime
     int plotdy = 15;
     
     int plotX0 = 400;
-    int plotY0 = 210;
+    int plotY0 = 225;
     int plotY1 = plotY0 + plotHeight0 + plotdy;
     int plotY2 = plotY1 + plotHeight0 + plotdy;
     int plotY3 = plotY2 + plotHeight0 + plotdy;

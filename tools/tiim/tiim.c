@@ -10,6 +10,7 @@
 #include "timeseries.h"
 
 #include "draw.h"
+#include "fonts.h"
 #include "video.h"
 #include "filters.h"
 
@@ -30,6 +31,8 @@ int main(int argc, char **argv)
     int frameCounter = 0;
     int gotImagePairTimeSeries = 0;
     int gotLpTiiTimeSeries = 0;
+
+    char densityText[255];
 
     char * hdr = argv[1];
     size_t sourceLen = strlen(hdr);
@@ -146,6 +149,9 @@ int main(int argc, char **argv)
 
     int nImagePairs = 0;
 
+    long lastScienceIndex = 0;
+    double lastScienceTime = 0.0;
+
     for (int i = 0; i < imagePackets.numberOfImages-1;)
     {
         status = getAlignedImagePair(&imagePackets, i, &imagePair, &imagesRead);
@@ -158,6 +164,25 @@ int main(int argc, char **argv)
             continue;
 
         drawFrame(&image, &templateImage, &imagePair, &timeSeries, &imagePairTimeSeries, nImagePairs, frameCounter, dayStart, dayEnd);
+        // Add Ion density 
+        annotate("  Density:", 9, MONITOR_LABEL_OFFSET_X, 50 + 5 * LINE_SPACING + MONITOR_LABEL_OFFSET_Y, &image);
+        while (lastScienceIndex < timeSeries.n2Hz && lastScienceTime < imagePair.secondsSince1970)
+        {
+            lastScienceIndex++;
+            if (lastScienceIndex < timeSeries.n2Hz)
+                lastScienceTime = timeSeries.lpTiiTime2Hz[lastScienceIndex];
+        }
+        if (lastScienceIndex < timeSeries.n2Hz && abs(lastScienceTime - imagePair.secondsSince1970)< 120.0)
+        {
+            // annotate the ion density
+            sprintf(densityText, "  %7.0lf cm^-3", timeSeries.ionDensity2[lastScienceIndex]);
+            annotate(densityText, 9, MONITOR_LABEL_OFFSET_X + 80, 50 + 5 * LINE_SPACING + MONITOR_LABEL_OFFSET_Y, &image);
+        }
+        else {
+            // Not available
+            annotate("not available", 9, MONITOR_LABEL_OFFSET_X + 115, 50 + 5 * LINE_SPACING + MONITOR_LABEL_OFFSET_Y, &image);
+        }
+
         generateFrame(&image, frameCounter);
 
         frameCounter++;
