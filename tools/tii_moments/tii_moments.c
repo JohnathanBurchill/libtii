@@ -17,11 +17,9 @@
 
 int main(int argc, char **argv)
 {
-    if (argc > 1 && strcmp(argv[1], "--gainmaps") == 0)
+    if (argc > 2 && strcmp(argv[1], "--gainmaps") == 0)
     {
-        gainMapInfo('A');
-        gainMapInfo('B');
-        gainMapInfo('C');
+        gainMapInfo(argv[2][0]);
         exit(0);
     }
     if (argc != 4)
@@ -29,8 +27,6 @@ int main(int argc, char **argv)
         usage(argv[0]);
         exit(0);
     }
-
-    exit(0);
 
     int status = 0;
 
@@ -42,8 +38,41 @@ int main(int argc, char **argv)
         usage(argv[0]);
 	    exit(1);
     }
+
+    char satellite = satDate[0];
+    if (satellite != 'A' && satellite != 'B' && satellite != 'C')
+    {
+        printf("Invalid satellite letter %c. Expected A, B, or C\n", satellite);
+        exit(1);
+    }
+
     double max = -1.0;
-    char *outputDir = argv[2];
+    int gainMapId = atoi(argv[2]);
+    char *outputDir = argv[3];
+
+
+    // Check valid gain map ID
+    int nGainMaps = 0;
+    double *gainMapTimeArray = NULL;
+    status = gainMapTimes(satellite, &nGainMaps, &gainMapTimeArray);
+    if (status != 0)
+    {
+        printf("Unable to load gain map times for Swarm %d\n", satellite);
+        exit(0);
+    }
+
+    if (gainMapId < -1 || gainMapId > nGainMaps)
+    {
+        printf("Invalid gain map ID (=%d) for Swarm %c, must be -1 (no processing), 0 (nominal gain map processing), or between 1 and %d (processing with gain map ID below.\n", gainMapId, satellite, nGainMaps);
+        gainMapInfo(satellite);
+        exit(1);
+    }
+
+    double gainMapTime = 0.0;
+    if (gainMapId > 0)
+    {
+        gainMapTime = gainMapTimeArray[gainMapId-1]; 
+    }
 
     // Data
     ImagePackets imagePackets;
@@ -78,7 +107,6 @@ int main(int argc, char **argv)
     initializeImagePair(&imagePair, &auxH, pixelsH, &auxV, pixelsV);
     getFirstImagePair(&imagePackets, &imagePair);
     double dayStart = imagePair.secondsSince1970;
-    char satellite = getSatellite(&imagePair);
     getLastImagePair(&imagePackets, &imagePair);
     double dayEnd = imagePair.secondsSince1970;
     // Filter images based on time of day if yyyymmdd was passed
@@ -92,9 +120,20 @@ int main(int argc, char **argv)
  
     size_t numberOfImagePairs = countImagePairs(&imagePackets, &imagePair, dayStart, dayEnd);
 
-    // Per image moments
+    char gainCorrectionString[255];
+    if (gainMapId == -1)
+        sprintf(gainCorrectionString, "_gain_correction_none");
+    else if (gainMapId == 0)
+        sprintf(gainCorrectionString, "_gain_correction_nominal");
+    else
+    {
+        time_t seconds = (time_t) floor(gainMapTimeArray[gainMapId-1]);
+        struct tm *date = gmtime(&seconds);
+        sprintf(gainCorrectionString, "_gain_correction_map_id_%d_uploaded_%04d%02d%02dT%02d%02d%02dUT", gainMapId, date->tm_year + 1900, date->tm_mon + 1, date->tm_mday, date->tm_hour, date->tm_min, date->tm_sec);
+    }
+
     char dailyMomentFilename[FILENAME_MAX];
-    sprintf(dailyMomentFilename, "%s/SW_EFI%s_imaging_anomaly_stats.txt", outputDir, satDate);
+    sprintf(dailyMomentFilename, "%s/SW_EFI%s_moment_stats_%s.txt", outputDir, satDate, gainCorrectionString);
     FILE *dailyMomentsFile = fopen(dailyMomentFilename, "w");
     if (dailyMomentsFile == NULL)
     {
@@ -105,12 +144,22 @@ int main(int argc, char **argv)
     ImageAnomalies h;
     ImageAnomalies v;
 
+    // Default onboard processing parameters
     int pixelThreshold = 0;
+    int minCol = 33;
+    int maxCol = 64;
+    int nCols = 32;
+
+    // indexing is for sensor [H|V]
+    double total[2] = {0};
+    double x1[2] = {0.0};
+    double y1[2] = {0.0};
+    double agcControl[2] = {0.0};
 
     int imagesRead = 0;
 
     // time in sec since 1970, PA H, PA V, measles H, measles V, classic wing H, classic wing V, angel's wing upper H, angel's wing upper V, angel's wing lower H, angel's wing lower V
-    fprintf(dailyMomentsFile, "secondsSince1970 TotalH TotalV X1H X1V Y1H Y1V X2H X2V Y2H Y2V\n");
+    fprintf(dailyMomentsFile, "secondsSince1970 TotalH TotalV X1H X1V Y1H Y1V AgcControlH AgcControlV\n");
     for (size_t i = 0; i < numberOfImagePairs; i++)
     {
 
@@ -118,21 +167,28 @@ int main(int argc, char **argv)
 
         if (scienceMode(imagePair.auxH) && scienceMode(imagePair.auxV))
         {
-            initializeAnomalyData(&h);
-            initializeAnomalyData(&v);
+            latestConfigValues(&imagePair, &timeSeries, &pixelThreshold, &minCol, &maxCol, &nCols, NULL, NULL, NULL);
 
-            // Raw image anomalies
-            analyzeRawImageAnomalies(imagePair.pixelsH, imagePair.gotImageH, imagePair.auxH->satellite, &h);
-            analyzeRawImageAnomalies(imagePair.pixelsV, imagePair.gotImageV, imagePair.auxV->satellite, &v);
+            // Defaults to processing the raw image (no gain correction)
+            // (i.e., gainMapId == -1)
 
-            // Gain corrected image anomalies
-            latestConfigValues(&imagePair, &timeSeries, &pixelThreshold, NULL, NULL, NULL, NULL, NULL, NULL);
-            applyImagePairGainMaps(&imagePair, pixelThreshold, NULL, NULL);
-            analyzeGainCorrectedImageAnomalies(imagePair.pixelsH, imagePair.gotImageH, imagePair.auxH->satellite, &h);
-            analyzeGainCorrectedImageAnomalies(imagePair.pixelsV, imagePair.gotImageV, imagePair.auxV->satellite, &v);
+            if (gainMapId >= 0)
+            {
+                // Unless gainmap corrections are requested
+                // Defaults to nominal processing with gainmap as uploaded to instrument
+                if (gainMapId > 0)
+                {
+                    // Unless a specific gainmap ID is requested
+                    imagePair.auxH->dateTime.secondsSince1970 = gainMapTime + 1.0;
+                    imagePair.auxV->dateTime.secondsSince1970 = gainMapTime + 1.0;
+                }
+                applyImagePairGainMaps(&imagePair, pixelThreshold, NULL, NULL);
+            }
+            onboardProcessing(imagePair.pixelsH, imagePair.gotImageH, minCol, maxCol, nCols, &total[0], &x1[0], &y1[0], &agcControl[0]);
+            onboardProcessing(imagePair.pixelsV, imagePair.gotImageV, minCol, maxCol, nCols, &total[1], &x1[1], &y1[1], &agcControl[1]);
 
             // time in sec since 1970, PA H, PA V, measles H, measles V, classic wing H, classic wing V, angel's wing upper H, angel's wing upper V, angel's wing lower H, angel's wing lower V
-            fprintf(dailyMomentsFile, "%ld %d %d %d %d %d %d %d %d %d %d %d %d %.3lf %.3lf %.3lf %.3lf %.3lf %.3lf %.3lf %.3lf %.3lf %.3lf %.3lf %.3lf %.3lf %.3lf %.3lf %.3lf\n", (time_t)floor(imagePair.secondsSince1970), h.peripheralAnomaly, v.peripheralAnomaly, h.measlesAnomaly, v.measlesAnomaly, h.classicWingAnomaly, v.classicWingAnomaly, h.bifurcationAnomaly, v.bifurcationAnomaly, h.upperAngelsWingAnomaly, v.upperAngelsWingAnomaly, h.lowerAngelsWingAnomaly, v.lowerAngelsWingAnomaly, h.upperAngelsWingX1, v.upperAngelsWingX1, h.upperAngelsWingY1, v.upperAngelsWingY1, h.upperAngelsWingX2, v.upperAngelsWingX2, h.upperAngelsWingY2, v.upperAngelsWingY2, h.lowerAngelsWingX1, v.lowerAngelsWingX1, h.lowerAngelsWingY1, v.lowerAngelsWingY1, h.lowerAngelsWingX2, v.lowerAngelsWingX2, h.lowerAngelsWingY2, v.lowerAngelsWingY2);
+            fprintf(dailyMomentsFile, "%ld %.1lf %.1lf %.4lf %.4lf %.4lf %.4lf %.4lf %.4lf\n", (time_t)floor(imagePair.secondsSince1970), total[0], total[1], x1[0], x1[1], y1[0], y1[1], agcControl[0], agcControl[1]);
         }
     }
     fclose(dailyMomentsFile);
@@ -153,7 +209,12 @@ void gainMapInfo(const char satellite)
     double *mapTimes = NULL;
     time_t seconds = 0;
 
-    gainMapTimes(satellite, &nMaps, &mapTimes);
+    int status = gainMapTimes(satellite, &nMaps, &mapTimes);
+    if (status != 0)
+    {
+        printf("Invalid satellite requested.\n");
+        return;
+    }    
 
     struct tm *date;
 
@@ -165,7 +226,7 @@ void gainMapInfo(const char satellite)
         {
             seconds = (time_t) floor(mapTimes[i]);
             date = gmtime(&seconds);
-            printf("%4d\t%4d%02d%02dT%02d%02d%02d UT\n", i, date->tm_year + 1900, date->tm_mon + 1, date->tm_mday, date->tm_hour, date->tm_min, date->tm_sec);
+            printf("%4d\t%4d%02d%02dT%02d%02d%02d UT\n", i+1, date->tm_year + 1900, date->tm_mon + 1, date->tm_mday, date->tm_hour, date->tm_min, date->tm_sec);
         }
     }
 
@@ -181,7 +242,7 @@ void usage(const char * name)
     printf("\n  %s Xyyyymmdd GainMapId outputDir\n", name);
     printf("\n");
     printf("X designates the Swarm satellite (A, B or C). Must be run from directory containing EFI L0 files. GainMapId is the gain map pair index to use, or -1 to automatically apply maps based on date uploaded to satellite.\n");
-    printf("\n  %s --gainmaps lists gainmap dates and their IDs\n", name);
+    printf("\n  %s --gainmaps <satelliteLetter> lists gainmap IDs and the dates they were loaded to the instrument for the specified satellite (A, B or C)\n", name);
 
     return;
 }
