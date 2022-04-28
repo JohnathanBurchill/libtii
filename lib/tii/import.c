@@ -80,10 +80,10 @@ int importImageryWithFilenames(const char *source, ImagePackets *imagePackets, c
 
     // Align packets if there aren't the same number of full image and full image continued packets
     imagePackets->numberOfImages = imagePackets->numberOfFullImagePackets;
-    if (imagePackets->numberOfContinuedPackets > imagePackets->numberOfFullImagePackets)
-    {
-        imagePackets->numberOfImages = imagePackets->numberOfContinuedPackets;
-    }
+    // if (imagePackets->numberOfContinuedPackets > imagePackets->numberOfFullImagePackets)
+    // {
+    //     imagePackets->numberOfImages = imagePackets->numberOfContinuedPackets;
+    // }
 
     if (imagePackets->numberOfImages > 0)
     {
@@ -215,23 +215,27 @@ int numberOfPacketGaps(uint8_t* fullImagePackets, uint8_t *continuedPackets, lon
     uint64_t fdateInt;
     uint64_t cdateInt;
 
-    for (long i = 0; i < nImages; i++)
+    for (long i = 0; (i < nImages) && ((i + gapOffset) < nImages); i++)
     {
         fip = (FullImagePacket*)(fullImagePackets + i*FULL_IMAGE_PACKET_SIZE);
-        cip = (FullImageContinuedPacket*)(continuedPackets + (i+gapOffset)*FULL_IMAGE_CONT_PACKET_SIZE);
         setDateTime(&(aux.dateTime), fip->DataFieldHeader);
         fdate = aux.dateTime.secondsSince1970;
+        fdateInt = *((uint64_t*)(fip->DataFieldHeader+4));
+
+        cip = (FullImageContinuedPacket*)(continuedPackets + (i+gapOffset)*FULL_IMAGE_CONT_PACKET_SIZE);
         setDateTime(&(aux.dateTime), cip->DataFieldHeader);
         cdate = aux.dateTime.secondsSince1970;
-        fdateInt = *((uint64_t*)(fip->DataFieldHeader+4));
         cdateInt = *((uint64_t*)(cip->DataFieldHeader+4));
+
         if (fdate < cdate && floor(fdate) != 0)
         {
+            // printf("\nF - @ %f, %f\n", fdate, cdate);
             nGaps++;
             gapOffset--;
         }
         else if (fdate > cdate && floor(cdate) != 0)
         {
+            // printf("\n- C @ %f, %f\n", fdate, cdate);
             nGaps++;
             gapOffset++;
         }
