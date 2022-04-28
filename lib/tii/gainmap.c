@@ -5,6 +5,40 @@
 
 #include <stdlib.h>
 
+int gainMapTimes(const char satellite, int *nTimes, double **timeArray)
+{
+    int n = 0;
+    double *timeArr = NULL;
+    switch (satellite)
+    {
+        case 'A':
+            n = N_GAIN_MAPS_A;
+            timeArr = mapUploadTimesA;
+            break;
+        case 'B':
+            n = N_GAIN_MAPS_B;
+            timeArr = mapUploadTimesB;
+            break;
+        case 'C':
+            n = N_GAIN_MAPS_C;
+            timeArr = mapUploadTimesC;
+            break;
+
+        default:
+            return GAIN_MAP_INV_SATELLITE;
+    }
+
+    if (nTimes != NULL)
+        *nTimes = n;
+
+    if (timeArray != NULL)
+        *timeArray = timeArr;
+
+    return GAIN_MAP_OK;
+
+}
+
+
 double * getGainMap(int efiUnit, int efiSensor, double time)
 {
     double * gainmaps;
