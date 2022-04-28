@@ -122,14 +122,14 @@ int main(int argc, char **argv)
 
     char gainCorrectionString[255];
     if (gainMapId == -1)
-        sprintf(gainCorrectionString, "_gain_correction_none");
+        sprintf(gainCorrectionString, "gain_correction_none");
     else if (gainMapId == 0)
-        sprintf(gainCorrectionString, "_gain_correction_nominal");
+        sprintf(gainCorrectionString, "gain_correction_nominal");
     else
     {
         time_t seconds = (time_t) floor(gainMapTimeArray[gainMapId-1]);
         struct tm *date = gmtime(&seconds);
-        sprintf(gainCorrectionString, "_gain_correction_map_id_%d_uploaded_%04d%02d%02dT%02d%02d%02dUT", gainMapId, date->tm_year + 1900, date->tm_mon + 1, date->tm_mday, date->tm_hour, date->tm_min, date->tm_sec);
+        sprintf(gainCorrectionString, "gain_correction_map_id_%d_uploaded_%04d%02d%02dT%02d%02d%02dUT", gainMapId, date->tm_year + 1900, date->tm_mon + 1, date->tm_mday, date->tm_hour, date->tm_min, date->tm_sec);
     }
 
     char dailyMomentFilename[FILENAME_MAX];
