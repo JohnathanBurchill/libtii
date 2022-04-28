@@ -4,8 +4,8 @@
 
 # http://stackoverflow.com/questions/28226229/how-to-loop-through-dates-using-bash
 
-if test "$#" -ne "5"; then
-  echo "Usage: $0 satelliteLetter gainMapId startDate stopDate stride"
+if test "$#" -ne "6"; then
+  echo "Usage: $0 satelliteLetter gainMapId startDate stopDate stride outputDirectory"
   exit 1
 fi
 
@@ -14,6 +14,7 @@ gainMapId=$2
 startDate=$(date -d "$3" +%s)
 stopDate=$(date -d "$4" +%s)
 stride=$5
+outDir=$6
 
 processingDate=$(date +%Y%m%dT%H%M%S)
 
@@ -57,7 +58,7 @@ while [ "$dateToProcess" -le "$stopDate" ]; do
 	daysProcessed=$((daysProcessed + 1))
 	datestring=`date -I -d "@$dateToProcess"`
 	draw_progress_bar $daysProcessed $daysToProcess "days: TIIM_STATS ${satellite} $datestring"
- 	tii_moments ${satellite}${year}${month}${day} ${gainMapId} /data/Movies/Swarm/image_stats
+ 	tii_moments ${satellite}${year}${month}${day} ${gainMapId} ${outDir}
 	dateToProcess=$((dateToProcess + stride * 86400))
 done
 )
