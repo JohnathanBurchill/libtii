@@ -1,0 +1,15 @@
+CMAKE_MINIMUM_REQUIRED(VERSION 3.0)
+
+PROJECT(tii_dump)
+
+# SET(LIBS ${LIBS} ${MATH} ${LIBXML2_LIBRARIES} ${ZLIB_LIBRARIES})
+INCLUDE_DIRECTORIES(${INCLUDE_DIRS} ${LIBXML2_INCLUDE_DIR})
+
+ADD_EXECUTABLE(tii_dump tii_dump.c)
+TARGET_LINK_LIBRARIES(tii_dump ${LIBS} tii -lm)
+
+install(TARGETS tii_dump DESTINATION $ENV{HOME}/bin)
+
+install(PROGRAMS parallel_process_tii_dump.sh DESTINATION $ENV{HOME}/bin)
+install(PROGRAMS process_tii_dump.sh DESTINATION $ENV{HOME}/bin)
+
