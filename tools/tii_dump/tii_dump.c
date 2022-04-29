@@ -83,23 +83,17 @@ int main(int argc, char **argv)
         parameterIds[n++] = atoi(tok);
         tok = strtok(NULL, ",");
     } 
-    printf("Requested parameters\n");
-    printf("ID\tName\n");
+    // printf("Requested parameters\n");
+    // printf("ID\tName\n");
     int nInvalidParameters = 0;
     for (int i = 0; i < parameterCount; i++)
     {
-        if (parameterIds[i] > 0 && parameterIds[i] <= nTiiParameters)
-            printf("%i\t%s\n", parameterIds[i], tiiParameters[parameterIds[i]-1].name);
-        else
-        {
-            printf("%i\tno such parameter\n", parameterIds[i]);
+        if (!(parameterIds[i] > 0 && parameterIds[i] <= nTiiParameters))
             nInvalidParameters++;
-        }
     }
-    printf("\n");
     if (nInvalidParameters > 0)
     {
-        printf("%d invalid parameter ID%s specified.\n", nInvalidParameters, nInvalidParameters == 1 ? "" : "s");
+        printf("%d invalid parameter ID%s was specified.\n", nInvalidParameters, nInvalidParameters == 1 ? "" : "s");
         exit(1);
     }
 
