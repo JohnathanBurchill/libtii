@@ -93,7 +93,7 @@ int main(int argc, char **argv)
     }
     if (nInvalidParameters > 0)
     {
-        printf("%d invalid parameter ID%s was specified.\n", nInvalidParameters, nInvalidParameters == 1 ? "" : "s");
+        printf("%d invalid parameter ID%s specified.\n", nInvalidParameters, nInvalidParameters == 1 ? " was" : "s were");
         exit(1);
     }
 
