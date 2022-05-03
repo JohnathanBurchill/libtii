@@ -17,6 +17,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <time.h>
+#include <math.h>
 
 int main(int argc, char **argv)
 {
@@ -172,7 +173,7 @@ int main(int argc, char **argv)
             if (lastScienceIndex < timeSeries.n2Hz)
                 lastScienceTime = timeSeries.lpTiiTime2Hz[lastScienceIndex];
         }
-        if (lastScienceIndex < timeSeries.n2Hz && abs(lastScienceTime - imagePair.secondsSince1970)< 120.0)
+        if (lastScienceIndex < timeSeries.n2Hz && fabs(lastScienceTime - imagePair.secondsSince1970)< 120.0)
         {
             // annotate the ion density
             sprintf(densityText, "  %7.0lf cm^-3", timeSeries.ionDensity2[lastScienceIndex]);
