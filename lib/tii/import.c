@@ -392,13 +392,13 @@ int comparePacketTimes(const void *p1, const void *p2)
 
 }
 
-int sortImagePackets(ImagePackets *imagePackets)
+void sortImagePackets(ImagePackets *imagePackets)
 {
     qsort(imagePackets->fullImagePackets, imagePackets->numberOfFullImagePackets, FULL_IMAGE_PACKET_SIZE, &comparePacketTimes);
     qsort(imagePackets->continuedPackets, imagePackets->numberOfContinuedPackets, FULL_IMAGE_CONT_PACKET_SIZE, &comparePacketTimes);
 }
 
-int sortSciencePackets(SciencePackets *sciencePackets)
+void sortSciencePackets(SciencePackets *sciencePackets)
 {
     qsort(sciencePackets->lpTiiSciencePackets, sciencePackets->numberOfLpTiiSciencePackets, LP_TII_SCIENCE_PACKET_SIZE, &comparePacketTimes);
     qsort(sciencePackets->configPackets, sciencePackets->numberOfConfigPackets, CONFIG_PACKET_SIZE, &comparePacketTimes);

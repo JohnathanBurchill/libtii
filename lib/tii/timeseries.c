@@ -502,6 +502,8 @@ int getImagePairTimeSeries(char satellite, ImagePackets * imagePackets, ImagePai
 
     
     }
+
+    return TIME_SERIES_OK;
     
 
 }

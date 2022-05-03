@@ -4,6 +4,7 @@
 #include "tii.h"
 
 #include <stdint.h>
+#include <stdlib.h>
 #include <stdbool.h>
 
 #define FULL_IMAGE_PACKET_SIZE 2068
@@ -24,22 +25,22 @@ typedef struct imagePackets
 {
     uint8_t *fullImagePackets;
     uint8_t *continuedPackets;
-    long numberOfFullImagePackets;
-    long numberOfContinuedPackets;
-    long numberOfImages;
+    size_t numberOfFullImagePackets;
+    size_t numberOfContinuedPackets;
+    size_t numberOfImages;
 
 } ImagePackets;
 
 typedef struct SciencePackets
 {
     uint8_t *lpTiiSciencePackets;
-    long numberOfLpTiiSciencePackets;
+    size_t numberOfLpTiiSciencePackets;
     uint8_t *lpSweepPackets;
-    long numberOfLpSweepPackets;
+    size_t numberOfLpSweepPackets;
     uint8_t *configPackets;
-    long numberOfConfigPackets;
+    size_t numberOfConfigPackets;
     uint8_t *offsetPackets;
-    long numberOfOffsetPackets;
+    size_t numberOfOffsetPackets;
 } SciencePackets;
 
 

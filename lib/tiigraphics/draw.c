@@ -486,7 +486,7 @@ void drawPoint(Image *imageBuf, int x, int y, int colorIndex, int dotSize)
 void setBufferColorIndex(Image *imageBuf, int x, int y, int colorIndex)
 {
     size_t index = imageBuf->width * y + x;
-    if (index >=0 && index < imageBuf->numberOfBytes && x < imageBuf->width && x >=0 && y >=0 && y < imageBuf->height)
+    if (index < imageBuf->numberOfBytes && x < imageBuf->width && x >=0 && y >=0 && y < imageBuf->height)
     {
         imageBuf->pixels[index] = colorIndex;
     }

@@ -32,8 +32,8 @@ int importScience(const char *source, SciencePackets *SciencePackets);
 int importScienceFromHdr(const char *hdr, SciencePackets *sciencePackets);
 
 int comparePacketTimes(const void *p1, const void *p2);
-int sortImagePackets(ImagePackets *imagePackets);
-int sortSciencePackets(SciencePackets *sciencePackets);
+void sortImagePackets(ImagePackets *imagePackets);
+void sortSciencePackets(SciencePackets *sciencePackets);
 
 int arrayResize(uint8_t **array, size_t numRecords, size_t numNewRecords, size_t recordSize);
 
