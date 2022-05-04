@@ -153,13 +153,17 @@ int main(int argc, char **argv)
     long lastScienceIndex = 0;
     double lastScienceTime = 0.0;
 
-    for (int i = 0; i < imagePackets.numberOfImages-1;)
+    for (size_t i = 0; i < imagePackets.numberOfImages-1;)
     {
         status = getAlignedImagePair(&imagePackets, i, &imagePair, &imagesRead);
 
-        i+=imagesRead;
         if (status == ISP_NO_IMAGE_PAIR)
+        {
+            // Images read would be 0, so force advance by one
+            i++;
             continue;
+        }
+        i+=imagesRead;
 
         if (ignoreTime(imagePair.secondsSince1970, dayStart, dayEnd))
             continue;
@@ -208,13 +212,16 @@ int main(int argc, char **argv)
     insertTransition(&image, "Frame-by-frame Horizontal sensor", IMAGE_WIDTH/2, IMAGE_HEIGHT/2-16, 24, 3.0, &frameCounter);
 
     nImagePairs = 0;
-    for (int i = 0; i < imagePackets.numberOfImages-1;)
+    for (size_t i = 0; i < imagePackets.numberOfImages-1;)
     {
         status = getAlignedImagePair(&imagePackets, i, &imagePair, &imagesRead);
 
-        i+=imagesRead;
         if (status == ISP_NO_IMAGE_PAIR)
+        {
+            i++;
             continue;
+        }
+        i+=imagesRead;
 
         if (ignoreTime(imagePair.secondsSince1970, dayStart, dayEnd))
             continue;
@@ -246,13 +253,16 @@ int main(int argc, char **argv)
     yoffset = 0;
     insertTransition(&image, "Frame-by-frame Vertical sensor", IMAGE_WIDTH/2, IMAGE_HEIGHT/2-16, 24, 3.0, &frameCounter);
     nImagePairs= 0;
-    for (int i = 0; i < imagePackets.numberOfImages-1;)
+    for (size_t i = 0; i < imagePackets.numberOfImages-1;)
     {
         status = getAlignedImagePair(&imagePackets, i, &imagePair, &imagesRead);
 
-        i+=imagesRead;
         if (status == ISP_NO_IMAGE_PAIR)
+        {
+            i++;
             continue;
+        }
+        i+=imagesRead;
 
         if (ignoreTime(imagePair.secondsSince1970, dayStart, dayEnd))
             continue;
