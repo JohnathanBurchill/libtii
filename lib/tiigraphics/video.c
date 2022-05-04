@@ -28,7 +28,7 @@ static AVStream *videoStream;
 static AVFrame *videoFrame = NULL;
 static AVPacket *videoPacket = NULL;
 
-static AVCodec *codec = NULL;
+static const AVCodec *codec = NULL;
 static AVCodecContext *codecContext = NULL;
 
 static struct SwsContext *colorConversionContext = NULL;
