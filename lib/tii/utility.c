@@ -64,3 +64,35 @@ bool scienceMode(ImageAuxData *aux)
     return aux->McpVoltageMonitor < -1000.0 && aux->PhosphorVoltageMonitor > 3900 && aux->BiasGridVoltageMonitor < -50.0;
 
 }
+
+
+void binaryView(const char *name, long nBytes, uint8_t *array, int rowSize, int startRow, int endRow, int startCol, int endCol)
+{
+    printf("Array: %s\n", name);
+    printf("N\t");
+    for (int j = startCol; j < endCol; j++)
+        printf("%3d      ", j);
+    printf("\n");
+
+    uint8_t *p = array;
+    long index = 0;
+    for (int i = startRow; i < endRow; i++)
+    {
+        printf("%d\t", i);
+        for (int j = startCol; j < endCol; j++)
+        {
+            index = rowSize*i + j;
+            if (index < nBytes)
+            {
+                for (int b = 7; b >= 0; b--)
+                    printf("%1d", (*(array+index) >> b) & 0x01);
+                printf(" ");
+            }
+            else
+                printf("--------");
+        }
+        printf("\n");
+    }
+
+}
+

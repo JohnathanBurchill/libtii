@@ -21,4 +21,6 @@ bool ignoreTime(double time, double dayStart, double dayEnd);
 
 bool scienceMode(ImageAuxData *aux);
 
+void binaryView(const char *name, long nBytes, uint8_t *array, int rowSize, int startRow, int endRow, int startCol, int endCol);
+
 #endif // _UTILITY_H
