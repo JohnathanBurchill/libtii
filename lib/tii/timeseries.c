@@ -428,9 +428,12 @@ int getImagePairTimeSeries(char satellite, ImagePackets * imagePackets, ImagePai
         {
             status = getAlignedImagePair(imagePackets, i, imagePair, &imagesRead);
 
-            i+=imagesRead;
             if (status == ISP_NO_IMAGE_PAIR)
+            {
+                i++;
                 continue;
+            }
+            i+=imagesRead;
 
             if (ignoreTime(imagePair->secondsSince1970, dayStart, dayEnd))
                 continue;
