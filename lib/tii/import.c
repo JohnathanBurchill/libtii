@@ -1,5 +1,6 @@
 #include "import.h"
 #include "isp.h"
+#include "utility.h"
 
 #include "xml.h"
 
@@ -138,7 +139,8 @@ int importImageryFromHdr(const char *hdr, ImagePackets *imagePackets)
     status = loadPackets(dblFile, &imagePackets->fullImagePackets, &imagePackets->numberOfFullImagePackets, &pfc.fullImage);
     if (status)
         goto cleanup;
-    
+
+
     status = loadPackets(dblFile, &imagePackets->continuedPackets, &imagePackets->numberOfContinuedPackets, &pfc.fullImageContinued);
     if (status)
         goto cleanup;
@@ -147,7 +149,6 @@ cleanup:
     if (dblFile != NULL) fclose(dblFile);
     return status; 
 }
-
 
 void alignPackets(uint8_t* fullImagePackets, uint8_t *continuedPackets, long nImages, long nGaps)
 {
@@ -229,13 +230,11 @@ int numberOfPacketGaps(uint8_t* fullImagePackets, uint8_t *continuedPackets, lon
 
         if (fdate < cdate && floor(fdate) != 0)
         {
-            // printf("\nF - @ %f, %f\n", fdate, cdate);
             nGaps++;
             gapOffset--;
         }
         else if (fdate > cdate && floor(cdate) != 0)
         {
-            // printf("\n- C @ %f, %f\n", fdate, cdate);
             nGaps++;
             gapOffset++;
         }
@@ -382,7 +381,6 @@ int comparePacketTimes(const void *p1, const void *p2)
     double us2 = (double) (cds2[6]*256 + cds2[7]);
     double t2 = day2 * 86400. + ms2 / 1.0e3 + us2 / 1.0e6;
 
-    // printf("t1: %lf t2: %lf, t2-t1: %lf\n", t1, t2, t2-t1);
     if (t1 > t2)
         return 1;
     else if (t1 == t2)
@@ -392,10 +390,80 @@ int comparePacketTimes(const void *p1, const void *p2)
 
 }
 
+int compareFullImagePacketTimes(const void *p1, const void *p2)
+{
+    // offsets for bytes 5 through 12 of each packet's data field header
+    uint8_t *cds1 = ((uint8_t*) p1) + 30;
+    uint8_t *cds2 = ((uint8_t*) p2) + 30;
+
+    double day1 = (double) (cds1[0]*256 + cds1[1] + 10957); // relative to 1970-01-01 00:00:00 UT
+    double ms1 = (double) (cds1[2]*256*256*256 + cds1[3]*256*256 + cds1[4]*256 + cds1[5]);
+    double us1 = (double) (cds1[6]*256 + cds1[7]);
+    double t1 = day1 * 86400. + ms1 / 1.0e3 + us1 / 1.0e6;
+
+    double day2 = (double) (cds2[0]*256 + cds2[1] + 10957); // relative to 1970-01-01 00:00:00 UT
+    double ms2 = (double) (cds2[2]*256*256*256 + cds2[3]*256*256 + cds2[4]*256 + cds2[5]);
+    double us2 = (double) (cds2[6]*256 + cds2[7]);
+    double t2 = day2 * 86400. + ms2 / 1.0e3 + us2 / 1.0e6;
+
+    // If the packet times are the same, make sure the H sensor comes first
+    if (t1 > t2)
+        return 1;
+    else if (t1 == t2)
+    {
+        uint8_t sensor1 = ((*(((uint8_t*) p1) + 48)) >> 1) & 0x1;
+        uint8_t sensor2 = ((*(((uint8_t*) p2) + 48)) >> 1) & 0x1;
+        if (sensor1 > sensor2)
+            return 1;
+        else if (sensor1 < sensor2)
+            return -1;
+        else
+            return 0;
+    }
+    else
+        return -1;
+
+}
+
+int compareContinuedImagePacketTimes(const void *p1, const void *p2)
+{
+    // offsets for bytes 5 through 12 of each packet's data field header
+    uint8_t *cds1 = ((uint8_t*) p1) + 30;
+    uint8_t *cds2 = ((uint8_t*) p2) + 30;
+
+    double day1 = (double) (cds1[0]*256 + cds1[1] + 10957); // relative to 1970-01-01 00:00:00 UT
+    double ms1 = (double) (cds1[2]*256*256*256 + cds1[3]*256*256 + cds1[4]*256 + cds1[5]);
+    double us1 = (double) (cds1[6]*256 + cds1[7]);
+    double t1 = day1 * 86400. + ms1 / 1.0e3 + us1 / 1.0e6;
+
+    double day2 = (double) (cds2[0]*256 + cds2[1] + 10957); // relative to 1970-01-01 00:00:00 UT
+    double ms2 = (double) (cds2[2]*256*256*256 + cds2[3]*256*256 + cds2[4]*256 + cds2[5]);
+    double us2 = (double) (cds2[6]*256 + cds2[7]);
+    double t2 = day2 * 86400. + ms2 / 1.0e3 + us2 / 1.0e6;
+
+    // If the packet times are the same, make sure the H sensor comes first
+    if (t1 > t2)
+        return 1;
+    else if (t1 == t2)
+    {
+        uint8_t sensor1 = ((*(((uint8_t*) p1) + 39)) >> 7) & 0x1;
+        uint8_t sensor2 = ((*(((uint8_t*) p2) + 39)) >> 7) & 0x1;
+        if (sensor1 > sensor2)
+            return 1;
+        else if (sensor1 < sensor2)
+            return -1;
+        else
+            return 0;
+    }
+    else
+        return -1;
+
+}
+
 void sortImagePackets(ImagePackets *imagePackets)
 {
-    qsort(imagePackets->fullImagePackets, imagePackets->numberOfFullImagePackets, FULL_IMAGE_PACKET_SIZE, &comparePacketTimes);
-    qsort(imagePackets->continuedPackets, imagePackets->numberOfContinuedPackets, FULL_IMAGE_CONT_PACKET_SIZE, &comparePacketTimes);
+    qsort(imagePackets->fullImagePackets, imagePackets->numberOfFullImagePackets, FULL_IMAGE_PACKET_SIZE, &compareFullImagePacketTimes);
+    qsort(imagePackets->continuedPackets, imagePackets->numberOfContinuedPackets, FULL_IMAGE_CONT_PACKET_SIZE, &compareContinuedImagePacketTimes);
 }
 
 void sortSciencePackets(SciencePackets *sciencePackets)
