@@ -318,11 +318,11 @@ enum ISP_STATUS
 
 void getImageData(FullImagePacket * fip, FullImageContinuedPacket *cip, ImageAuxData *aux, uint16_t *pixels);
 
-void getImagePair(ImagePackets *imagePackets, long packetIndex, ImagePair *imagePair);
+void getImagePair(ImagePackets *imagePackets, size_t packetIndex, ImagePair *imagePair);
 
 int alignImages(ImagePair *imagePair);
 
-int getAlignedImagePair(ImagePackets *imagePackets, long packetIndex, ImagePair *imagePair, int *imagesRead);
+int getAlignedImagePair(ImagePackets *imagePackets, size_t packetIndex, ImagePair *imagePair, int *imagesRead);
 
 int getFirstImagePair(ImagePackets *imagePackets, ImagePair *imagePair);
 int getLastImagePair(ImagePackets *imagePackets, ImagePair *imagePair);
