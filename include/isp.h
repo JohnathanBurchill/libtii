@@ -49,7 +49,7 @@ typedef struct fullImagePacket
     uint8_t IspHeader[20];
     uint8_t SourcePacketHeader[6];
     uint8_t DataFieldHeader[12];
-    uint8_t StructureId; // 37 bytes
+    uint8_t StructureId; // 39 bytes
 
     uint8_t AuxData[13];
     uint8_t MeasurementTimestamp[2];
@@ -63,7 +63,7 @@ typedef struct fullImageContinuedPacket
     uint8_t IspHeader[20];
     uint8_t SourcePacketHeader[6];
     uint8_t DataFieldHeader[12];
-    uint8_t StructureId; // 37 bytes
+    uint8_t StructureId; // 39 bytes
 
     uint8_t AuxData[4];
     uint8_t MeasurementTimestamp[2];
@@ -77,7 +77,7 @@ typedef struct LpTiiSciencePacket
     uint8_t IspHeader[20];
     uint8_t SourcePacketHeader[6];
     uint8_t DataFieldHeader[12];
-    uint8_t StructureId; // 37 bytes
+    uint8_t StructureId; // 39 bytes
 
     uint8_t AuxData[4];
     uint8_t AuxDataH[8];
@@ -94,7 +94,7 @@ typedef struct LpSweepPacket
     uint8_t IspHeader[20];
     uint8_t SourcePacketHeader[6];
     uint8_t DataFieldHeader[12];
-    uint8_t StructureId; // 37 bytes
+    uint8_t StructureId; // 39 bytes
 
     uint8_t AuxData[25];
     uint8_t MeasurementTimestamp[2];
@@ -108,7 +108,7 @@ typedef struct LpOffsetPacket
     uint8_t IspHeader[20];
     uint8_t SourcePacketHeader[6];
     uint8_t DataFieldHeader[12];
-    uint8_t StructureId; // 37 bytes
+    uint8_t StructureId; // 39 bytes
 
     uint8_t AuxData[10];
     uint8_t MeasurementTimestamp[2];
