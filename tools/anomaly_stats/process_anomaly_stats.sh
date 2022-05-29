@@ -56,7 +56,7 @@ while [ "$dateToProcess" -le "$stopDate" ]; do
 	daysProcessed=$((daysProcessed + 1))
 	datestring=`date -I -d "@$dateToProcess"`
 	draw_progress_bar $daysProcessed $daysToProcess "days: TIIM_STATS ${satellite} $datestring"
- 	anomaly_stats ${satellite}${year}${month}${day} /data/Movies/Swarm/image_stats
+ 	anomaly_stats ${satellite}${year}${month}${day} /data/Movies/Swarm/anomaly_stats
 	dateToProcess=$((dateToProcess + stride * 86400))
 done
 )
