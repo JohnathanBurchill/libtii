@@ -11,4 +11,5 @@ ADD_SUBDIRECTORY(tii_moments)
 ADD_SUBDIRECTORY(tii_dump)
 ADD_SUBDIRECTORY(tii_look)
 
+ADD_SUBDIRECTORY(process_anomaly_stats)
 ADD_SUBDIRECTORY(get_image_stats)
