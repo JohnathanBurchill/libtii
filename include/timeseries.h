@@ -30,6 +30,8 @@ typedef struct LpTiiTimeSeries
     double *mcpVoltageSettingV;
     double *phosphorVoltageSettingH;
     double *phosphorVoltageSettingV;
+    uint16_t *columnSumH;
+    uint16_t *columnSumV;
 
     size_t n16Hz;
     double *lpTiiTime16Hz;

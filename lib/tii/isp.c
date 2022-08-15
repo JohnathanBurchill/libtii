@@ -343,6 +343,14 @@ void getLpTiiScienceData(LpTiiSciencePacket * pkt, LpTiiScience * science)
     if (di < 0.0) di = 0.0;
     science->IonDensityL1aProbe2[1] = 2.0 * M_PI * 1.0e6 * di * 7600.0 * 2.67e-26 / (2 * M_PI * 0.004 * 0.004 * 1.602e-19 / 1e6); // cm^-3
 
+    for (int i = 0; i < 32; i++)
+    {
+        science->ColumnSumH[0][i] = getu16(bytes, 230 + 2 * i);
+        science->ColumnSumV[0][i] = getu16(bytes, 346 + 2 * i);
+        science->ColumnSumH[1][i] = getu16(bytes, 462 + 2 * i);
+        science->ColumnSumV[1][i] = getu16(bytes, 578 + 2 * i);
+    }
+
     setDateTime(&(science->dateTime), pkt->DataFieldHeader);
 
     return;

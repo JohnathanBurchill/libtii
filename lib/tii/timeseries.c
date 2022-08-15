@@ -189,6 +189,10 @@ void freeLpTiiTimeSeries(LpTiiTimeSeries * ts)
         free(ts->phosphorVoltageSettingH);
     if (ts->phosphorVoltageSettingV != NULL)
         free(ts->phosphorVoltageSettingV);
+    if (ts->columnSumH != NULL)
+        free(ts->columnSumH);
+    if (ts->columnSumV != NULL)
+        free(ts->columnSumV);
     if (ts->lpTiiTime16Hz != NULL)
         free(ts->lpTiiTime16Hz);
     if (ts->x1H != NULL)
@@ -532,6 +536,8 @@ void initLpTiiTimeSeries(LpTiiTimeSeries * timeSeries)
     timeSeries->mcpVoltageSettingV = NULL;
     timeSeries->phosphorVoltageSettingH = NULL;
     timeSeries->phosphorVoltageSettingV = NULL;
+    timeSeries->columnSumH = NULL;
+    timeSeries->columnSumV = NULL;
 
 
     timeSeries->lpTiiTime16Hz = NULL;
@@ -618,6 +624,12 @@ int getLpTiiTimeSeries(char satellite, SciencePackets *packets, LpTiiTimeSeries 
         if (timeSeries->phosphorVoltageSettingV == NULL)
             return TIME_SERIES_MALLOC;
 
+        timeSeries->columnSumH = (uint16_t*) malloc(timeSeries->n2Hz * sizeof(uint16_t) * 32);
+        if (timeSeries->columnSumH == NULL)
+            return TIME_SERIES_MALLOC;
+        timeSeries->columnSumV = (uint16_t*) malloc(timeSeries->n2Hz * sizeof(uint16_t) * 32);
+        if (timeSeries->columnSumV == NULL)
+            return TIME_SERIES_MALLOC;
 
 
         for (long i = 0; i < packets->numberOfLpTiiSciencePackets; i++)
@@ -626,7 +638,7 @@ int getLpTiiTimeSeries(char satellite, SciencePackets *packets, LpTiiTimeSeries 
             getLpTiiScienceData(pkt, &science);
             // TODO set accurate times
             timeSeries->lpTiiTime2Hz[2*i] = science.dateTime.secondsSince1970;
-            timeSeries->lpTiiTime2Hz[2*i+1] = timeSeries->lpTiiTime2Hz[i] + 0.5;
+            timeSeries->lpTiiTime2Hz[2*i+1] = science.dateTime.secondsSince1970 + 0.5;
             if (timeSeries->lpTiiTime2Hz[2*i] > maxTime) maxTime = timeSeries->lpTiiTime2Hz[2*i] + 0.5;
             if (timeSeries->lpTiiTime2Hz[2*i] < minTime) minTime = timeSeries->lpTiiTime2Hz[2*i];
             for (int s = 0; s < 2; s++)
@@ -641,6 +653,11 @@ int getLpTiiTimeSeries(char satellite, SciencePackets *packets, LpTiiTimeSeries 
                 timeSeries->mcpVoltageSettingV[2*i + s] = science.McpVoltageSettingV;
                 timeSeries->phosphorVoltageSettingH[2*i + s] = science.PhosphorVoltageSettingH;
                 timeSeries->phosphorVoltageSettingV[2*i + s] = science.PhosphorVoltageSettingV;
+                for (int p = 0; p < 32; p++)
+                {
+                    timeSeries->columnSumH[2*32*i + 32*s + p] = science.ColumnSumH[s][p];
+                    timeSeries->columnSumV[2*32*i + 32*s + p] = science.ColumnSumV[s][p];
+                }
             }            
         }
         timeSeries->minTime2Hz = minTime;
