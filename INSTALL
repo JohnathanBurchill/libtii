@@ -4,9 +4,8 @@ $ export PKG_CONFIG_PATH=/usr/local/lib/pkgconfig
 
 A C compiler is required, e.g. GCC. Requires CMake 3.0 if building with CMake (recommended).
 
-Checkout the sources from git. Contact UCalgary EFI TII team for access.
+Checkout the sources from git (https://github.com/Swarm-DISC/TRACIS).
 
-$ git clone ssh://git@efi.phys.ucalgary.ca:/data/git/tiim.git
 $ cd tiim
 $ mkdir build
 $ cd build
