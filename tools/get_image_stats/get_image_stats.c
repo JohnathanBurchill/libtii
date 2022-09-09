@@ -105,7 +105,7 @@ int main( int argc, char **argv)
             {
                 if (valuesRead != 12)
                     break;
-                if (scienceOnly == 0 || (vph >= 4700.0 && vph <= 5300.0 && vpv >= 4700.0 && vpv <= 5300.0 && vmh <= -1000.0 && vmv <= -1000.0 && vbh <= -50.0 && vbv <= -50.0))
+                if (scienceOnly == 0 || (vph >= 4700.0 && vph <= 6300.0 && vpv >= 4700.0 && vpv <= 6300.0 && vmh <= -1000.0 && vmv <= -1000.0 && vbh <= -50.0 && vbv <= -50.0))
                 {
                     nValues++;
                     timesValues = (double*) realloc(timesValues, 2*nValues * sizeof(double));
