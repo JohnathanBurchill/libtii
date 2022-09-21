@@ -41,6 +41,7 @@ RUN apt -y install vim
 RUN apt -y install pkg-config
 RUN addgroup science
 RUN useradd -G science dataflow
+RUN mkdir -p /home/dataflow
 RUN chown -R dataflow.dataflow /home/dataflow
 USER dataflow
 WORKDIR /home/dataflow/src
