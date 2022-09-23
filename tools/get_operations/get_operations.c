@@ -196,8 +196,12 @@ int sortEm(const FTSENT **first, const FTSENT **second)
     if (a == NULL || b == NULL)
         return 0;
     // order does not matter if either is not an operations file
-    if (strncmp(a->fts_name, "EMAIL_ON_OFF_times", 18) != 0 || strncmp(b->fts_name, "EMAIL_ON_OFF_times", 18) != 0)
+    if (strncmp(a->fts_name, "EMAIL_ON_OFF_times", 18) != 0 && strncmp(b->fts_name, "EMAIL_ON_OFF_times", 18) != 0)
         return 0;
+    else if (strncmp(a->fts_name, "EMAIL_ON_OFF_times", 18) != 0)
+        return -1;
+    else if (strncmp(b->fts_name, "EMAIL_ON_OFF_times", 18) != 0)
+        return 1;
 
     // Get year and week
     int weekDigitsA = 1;
