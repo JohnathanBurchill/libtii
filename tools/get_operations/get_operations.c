@@ -36,6 +36,7 @@ void parserUsage(const char *program);
 
 int sortEm(const FTSENT **first, const FTSENT **second);
 int sortEmReverse(const FTSENT **first, const FTSENT **second);
+void getYearAndWeek(const char *filename, int *year, int *week);
 
 int main( int argc, char **argv)
 {
@@ -102,14 +103,7 @@ int main( int argc, char **argv)
     }
 
     FTSENT * f = fts_read(fts);
-
-    int nameLength;
     
-    size_t nValues = 0;
-    double t, mh, mv, pah, pav, vph, vpv, vmh, vmv, vbh, vbv, vf;
-    int valuesRead = 0;
-    double epoch1970 = 2208988800.0;
-
     // From man getline
     char *line = NULL;
     ssize_t linelen = 0;
@@ -122,6 +116,9 @@ int main( int argc, char **argv)
     bool newYear = true;
     char thetime[255] = {0};
     char thedate[255] = {0};
+    int fileYear = 0;
+    int fileWeek = 0;
+    ssize_t valuesRead = 0;
 
     while (f != NULL)
     {
@@ -137,6 +134,8 @@ int main( int argc, char **argv)
             }
             gotStart = false;            
             gotTimeRange = true;
+
+            getYearAndWeek(f->fts_name, &fileYear, &fileWeek);
 
             while((valuesRead = getline(&line, &linecap, file)) > 0)
             {
@@ -158,7 +157,7 @@ int main( int argc, char **argv)
                         snprintf(thedate, 11, "%s", line + 29);
                         thedate[4] = '-';
                         thedate[7] = '-';
-                        fprintf(stdout, "<li>Week of %s\n  <ul>\n    <li>", thedate);
+                        fprintf(stdout, "<li>Week %d (starting %s)\n  <ul>\n    <li>", fileWeek, thedate);
                         newWeek = false;
                     }
                     else
@@ -237,33 +236,12 @@ int sortEm(const FTSENT **first, const FTSENT **second)
         return 1;
 
     // Get year and week
-    int weekDigitsA = 1;
-    char weekStrA[16] = {0};
-    char yearStrA[16] = {0};
-    int weekDigitsB = 1;
-    char weekStrB[16] = {0};
-    char yearStrB[16] = {0};
-
     int weekA = 0;
     int yearA = 0;
     int weekB = 0;
     int yearB = 0;
-
-    if (*(a->fts_name + 33) != '_')
-        weekDigitsA = 2;
-    if (*(b->fts_name + 33) != '_')
-        weekDigitsB = 2;
-    
-    snprintf(weekStrA, weekDigitsA + 1, "%s", a->fts_name + 32);
-    snprintf(weekStrB, weekDigitsB + 1, "%s", b->fts_name + 32);
-
-    snprintf(yearStrA, 5, "%s", a->fts_name + 33 + weekDigitsA);
-    snprintf(yearStrB, 5, "%s", b->fts_name + 33 + weekDigitsB);
-
-    weekA = atoi(weekStrA); 
-    weekB = atoi(weekStrB); 
-    yearA = atoi(yearStrA);  
-    yearB = atoi(yearStrB); 
+    getYearAndWeek(a->fts_name, &yearA, &weekA);
+    getYearAndWeek(b->fts_name, &yearB, &weekB);
     // printf("%s %s\n", a->fts_name, b->fts_name);
 
     int comp = 0;
@@ -288,4 +266,28 @@ int sortEm(const FTSENT **first, const FTSENT **second)
 int sortEmReverse(const FTSENT **first, const FTSENT **second)
 {
     return -sortEm(first, second);
+}
+
+void getYearAndWeek(const char *filename, int *year, int *week)
+{
+    if (strlen(filename) < 39)
+        return;
+
+    int weekDigits = 1;
+    char weekStr[16] = {0};
+    char yearStr[16] = {0};
+
+    if (*(filename + 33) != '_')
+        weekDigits = 2;
+    
+    snprintf(weekStr, weekDigits + 1, "%s", filename + 32);
+
+    snprintf(yearStr, 5, "%s", filename + 33 + weekDigits);
+
+    if (week != NULL)
+        *week = atoi(weekStr); 
+    if (year != NULL)
+        *year = atoi(yearStr);  
+
+    return;
 }
