@@ -27,6 +27,7 @@
 #include <math.h>
 #include <fts.h>
 #include <stdbool.h>
+#include <time.h>
 
 #define VERSION_STRING "1.0.0"
 
@@ -34,10 +35,13 @@
 void parserUsage(const char *program);
 
 int sortEm(const FTSENT **first, const FTSENT **second);
+int sortEmReverse(const FTSENT **first, const FTSENT **second);
 
 int main( int argc, char **argv)
 {
     FILE *file = NULL;
+
+    bool reverseWeekOrder = false;
 
     for (int i = 0; i < argc; i++)
     {
@@ -47,8 +51,7 @@ int main( int argc, char **argv)
             exit(EXIT_SUCCESS);
         }
     }
-
-    if (argc != 3)
+    if (argc != 3 && argc != 4)
     {
         parserUsage(argv[0]);
         exit(EXIT_SUCCESS);
@@ -61,10 +64,37 @@ int main( int argc, char **argv)
         goto cleanup;
     }
     char *year = argv[2];
+    time_t sec = time(NULL);
+    struct tm *now = gmtime(&sec);
+    int y = atoi(year);
+    int thisYear = now->tm_year + 1900;
+    if (y < 2015 || y > thisYear)
+    {
+        fprintf(stderr, "%s: Requested year must be from 2015 to %d\n", argv[0], thisYear);
+        goto cleanup;
+    }
+
+    if (argc == 4)
+    {
+        if (strcmp(argv[3], "--reverse") == 0)
+        {
+            reverseWeekOrder = true;            
+        }
+        else
+        {
+            fprintf(stderr, "%s: unknown option.\n", argv[0]);
+            goto cleanup;
+        }
+    }
 
     char *path[2] = {NULL, NULL};
     path[0] = ".";
-    FTS * fts = fts_open(path, FTS_LOGICAL | FTS_NOCHDIR | FTS_NOSTAT, &sortEm);
+    FTS * fts = NULL;
+    if (reverseWeekOrder == true)
+        fts = fts_open(path, FTS_LOGICAL | FTS_NOCHDIR | FTS_NOSTAT, &sortEmReverse);
+    else
+        fts = fts_open(path, FTS_LOGICAL | FTS_NOCHDIR | FTS_NOSTAT, &sortEm);
+
     if (fts == NULL)
     {
         printf("Could not open folder.\n");
@@ -180,7 +210,10 @@ void parserUsage(const char *program)
     printf("\nTII Daily Operations Parser %s compiled %s %s UTC\n", VERSION_STRING, __DATE__, __TIME__);
     printf("\nLicense: GPL 3.0 ");
     printf("Copyright 2022 Johnathan Kerr Burchill\n");
-    printf("Usage: %s satelliteLetter year\n", program);
+    printf("Usage: %s satelliteLetter year [--reverse]\n", program);
+    printf("Options:\n");
+    printf("\t--about prints this message\n");
+    printf("\t--reverse prints most recent weeks first\n");
 
     return;
 }
@@ -248,8 +281,11 @@ int sortEm(const FTSENT **first, const FTSENT **second)
             comp = 0;
     }
 
-    // printf("%d: %s %s\n", comp, a->fts_name, b->fts_name);
+    // Oldest to newest
+    return comp;
+}
 
-    // Order most recent first
-    return -comp;
+int sortEmReverse(const FTSENT **first, const FTSENT **second)
+{
+    return -sortEm(first, second);
 }
