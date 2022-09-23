@@ -33,7 +33,7 @@
 // read image stats text files between date range, select data for science only imaging mode or all imagery, and average
 void parserUsage(const char *program);
 
-int sortEm(FTSENT **first, FTSENT **second);
+int sortEm(const FTSENT **first, const FTSENT **second);
 
 int main( int argc, char **argv)
 {
@@ -64,7 +64,7 @@ int main( int argc, char **argv)
 
     char *path[2] = {NULL, NULL};
     path[0] = ".";
-    FTS * fts = fts_open(path, FTS_LOGICAL | FTS_NOCHDIR | FTS_NOSTAT, NULL);
+    FTS * fts = fts_open(path, FTS_LOGICAL | FTS_NOCHDIR | FTS_NOSTAT, &sortEm);
     if (fts == NULL)
     {
         printf("Could not open folder.\n");
@@ -186,15 +186,65 @@ void parserUsage(const char *program)
     return;
 }
 
-int sortEm(FTSENT **first, FTSENT **second)
+int sortEm(const FTSENT **first, const FTSENT **second)
 {
     if (first == NULL || second == NULL)
         return 0;
 
-    FTSENT *a = *first;
-    FTSENT *b = *second;
+    const FTSENT *a = *first;
+    const FTSENT *b = *second;
+
     if (a == NULL || b == NULL)
         return 0;
+    // order does not matter if either is not an operations file
+    if (strncmp(a->fts_name, "EMAIL_ON_OFF_times", 18) != 0 || strncmp(b->fts_name, "EMAIL_ON_OFF_times", 18) != 0)
+        return 0;
 
-    return strcmp(a->fts_name, b->fts_name);
+    // Get year and week
+    int weekDigitsA = 1;
+    char weekStrA[16] = {0};
+    char yearStrA[16] = {0};
+    int weekDigitsB = 1;
+    char weekStrB[16] = {0};
+    char yearStrB[16] = {0};
+
+    int weekA = 0;
+    int yearA = 0;
+    int weekB = 0;
+    int yearB = 0;
+
+    if (*(a->fts_name + 33) != '_')
+        weekDigitsA = 2;
+    if (*(b->fts_name + 33) != '_')
+        weekDigitsB = 2;
+    
+    snprintf(weekStrA, weekDigitsA, "%s", a->fts_name + 32);
+    snprintf(weekStrB, weekDigitsB, "%s", b->fts_name + 32);
+
+    snprintf(yearStrA, 4, "%s", a->fts_name + 33 + weekDigitsA);
+    snprintf(yearStrB, 4, "%s", b->fts_name + 33 + weekDigitsB);
+
+    weekA = atoi(weekStrA); 
+    weekB = atoi(weekStrB); 
+    yearA = atoi(yearStrA); 
+    yearB = atoi(yearStrB); 
+
+    // printf("%d %d %d %d\n", yearA, yearB, weekA, weekB);
+
+    int comp = 0;
+    if (yearA > yearB)
+        comp = 1;
+    else if (yearA < yearB)
+        comp = -1;
+    else
+    {
+        if (weekA > weekB)
+            comp = 1;
+        else if (weekA < weekB)
+            comp = -1;
+        else
+            comp = 0;
+    }
+
+    return comp;
 }
