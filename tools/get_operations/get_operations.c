@@ -124,7 +124,6 @@ int main( int argc, char **argv)
     {
         if (strncmp(f->fts_name, "EMAIL_ON_OFF_times_Swarm-", 25) == 0 && f->fts_name[25] == satLetter && strcmp(f->fts_name + f->fts_namelen - 4, ".txt") == 0 && ((strncmp(f->fts_name + f->fts_namelen - 14, year, 4) == 0 && *(f->fts_name + f->fts_namelen - 10) == '_') || strncmp(f->fts_name + f->fts_namelen - 13, year, 4) == 0))
         {
-            // Ignore errors: we read as many files as we can
             file = fopen(fts->fts_path, "r");
             if (file == NULL)
             {
@@ -136,48 +135,53 @@ int main( int argc, char **argv)
             gotTimeRange = true;
 
             getYearAndWeek(f->fts_name, &fileYear, &fileWeek);
-
             while((valuesRead = getline(&line, &linecap, file)) > 0)
             {
-                if (valuesRead < 48)
+                if (valuesRead != 50)
                     continue;
 
+                if (newYear == true)
+                {
+                    fprintf(stdout, "<ul>\n");
+                    newYear = false;
+                }
+                if (newWeek == true)
+                {
+                    snprintf(thedate, 11, "%s", line + 29);
+                    thedate[4] = '-';
+                    thedate[7] = '-';
+                    fprintf(stdout, "<li>Week %d (starting %s)\n  <ul>\n", fileWeek, thedate);
+                    newWeek = false;
+                }
                 if (strncmp(line + 21, "ON", 2)  == 0)
                 {
                     snprintf(thetime, 20, "%s", line + 29);
                     thetime[4] = '-';
                     thetime[7] = '-';
-                    if (newYear == true)
-                    {
-                        fprintf(stdout, "<ul>\n");
-                        newYear = false;
-                    }
-                    if (newWeek == true)
-                    {
-                        snprintf(thedate, 11, "%s", line + 29);
-                        thedate[4] = '-';
-                        thedate[7] = '-';
-                        fprintf(stdout, "<li>Week %d (starting %s)\n  <ul>\n    <li>", fileWeek, thedate);
-                        newWeek = false;
-                    }
-                    else
-                    {
-                        fprintf(stdout, "    <li>");
-                    }
-                    fprintf(stdout, "%s UT", thetime);
+                    fprintf(stdout, "    <li>%s UT", thetime);
                     gotStart = true;
                 }
-                else if (strncmp(line + 21, "OF", 2) == 0 && gotStart == true)
+                else if (strncmp(line + 21, "OF", 2) == 0)
                 {
                     snprintf(thetime, 20, "%s", line + 29);
                     thetime[4] = '-';
                     thetime[7] = '-';
+                    if (gotStart == false)
+                    {
+                        // Operations continued from previous week
+                        fprintf(stdout, "    <li>...");
+                    }
                     fprintf(stdout, " - %s UT</li>\n", thetime);
                     gotStart = false;
                 }
             }
             fclose(file);
             file = NULL;
+            if (gotStart == true)
+            {
+                // Operations continued to the next week
+                fprintf(stdout, " - ...</li>\n");
+            }
             if (newWeek == false)
             {
                 fprintf(stdout, "  </ul>\n</li>\n");
