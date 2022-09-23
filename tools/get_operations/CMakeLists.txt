@@ -1,4 +1,4 @@
-# TIILIB: tools/CMakeLists.txt
+# TIILIB: tools/get_operations/CMakeLists.txt
 
 # Copyright (C) 2022  Johnathan K Burchill
 
@@ -17,15 +17,13 @@
 
 CMAKE_MINIMUM_REQUIRED(VERSION 3.0)
 
-PROJECT(tii_tools)
+PROJECT(get_operations)
 
-ADD_SUBDIRECTORY(tiim)
-ADD_SUBDIRECTORY(tiim_stats)
-ADD_SUBDIRECTORY(anomaly_stats)
-ADD_SUBDIRECTORY(tii_moments)
-ADD_SUBDIRECTORY(tii_dump)
-ADD_SUBDIRECTORY(tii_look)
+SET(LIBS ${LIBS} ${MATH} ${LIBXML2_LIBRARIES} ${ZLIB_LIBRARIES})
+INCLUDE_DIRECTORIES(${INCLUDE_DIRS} ${LIBXML2_INCLUDE_DIR})
 
-ADD_SUBDIRECTORY(process_anomaly_stats)
-ADD_SUBDIRECTORY(get_image_stats)
-ADD_SUBDIRECTORY(get_operations)
+ADD_EXECUTABLE(get_operations get_operations.c)
+TARGET_LINK_LIBRARIES(get_operations ${LIBS} tii -lm)
+
+install(TARGETS get_operations DESTINATION $ENV{HOME}/bin)
+
