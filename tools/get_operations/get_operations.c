@@ -72,6 +72,7 @@ int main( int argc, char **argv)
     }
 
     FTSENT * f = fts_read(fts);
+
     int nameLength;
     
     size_t nValues = 0;
@@ -226,6 +227,7 @@ int sortEm(const FTSENT **first, const FTSENT **second)
     weekB = atoi(weekStrB); 
     yearA = atoi(yearStrA);  
     yearB = atoi(yearStrB); 
+    // printf("%s %s\n", a->fts_name, b->fts_name);
 
     int comp = 0;
     if (yearA > yearB)
@@ -241,6 +243,8 @@ int sortEm(const FTSENT **first, const FTSENT **second)
         else
             comp = 0;
     }
+
+    // printf("%d: %s %s\n", comp, a->fts_name, b->fts_name);
 
     // Order most recent first
     return -comp;
