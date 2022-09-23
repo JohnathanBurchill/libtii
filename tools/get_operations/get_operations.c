@@ -88,6 +88,7 @@ int main( int argc, char **argv)
     bool gotStart = false;
     bool gotTimeRange = false;
     bool newWeek = true;
+    bool newYear = true;
     char thetime[255] = {0};
     char thedate[255] = {0};
 
@@ -118,6 +119,11 @@ int main( int argc, char **argv)
                     snprintf(thetime, 20, "%s", line + 29);
                     thetime[4] = '-';
                     thetime[7] = '-';
+                    if (newYear == true)
+                    {
+                        fprintf(stdout, "<ul>\n");
+                        newYear = false;
+                    }
                     if (newWeek == true)
                     {
                         snprintf(thedate, 11, "%s", line + 29);
@@ -153,6 +159,11 @@ int main( int argc, char **argv)
         f = fts_read(fts);
     }
     fts_close(fts);
+    if (newYear == false)
+    {
+        fprintf(stdout, "</ul>\n");
+        newYear = false;
+    }
 
     cleanup:
     if (file != NULL)
