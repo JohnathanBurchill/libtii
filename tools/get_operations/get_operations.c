@@ -92,8 +92,6 @@ int main( int argc, char **argv)
     char thetime[255] = {0};
     char thedate[255] = {0};
 
-    fprintf(stderr, "%s", year);
-
     while (f != NULL)
     {
         if (strncmp(f->fts_name, "EMAIL_ON_OFF_times_Swarm-", 25) == 0 && f->fts_name[25] == satLetter && strcmp(f->fts_name + f->fts_namelen - 4, ".txt") == 0 && ((strncmp(f->fts_name + f->fts_namelen - 14, year, 4) == 0 && *(f->fts_name + f->fts_namelen - 10) == '_') || strncmp(f->fts_name + f->fts_namelen - 13, year, 4) == 0))
@@ -218,18 +216,16 @@ int sortEm(const FTSENT **first, const FTSENT **second)
     if (*(b->fts_name + 33) != '_')
         weekDigitsB = 2;
     
-    snprintf(weekStrA, weekDigitsA, "%s", a->fts_name + 32);
-    snprintf(weekStrB, weekDigitsB, "%s", b->fts_name + 32);
+    snprintf(weekStrA, weekDigitsA + 1, "%s", a->fts_name + 32);
+    snprintf(weekStrB, weekDigitsB + 1, "%s", b->fts_name + 32);
 
-    snprintf(yearStrA, 4, "%s", a->fts_name + 33 + weekDigitsA);
-    snprintf(yearStrB, 4, "%s", b->fts_name + 33 + weekDigitsB);
+    snprintf(yearStrA, 5, "%s", a->fts_name + 33 + weekDigitsA);
+    snprintf(yearStrB, 5, "%s", b->fts_name + 33 + weekDigitsB);
 
     weekA = atoi(weekStrA); 
     weekB = atoi(weekStrB); 
-    yearA = atoi(yearStrA); 
+    yearA = atoi(yearStrA);  
     yearB = atoi(yearStrB); 
-
-    // printf("%d %d %d %d\n", yearA, yearB, weekA, weekB);
 
     int comp = 0;
     if (yearA > yearB)
@@ -246,5 +242,6 @@ int sortEm(const FTSENT **first, const FTSENT **second)
             comp = 0;
     }
 
-    return comp;
+    // Order most recent first
+    return -comp;
 }
