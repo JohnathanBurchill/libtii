@@ -44,7 +44,7 @@ int main(int argc, char **argv)
     if (argc < 4 || argc > 5)
     {
         usage(argv[0]);
-        exit(1);
+        exit(EXIT_FAILURE);
     }
 
     int status = 0;
@@ -61,7 +61,7 @@ int main(int argc, char **argv)
     if (strcmp(hdr + sourceLen - 4, ".HDR") != 0 && sourceLen != 9)
     {
         usage(argv[0]);
-	    exit(1);
+	exit(EXIT_FAILURE);
     }
     double max = atof(argv[2]);
     char *outputDir = argv[3];
@@ -75,18 +75,39 @@ int main(int argc, char **argv)
     }
 
     // Data
-    ImagePackets imagePackets;
-    SciencePackets sciencePackets;
+    ImagePackets imagePackets = {0};
+    SciencePackets sciencePackets = {0};
+    Image templateImage = {0};
+    Image image = {0};
 
-    LpTiiTimeSeries timeSeries;
+    LpTiiTimeSeries timeSeries = {0};
     initLpTiiTimeSeries(&timeSeries);
-    ImagePairTimeSeries imagePairTimeSeries;
+    ImagePairTimeSeries imagePairTimeSeries = {0};
     initImagePairTimeSeries(&imagePairTimeSeries);
 
+    if (allocImage(&templateImage, IMAGE_WIDTH, IMAGE_HEIGHT, 1) != DRAW_OK)
+    {
+        printf("Could not allocate memory for template image.\n");
+        goto cleanup;
+    }    
+    if (allocImage(&image, IMAGE_WIDTH, IMAGE_HEIGHT, 1) != DRAW_OK)
+    {
+        printf("Could not allocate memory for image.\n");
+        goto cleanup;
+    }    
     status = importImagery(hdr, &imagePackets);
     if (status)
     {
-        fprintf(stderr, "Could not import image data.\n");
+	if (status == IMPORT_NO_RECORDS && sourceLen == 9)
+	{
+	    // Print only for daily file generation. This
+	    // message is already issued on a per HDR file basis.
+	    fprintf(stderr, "No records found for %s\n", hdr);
+	}
+	else if (status != IMPORT_NO_RECORDS)
+	{
+            fprintf(stderr, "Could not import image data: error %d.\n", status);
+	}
         goto cleanup;
     }
     if (imagePackets.numberOfImages == 0)
@@ -99,18 +120,6 @@ int main(int argc, char **argv)
     }
     
     uint16_t pixelsH[NUM_FULL_IMAGE_PIXELS], pixelsV[NUM_FULL_IMAGE_PIXELS];
-    Image templateImage;
-    if (allocImage(&templateImage, IMAGE_WIDTH, IMAGE_HEIGHT, 1) != DRAW_OK)
-    {
-        printf("Could not allocate memory for template image.\n");
-        goto cleanup;
-    }    
-    Image image;
-    if (allocImage(&image, IMAGE_WIDTH, IMAGE_HEIGHT, 1) != DRAW_OK)
-    {
-        printf("Could not allocate memory for image.\n");
-        goto cleanup;
-    }    
 
     FullImagePacket * fip1, *fip2;
     FullImageContinuedPacket *cip1, *cip2;
@@ -391,7 +400,7 @@ cleanup:
 
     fflush(stdout);
 
-    exit(0);
+    exit(EXIT_SUCCESS);
 }
 
 void usage(const char * name)

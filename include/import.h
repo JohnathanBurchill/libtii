@@ -37,7 +37,8 @@ enum IMPORT_ERROR
     IMPORT_HDR_FILENAME_TOO_LONG = -6,
     IMPORT_SOURCE = -7,
     IMPORT_DATE_FORMAT = -8,
-    IMPORT_DATE = -9
+    IMPORT_DATE = -9,
+    IMPORT_NO_RECORDS = -10
 };
 
 int importImagery(const char *source, ImagePackets *imagePackets);

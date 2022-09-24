@@ -47,13 +47,13 @@ int importImagery(const char *source, ImagePackets *imagePackets)
 int importImageryWithFilenames(const char *source, ImagePackets *imagePackets, char **efiFilenames, size_t *nFiles)
 {
     int status = IMPORT_OK;
+    bool readAtLeastOneFile = false;
     int len = strlen(source);
     imagePackets->numberOfImages = 0;
     imagePackets->numberOfFullImagePackets = 0;
     imagePackets->numberOfContinuedPackets = 0;
     imagePackets->fullImagePackets = NULL;
     imagePackets->continuedPackets = NULL;
- 
     if (strcmp(source + len - 4, ".HDR") == 0)
     {
         status = importImageryFromHdr(source, imagePackets);
@@ -79,6 +79,10 @@ int importImageryWithFilenames(const char *source, ImagePackets *imagePackets, c
                 // Very likely got a SW_OPER_EFI?{NOM,TIC}_0__*.HDR file for the correct satellite and date
                 // Ignore errors: we read as many files as we can
                 status = importImageryFromHdr(f->fts_path, imagePackets);
+		if (status == IMPORT_OK)
+		{
+		    readAtLeastOneFile = true;
+		}
                 if (status == IMPORT_OK && nFiles != NULL)
                 {
                     *efiFilenames = (char *)realloc(*efiFilenames, FILENAME_MAX * (*nFiles + 1));
@@ -120,6 +124,10 @@ int importImageryWithFilenames(const char *source, ImagePackets *imagePackets, c
         }
     }
 
+    if (readAtLeastOneFile)
+    {
+        status = IMPORT_OK;
+    }
     return status;
 }
 
@@ -139,6 +147,13 @@ int importImageryFromHdr(const char *hdr, ImagePackets *imagePackets)
     {
         return status;
     }
+
+    if (pfc.fullImage.numRecords == 0 && pfc.fullImageContinued.numRecords == 0)
+    {
+	fprintf(stderr, "No image records found for %s\n", hdr);
+	return IMPORT_NO_RECORDS;
+    }
+
 
     // get DBL filename and check that we can open it.
     char dbl[FILENAME_MAX];
@@ -500,6 +515,7 @@ int arrayResize(uint8_t **array, size_t numRecords, size_t numNewRecords, size_t
     *array = (uint8_t*) realloc(*array, newArrayBytes);
     if (*array == NULL)
     {
+	fprintf(stderr, "BUFFER_REALLOC: old size: %lu new size %lu.\n", arrayBytes, newArrayBytes);
         return IMPORT_DBL_BUFFER_ALLOCATION;
     }
     return IMPORT_OK;
@@ -527,6 +543,7 @@ int loadPackets(FILE *dblFile, uint8_t ** array, size_t *arrayNumRecords, HdrInf
     status = arrayResize(array, *arrayNumRecords, info->numRecords, info->recordSize);
     if (*array == NULL)
     {
+	fprintf(stderr, "loadPackets:arrayResize failed.\n");
         return IMPORT_DBL_BUFFER_ALLOCATION;
     }
     // Append data to the array

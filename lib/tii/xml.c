@@ -212,13 +212,15 @@ int parseHdr(const char *hdr, PacketFileContents *packetInfo)
     }
 
 
-    if (packetInfo->fullImage.recordSize != FULL_IMAGE_PACKET_SIZE)
+    if (packetInfo->fullImage.numRecords > 0 && packetInfo->fullImage.recordSize != FULL_IMAGE_PACKET_SIZE)
     {
+	fprintf(stderr, "parseHdr: incorrect FullImage RecordSize in %s\n", hdr);
         status = HDR_PARSE_ERR_FULL_IMAGE_RECORD_SIZE;
         goto cleanup;
     }
-    if (packetInfo->fullImageContinued.recordSize != FULL_IMAGE_CONT_PACKET_SIZE)
+    if (packetInfo->fullImageContinued.numRecords > 0 && packetInfo->fullImageContinued.recordSize != FULL_IMAGE_CONT_PACKET_SIZE)
     {
+	fprintf(stderr, "parseHdr: incorrect FullImageContinued RecordSize in %s\n", hdr);
         status = HDR_PARSE_ERR_FULL_IMAGE_CONT_RECORD_SIZE;
         goto cleanup;
     }
