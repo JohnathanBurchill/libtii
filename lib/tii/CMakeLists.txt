@@ -23,7 +23,7 @@ PROJECT(tii VERSION 1.0.0 DESCRIPTION "Swarm Electric Field Instrument Thermal I
 SET(LIBS ${LIBS} ${MATH} ${LIBXML2_LIBRARIES})
 INCLUDE_DIRECTORIES(${INCLUDE_DIRS} ${LIBXML2_INCLUDE_DIR})
 
-ADD_LIBRARY(tii analysis.c filters.c gainmap.c import.c isp.c timeseries.c utility.c xml.c)
+ADD_LIBRARY(tii analysis.c filters.c gainmap.c import.c isp.c timeseries.c utility.c xml.c detector.c)
 SET_TARGET_PROPERTIES(tii PROPERTIES 
     VERSION ${PROJECT_VERSION}
     SOVERSION 1
