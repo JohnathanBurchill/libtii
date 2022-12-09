@@ -15,37 +15,18 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-FROM ubuntu
-RUN apt -y update
-RUN apt -y upgrade
-RUN apt -y install wget
-RUN apt -y install gcc
-RUN apt -y install g++
-RUN apt -y install cmake
-RUN apt -y install make
-RUN apt -y install bash
-RUN apt -y install libxml2
-RUN apt -y install libxml2-dev
-RUN apt -y install zlib1g
-RUN apt -y install zlib1g-dev
+FROM johnathanburchill/utils:cdev AS dev
+USER root
 RUN apt -y install libavutil-dev
 RUN apt -y install libavcodec-dev
 RUN apt -y install libswscale-dev
 RUN apt -y install libavformat-dev
 RUN apt -y install libswresample-dev
 RUN apt -y install libx264-dev
-RUN apt -y install git
-RUN apt -y install gdb
-RUN apt -y install cgdb
-RUN apt -y install vim
-RUN apt -y install pkg-config
-RUN addgroup science
-RUN useradd -G science dataflow
-RUN mkdir -p /home/dataflow
-RUN chown -R dataflow.dataflow /home/dataflow
-USER dataflow
-WORKDIR /home/dataflow/src
-VOLUME ["/home/dataflow/src"]
+RUN chown science.science /home/science
+USER science
+WORKDIR /home/science/src
+VOLUME ["/home/science/src"]
 ENTRYPOINT ["/bin/bash"]
 
 
