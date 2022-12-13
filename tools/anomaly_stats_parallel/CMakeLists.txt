@@ -1,4 +1,4 @@
-# TIILIB: tools/CMakeLists.txt
+# TIICT Processor: util/anomaly_stats_parallel/CMakeLists.txt
 
 # Copyright (C) 2022  Johnathan K Burchill
 
@@ -15,18 +15,14 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-CMAKE_MINIMUM_REQUIRED(VERSION 3.0)
+project(TIIM)
 
-PROJECT(tii_tools)
+CMAKE_MINIMUM_REQUIRED(VERSION 3.1)
 
-ADD_SUBDIRECTORY(tiim)
-ADD_SUBDIRECTORY(tiim_stats)
-ADD_SUBDIRECTORY(anomaly_stats)
-ADD_SUBDIRECTORY(anomaly_stats_parallel)
-ADD_SUBDIRECTORY(tii_moments)
-ADD_SUBDIRECTORY(tii_dump)
-ADD_SUBDIRECTORY(tii_look)
+SET(THREADS_PREFER_PTHREAD_FLAG ON)
+FIND_PACKAGE(Threads REQUIRED)
+FIND_LIBRARY(CURSES ncurses)
+ADD_EXECUTABLE(anomaly_stats_parallel main.c)
+TARGET_LINK_LIBRARIES(anomaly_stats_parallel PRIVATE Threads::Threads ${CURSES})
 
-ADD_SUBDIRECTORY(process_anomaly_stats)
-ADD_SUBDIRECTORY(get_image_stats)
-ADD_SUBDIRECTORY(get_operations)
+install(TARGETS anomaly_stats_parallel DESTINATION $ENV{HOME}/bin)
