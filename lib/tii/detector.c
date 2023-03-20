@@ -2,7 +2,7 @@
 
     TIIM processing library: lib/tii/detector.c
 
-    Copyright (C) 2022  Johnathan K Burchill
+    Copyright (C) 2023  Johnathan K Burchill
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -84,42 +84,32 @@ void detectorCoordinates(char satellite, int sensor, float *xc, float *yc)
     return;
 }
 
-
-// Moved from TRACIS...
 float eofr(double r, float innerDomeVoltage, float mcpVoltage)
 {
     // Passing r by casting as double to avoid
-    // making a temporary variable for r^3 calculation in double precision
-    // TODO incorporate MCP voltage into transfer function
+    // making a temporary variable for r^3 calculations in double precision
+    
+    // innerDomeVoltage is voltage after subtracting faceplate voltage
+    // i.e., the voltage between the domes
 
-    double a = 0.0, b = 0.0, c = 0.0, d = 0.0;
+    // Model values from "Eofr.nb simulations with CEFI XTracer (TRACIS github)."
+    static const double a00 =  0.008727536876620966;
+    static const double a10 = -0.004454815158800095;
+    static const double a20 =  0.0009085603706168588;
+    static const double a30 = -0.000014365393160422022;
+    static const double a01 = -0.010918278041742287;
+    static const double a11 =  0.004981990763549952;
+    static const double a21 = -0.00029784411180069903;
+    static const double a31 =  8.680704266427428e-6;
 
-    float energy = 0.0;
+    double referenceVoltage = -2400.0;
+    double vmcpN = mcpVoltage / referenceVoltage;
 
-    // Model values from "Along-track-drift-anomaly.nb simulations with CEFI XTracer."
+    double energy = a00 + a10*r + a20*r*r + a30*r*r*r;
+    energy += a01*vmcpN + a11*r*vmcpN + a21*r*r*vmcpN + a31*r*r*r*vmcpN;
 
-    if (innerDomeVoltage < -90.0) // -99.0 V simulation, need to update for actual voltages
-    {
-        a = -0.9849666707472252;
-        b = 0.25076488696479904;
-        c = 0.02909150117625129;
-        d = 0.00017439906324331827;
-    }
-    else // Simulated for -60.3 V, but will apply to any other voltage until covered by new simulations.
-    {
-        a = -2.4014615344450805;
-        b = 0.7439055999344776;
-        c = -0.030922802815747417;
-        d = 0.001209654508105981;
-    }
+    energy *= fabs(innerDomeVoltage);
 
-    energy = (float) (a + b*r + c*r*r + d*r*r*r);
-
-    if (innerDomeVoltage > -60.) // Scale by inner dome voltage until new simulations are done
-    {
-        energy = energy / 60.3 * fabs(innerDomeVoltage);
-    }
-
-    return energy;
+    return (float)energy;
 }
 
