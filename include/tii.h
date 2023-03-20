@@ -2,7 +2,7 @@
 
     TIIM processing library: include/tii.h
 
-    Copyright (C) 2022  Johnathan K Burchill
+    Copyright (C) 2023  Johnathan K Burchill
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -21,7 +21,7 @@
 #ifndef _TII_HEADER_H
 #define _TII_HEADER_H
 
-#define TII_LIB_VERSION 1.0
+#define TII_LIB_VERSION 1.1
 #define TII_LIB_VERSION_STRING "0101"
 
 #include <stdbool.h>
