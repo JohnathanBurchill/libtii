@@ -2,4 +2,5 @@
 build
 usr
 example/anomaly_stats
+**/.DS_Store
 
