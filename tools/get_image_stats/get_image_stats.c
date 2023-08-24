@@ -105,7 +105,7 @@ int main( int argc, char **argv)
             {
                 if (valuesRead != 12)
                     break;
-                if (scienceOnly == 0 || (vph >= 4700.0 && vph <= 6300.0 && vpv >= 4700.0 && vpv <= 6300.0 && vmh <= -1000.0 && vmv <= -1000.0 && vbh <= -50.0 && vbv <= -50.0))
+                if (scienceOnly == 0 || (vph >= 4700.0 && vpv >= 4700.0 && vmh <= -1000.0 && vmv <= -1000.0 && vbh <= -50.0 && vbv <= -50.0))
                 {
                     nValues++;
                     timesValues = (double*) realloc(timesValues, 2*nValues * sizeof(double));
@@ -216,7 +216,7 @@ void parserUsage(const char *program)
     printf("\nLicense: GPL 3.0 ");
     printf("Copyright 2022 Johnathan Kerr Burchill\n");
     printf("Usage: %s satelliteLetter startDate endDate scienceOnly averagingIntervalMinutes paramToRead\n", program);
-    printf("Dates take the form yyyymmdd. scienceOnly is 0 or 1 (true or false) to toggle keeping measurements from TII science operations only (4700 V <= VPhos <= 5300 V, VMCP < -1000 V, VBias < -50 V.");
+    printf("Dates take the form yyyymmdd. scienceOnly is 0 or 1 (true or false) to toggle keeping measurements from TII science operations only (VPhos >= 4700 V, VMCP < -1000 V, VBias < -50 V.");
     printf("paramToRead:\n");
     printf(" 1: measles count H\n");
     printf(" 2: measles count V\n");
