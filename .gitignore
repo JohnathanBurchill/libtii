@@ -2,5 +2,8 @@
 build
 usr
 example/anomaly_stats
+example/gainmapdata
+example/test.txt
 **/.DS_Store
+
 
