@@ -66,7 +66,7 @@ draw_progress_bar() {
   for s in $(seq 1 $(( $PROGRESS_BAR_WIDTH - $__num_bar ))); do printf " "; done
   printf "] $__percentage%% ($__value / $__max $__unit)\r"
 }
-(cd /data/Swarm/EFI/Level0/Treated;
+(cd /data2/Swarm/EFI/Level0/Treated;
 while [ "$dateToProcess" -le "$stopDate" ]; do
 	
 	year=$(date -d "@$dateToProcess" +%Y)
