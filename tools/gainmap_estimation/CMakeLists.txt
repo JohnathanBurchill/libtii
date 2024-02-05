@@ -1,6 +1,6 @@
-# TIILIB: tools/CMakeLists.txt
+# TIILIB: tools/gainmap_estimation/CMakeLists.txt
 
-# Copyright (C) 2022  Johnathan K Burchill
+# Copyright (C) 2024  Johnathan K Burchill
 
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -17,17 +17,13 @@
 
 CMAKE_MINIMUM_REQUIRED(VERSION 3.0)
 
-PROJECT(tii_tools)
+PROJECT(tii_moments)
 
-ADD_SUBDIRECTORY(tiim)
-ADD_SUBDIRECTORY(tiim_stats)
-ADD_SUBDIRECTORY(anomaly_stats)
-ADD_SUBDIRECTORY(anomaly_stats_parallel)
-ADD_SUBDIRECTORY(tii_moments)
-ADD_SUBDIRECTORY(tii_dump)
-ADD_SUBDIRECTORY(tii_look)
-ADD_SUBDIRECTORY(gainmap_estimation)
+# SET(LIBS ${LIBS} ${MATH} ${LIBXML2_LIBRARIES} ${ZLIB_LIBRARIES})
+INCLUDE_DIRECTORIES(${INCLUDE_DIRS} ${LIBXML2_INCLUDE_DIR})
 
-ADD_SUBDIRECTORY(process_anomaly_stats)
-ADD_SUBDIRECTORY(get_image_stats)
-ADD_SUBDIRECTORY(get_operations)
+ADD_EXECUTABLE(gainmap_estimation gainmap_estimation.c usage.c parse_args.c)
+TARGET_LINK_LIBRARIES(gainmap_estimation ${LIBS} tii tiigraphics -lm ${ZLIB_LIBRARIES})
+
+install(TARGETS gainmap_estimation DESTINATION $ENV{HOME}/bin)
+

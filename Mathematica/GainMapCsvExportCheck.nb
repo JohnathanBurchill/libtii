@@ -1,0 +1,446 @@
+(* Content-type: application/vnd.wolfram.mathematica *)
+
+(*** Wolfram Notebook File ***)
+(* http://www.wolfram.com/nb *)
+
+(* CreatedBy='Mathematica 13.2' *)
+
+(*CacheID: 234*)
+(* Internal cache information:
+NotebookFileLineBreakTest
+NotebookFileLineBreakTest
+NotebookDataPosition[       158,          7]
+NotebookDataLength[     21899,        438]
+NotebookOptionsPosition[     21020,        415]
+NotebookOutlinePosition[     21415,        431]
+CellTagsIndexPosition[     21372,        428]
+WindowFrame->Normal*)
+
+(* Beginning of Notebook Content *)
+Notebook[{
+
+Cell[CellGroupData[{
+Cell[BoxData[
+ RowBox[{"hexValues", "=", 
+  RowBox[{"{", "\"\<3FF2368C\>\"", "}"}]}]], "Input",
+ CellChangeTimes->{{3.8948885005710983`*^9, 3.8948885122722273`*^9}, {
+  3.894888546058709*^9, 3.8948885657977457`*^9}},
+ CellLabel->"In[5]:=",ExpressionUUID->"ce5f9cb9-dc90-4370-9b80-5104ccaefd42"],
+
+Cell[BoxData[
+ RowBox[{"{", "\<\"3FF2368C\"\>", "}"}]], "Output",
+ CellChangeTimes->{
+  3.8948885132269697`*^9, {3.8948885467075243`*^9, 3.894888566219005*^9}},
+ CellLabel->"Out[5]=",ExpressionUUID->"fd5aaedc-7ae7-4664-9a1b-b2677cd94cc4"]
+}, Open  ]],
+
+Cell[BoxData[
+ RowBox[{"Needs", "[", "\"\<SwarmOperations`\>\"", "]"}]], "Input",
+ CellChangeTimes->{{3.8948886472835827`*^9, 3.8948886535987663`*^9}},
+ CellLabel->"In[9]:=",ExpressionUUID->"7a98d658-7923-481b-b289-5e32aa47c8be"],
+
+Cell[BoxData[{
+ RowBox[{
+  RowBox[{
+  "fileH", "=", 
+   "\"\</Users/john/src/tiim.dck/example/gainmapdata/tmp/gainCorrectionMap_\
+FM3_A_20211211.csv\>\""}], ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{
+  "fileV", "=", 
+   "\"\</Users/john/src/tiim.dck/example/gainmapdata/tmp/gainCorrectionMap_\
+FM3_B_20211211.csv\>\""}], ";"}]}], "Input",
+ CellChangeTimes->{{3.894888615756885*^9, 3.894888631648755*^9}, {
+  3.8948903305342007`*^9, 3.8948903411039886`*^9}, {3.894894827668276*^9, 
+  3.894894866905757*^9}, {3.8948949401793137`*^9, 3.894894949251966*^9}},
+ CellLabel->"In[63]:=",ExpressionUUID->"817a79b2-7fef-4e95-9b9a-f2a472bdc5f8"],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[{
+ RowBox[{
+  RowBox[{"imaH", "=", 
+   RowBox[{
+   "SwarmOperations`GainMap`Private`importCsvGainMap", "[", "fileH", "]"}]}], 
+  ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"imaV", "=", 
+   RowBox[{
+   "SwarmOperations`GainMap`Private`importCsvGainMap", "[", "fileV", "]"}]}], 
+  ";"}], "\[IndentingNewLine]", 
+ RowBox[{"tiiImagePlot", "[", 
+  RowBox[{
+   RowBox[{"{", 
+    RowBox[{
+     RowBox[{"{", 
+      RowBox[{"\"\<H\>\"", ",", "0", ",", "imaH"}], "}"}], ",", 
+     RowBox[{"{", 
+      RowBox[{"\"\<H\>\"", ",", "0", ",", "imaV"}], "}"}]}], "}"}], ",", 
+   RowBox[{"\"\<LabelPrecision\>\"", "->", ".01"}], ",", 
+   RowBox[{"\"\<IndependentScaling\>\"", "->", "True"}]}], "]"}]}], "Input",
+ CellChangeTimes->{{3.894888640732847*^9, 3.894888720074121*^9}, {
+  3.8948898553026342`*^9, 3.894889864217463*^9}, {3.894890347792283*^9, 
+  3.8948903904044247`*^9}},
+ CellLabel->"In[68]:=",ExpressionUUID->"6502eb69-5428-4e3a-80d4-32bccd537ef1"],
+
+Cell[BoxData[
+ GraphicsBox[{{RasterBox[CompressedData["
+1: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
+
+     "], {{0, 0}, {40, 64}}, {0., 2.006963014602661},
+     ColorFunction->"TemperatureMap"], RasterBox[CompressedData["
+1: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
+UA==
+     "], {{45, 0}, {85, 64}}, {0., 2.9661500453948975`},
+     ColorFunction->"TemperatureMap"]}, InsetBox[
+    StyleBox["\<\"\"\>",
+     StripOnInput->False,
+     FontSize->15.], NCache[{Rational[85, 2], 64}, {42.5, 64}], NCache[
+    ImageScaled[{Rational[1, 2], -1}], ImageScaled[{0.5, -1}]]], {InsetBox[
+     StyleBox["\<\"Horizontal\"\>",
+      StripOnInput->False,
+      FontSize->13.], {20, 0}, NCache[
+     ImageScaled[{Rational[1, 2], 2.75}], ImageScaled[{0.5, 2.75}]]], InsetBox[
+     StyleBox["\<\"Vertical\"\>",
+      StripOnInput->False,
+      FontSize->13.], {65, 0}, NCache[
+     ImageScaled[{Rational[1, 2], 2.75}], ImageScaled[{0.5, 2.75}]]]}, 
+   InsetBox[
+    StyleBox["\<\"1 Jan 1900 00:00:00.000 UT\"\>",
+     StripOnInput->False,
+     FontSize->12.], NCache[{Rational[85, 2], 64}, {42.5, 64}], NCache[
+    ImageScaled[{Rational[1, 2], -0.25}], ImageScaled[{0.5, -0.25}]]], 
+   {GrayLevel[1], Thickness[Tiny], 
+    Dashing[{Small, Small}], {
+     LineBox[{{{0, 8}, {40, 8}}, {{0, 16}, {40, 16}}, {{0, 24}, {40, 24}}, {{
+      0, 32}, {40, 32}}, {{0, 40}, {40, 40}}, {{0, 48}, {40, 48}}, {{0, 56}, {
+      40, 56}}}], 
+     LineBox[{{{45, 8}, {85, 8}}, {{45, 16}, {85, 16}}, {{45, 24}, {85, 
+      24}}, {{45, 32}, {85, 32}}, {{45, 40}, {85, 40}}, {{45, 48}, {85, 
+      48}}, {{45, 56}, {85, 56}}}]}, {
+     LineBox[{{{8, 0}, {8, 64}}, {{16, 0}, {16, 64}}, {{24, 0}, {24, 64}}, {{
+      32, 0}, {32, 64}}}], 
+     LineBox[{{{53, 0}, {53, 64}}, {{61, 0}, {61, 64}}, {{69, 0}, {69, 
+      64}}, {{77, 0}, {77, 64}}}]}}, InsetBox[
+    StyleBox["\<\"\\!\\(\\*StyleBox[\\\"x\\\",\\nFontSlant->\\\"Italic\\\"]\\)\
+ (pixels)\"\>",
+     StripOnInput->False,
+     FontSize->12.], NCache[{Rational[85, 2], -1}, {42.5, -1}], NCache[
+    ImageScaled[{Rational[1, 2], 2.25}], ImageScaled[{0.5, 2.25}]]], 
+   InsetBox[
+    RotationBox[
+     StyleBox["\<\"\\!\\(\\*StyleBox[\\\"y\\\",\\nFontSlant->\\\"Italic\\\"]\\\
+) (pixels)\"\>",
+      StripOnInput->False,
+      FontSize->12.],
+     BoxRotation->1.5707963267948966`], Scaled[{-0.03, 0.5}], NCache[
+    ImageScaled[{1.75, Rational[1, 2]}], ImageScaled[{1.75, 0.5}]]], 
+   {Thickness[Tiny], 
+    StyleBox[{{{LineBox[{{0, 0}, {0, -0.7}}], 
+        InsetBox["\<\"0\"\>", {0, 0}, NCache[
+         ImageScaled[{Rational[1, 2], Rational[3, 2]}], 
+          ImageScaled[{0.5, 1.5}]]]}, {LineBox[{{8, 0}, {8, -0.7}}], 
+        InsetBox["\<\"8\"\>", {8, 0}, NCache[
+         ImageScaled[{Rational[1, 2], Rational[3, 2]}], 
+          ImageScaled[{0.5, 1.5}]]]}, {LineBox[{{16, 0}, {16, -0.7}}], 
+        InsetBox["\<\"16\"\>", {16, 0}, NCache[
+         ImageScaled[{Rational[1, 2], Rational[3, 2]}], 
+          ImageScaled[{0.5, 1.5}]]]}, {LineBox[{{24, 0}, {24, -0.7}}], 
+        InsetBox["\<\"24\"\>", {24, 0}, NCache[
+         ImageScaled[{Rational[1, 2], Rational[3, 2]}], 
+          ImageScaled[{0.5, 1.5}]]]}, {LineBox[{{32, 0}, {32, -0.7}}], 
+        InsetBox["\<\"32\"\>", {32, 0}, NCache[
+         ImageScaled[{Rational[1, 2], Rational[3, 2]}], 
+          ImageScaled[{0.5, 1.5}]]]}, {LineBox[{{40, 0}, {40, -0.7}}], 
+        InsetBox["\<\"40\"\>", {40, 0}, NCache[
+         ImageScaled[{Rational[1, 2], Rational[3, 2]}], 
+          ImageScaled[{0.5, 1.5}]]]}}, {}},
+     StripOnInput->False,
+     FontSize->12.], 
+    StyleBox[{{{LineBox[{{45, 0}, {45, -0.7}}], 
+        InsetBox["\<\"0\"\>", {45, 0}, NCache[
+         ImageScaled[{Rational[1, 2], Rational[3, 2]}], 
+          ImageScaled[{0.5, 1.5}]]]}, {LineBox[{{53, 0}, {53, -0.7}}], 
+        InsetBox["\<\"8\"\>", {53, 0}, NCache[
+         ImageScaled[{Rational[1, 2], Rational[3, 2]}], 
+          ImageScaled[{0.5, 1.5}]]]}, {LineBox[{{61, 0}, {61, -0.7}}], 
+        InsetBox["\<\"16\"\>", {61, 0}, NCache[
+         ImageScaled[{Rational[1, 2], Rational[3, 2]}], 
+          ImageScaled[{0.5, 1.5}]]]}, {LineBox[{{69, 0}, {69, -0.7}}], 
+        InsetBox["\<\"24\"\>", {69, 0}, NCache[
+         ImageScaled[{Rational[1, 2], Rational[3, 2]}], 
+          ImageScaled[{0.5, 1.5}]]]}, {LineBox[{{77, 0}, {77, -0.7}}], 
+        InsetBox["\<\"32\"\>", {77, 0}, NCache[
+         ImageScaled[{Rational[1, 2], Rational[3, 2]}], 
+          ImageScaled[{0.5, 1.5}]]]}, {LineBox[{{85, 0}, {85, -0.7}}], 
+        InsetBox["\<\"40\"\>", {85, 0}, NCache[
+         ImageScaled[{Rational[1, 2], Rational[3, 2]}], 
+          ImageScaled[{0.5, 1.5}]]]}}, {}},
+     StripOnInput->False,
+     FontSize->12.]}, 
+   {Thickness[
+    Tiny], {{LineBox[{{0, 64}, {0, 64.7}}], LineBox[{{8, 64}, {8, 64.7}}], 
+      LineBox[{{16, 64}, {16, 64.7}}], LineBox[{{24, 64}, {24, 64.7}}], 
+      LineBox[{{32, 64}, {32, 64.7}}], 
+      LineBox[{{40, 64}, {40, 64.7}}]}, {}}, {{
+      LineBox[{{45, 64}, {45, 64.7}}], LineBox[{{53, 64}, {53, 64.7}}], 
+      LineBox[{{61, 64}, {61, 64.7}}], LineBox[{{69, 64}, {69, 64.7}}], 
+      LineBox[{{77, 64}, {77, 64.7}}], LineBox[{{85, 64}, {85, 64.7}}]}, {}}}, 
+   {Thickness[Tiny], 
+    StyleBox[{{{LineBox[{{0, 0}, {-0.7, 0}}], 
+        InsetBox["\<\"0\"\>", {0, 0}, NCache[
+         ImageScaled[{Rational[3, 2], Rational[1, 2]}], 
+          ImageScaled[{1.5, 0.5}]]]}, {LineBox[{{0, 8}, {-0.7, 8}}], 
+        InsetBox["\<\"8\"\>", {0, 8}, NCache[
+         ImageScaled[{Rational[3, 2], Rational[1, 2]}], 
+          ImageScaled[{1.5, 0.5}]]]}, {LineBox[{{0, 16}, {-0.7, 16}}], 
+        InsetBox["\<\"16\"\>", {0, 16}, NCache[
+         ImageScaled[{Rational[3, 2], Rational[1, 2]}], 
+          ImageScaled[{1.5, 0.5}]]]}, {LineBox[{{0, 24}, {-0.7, 24}}], 
+        InsetBox["\<\"24\"\>", {0, 24}, NCache[
+         ImageScaled[{Rational[3, 2], Rational[1, 2]}], 
+          ImageScaled[{1.5, 0.5}]]]}, {LineBox[{{0, 32}, {-0.7, 32}}], 
+        InsetBox["\<\"32\"\>", {0, 32}, NCache[
+         ImageScaled[{Rational[3, 2], Rational[1, 2]}], 
+          ImageScaled[{1.5, 0.5}]]]}, {LineBox[{{0, 40}, {-0.7, 40}}], 
+        InsetBox["\<\"40\"\>", {0, 40}, NCache[
+         ImageScaled[{Rational[3, 2], Rational[1, 2]}], 
+          ImageScaled[{1.5, 0.5}]]]}, {LineBox[{{0, 48}, {-0.7, 48}}], 
+        InsetBox["\<\"48\"\>", {0, 48}, NCache[
+         ImageScaled[{Rational[3, 2], Rational[1, 2]}], 
+          ImageScaled[{1.5, 0.5}]]]}, {LineBox[{{0, 56}, {-0.7, 56}}], 
+        InsetBox["\<\"56\"\>", {0, 56}, NCache[
+         ImageScaled[{Rational[3, 2], Rational[1, 2]}], 
+          ImageScaled[{1.5, 0.5}]]]}, {LineBox[{{0, 64}, {-0.7, 64}}], 
+        InsetBox["\<\"64\"\>", {0, 64}, NCache[
+         ImageScaled[{Rational[3, 2], Rational[1, 2]}], 
+          ImageScaled[{1.5, 0.5}]]]}}, {}},
+     StripOnInput->False,
+     FontSize->12.], 
+    StyleBox[{{LineBox[{{45, 0}, {44.3, 0}}], LineBox[{{45, 8}, {44.3, 8}}], 
+       LineBox[{{45, 16}, {44.3, 16}}], LineBox[{{45, 24}, {44.3, 24}}], 
+       LineBox[{{45, 32}, {44.3, 32}}], LineBox[{{45, 40}, {44.3, 40}}], 
+       LineBox[{{45, 48}, {44.3, 48}}], LineBox[{{45, 56}, {44.3, 56}}], 
+       LineBox[{{45, 64}, {44.3, 64}}]}, {}},
+     StripOnInput->False,
+     FontSize->12.]}, 
+   {Thickness[Tiny], 
+    StyleBox[{{LineBox[{{40, 0}, {40.7, 0}}], LineBox[{{40, 8}, {40.7, 8}}], 
+       LineBox[{{40, 16}, {40.7, 16}}], LineBox[{{40, 24}, {40.7, 24}}], 
+       LineBox[{{40, 32}, {40.7, 32}}], LineBox[{{40, 40}, {40.7, 40}}], 
+       LineBox[{{40, 48}, {40.7, 48}}], LineBox[{{40, 56}, {40.7, 56}}], 
+       LineBox[{{40, 64}, {40.7, 64}}]}, {}},
+     StripOnInput->False,
+     FontSize->12.], 
+    StyleBox[{{LineBox[{{85, 0}, {85.7, 0}}], LineBox[{{85, 8}, {85.7, 8}}], 
+       LineBox[{{85, 16}, {85.7, 16}}], LineBox[{{85, 24}, {85.7, 24}}], 
+       LineBox[{{85, 32}, {85.7, 32}}], LineBox[{{85, 40}, {85.7, 40}}], 
+       LineBox[{{85, 48}, {85.7, 48}}], LineBox[{{85, 56}, {85.7, 56}}], 
+       LineBox[{{85, 64}, {85.7, 64}}]}, {}},
+     StripOnInput->False,
+     FontSize->12.]}, {
+    StyleBox[{RasterBox[CompressedData["
+1:eJw9lQtM1XUcxVWGzBgxR4aFhoaMMcaYMaRkeEwiLGJkyMgRkRKakjJjxBw5
+fCsqCRIikiIiooKCggoiIiIiIiDvl8jj8n7e9/vRf3XW2d3u7r3//+///Z7z
+Obsrt0V/F7lgnqD5/77+13xBWz86gP/ek3Ho4MGDKa7n+fkyPhekcbzK76/j
+aVVVlbNHAX8vwkpBrh/f5XUl2Cqoxvk+ry/Flezs7LDVD3nfIwwNDg4qPn3M
++59gsSC/FVU85ylWC7JZVc3znmGToH6nGp77HHsF5bvU8vwXOJuSkhLnVsfn
+vMTdO3fu+LjX83mv0NLc3Gzt2cDnNkIqkUh61zbx+a+xSNDmrNecoxkfCFqb
+3cx5WuAsaEVOC+dqxWeCFua2cr42fCVo+lob52zHFkEt19s5bwd2Ciq92cG5
+O7FP0KWCTs7fhZOJiYlHbndxj25cyMjI2FXUzX16cPPGjRvf3u3hXr14WFZW
+tqakl/u9wcu6urpl999wzz70dHd3Lyjt475vMTkxMTFe9pZ790Or0Wgay/u5
+/wDMzc2P9vw4QB8GYGVlldTQP0A/BrFkyZK0Jz8N0pdBLF++/GLx4CD9GYKj
+o2PutW1D9GkIrq6utzJEQ/RLBA8Pj3unfxbRNxG8vb0rEkZE9G8Yvr6+Nb9t
+H6aPwwgICGiIHBumnyMIDg5u//6XEfo6grCwsD7/iRH6O4rIyMiRdbtG6fMo
+du/ePbN6apR+jyE2Nlax6tcx+j6G/fv3G2xnxuj/OI4dPWpuuWecOYzjz6Qk
+K+PsOPOYwLm0tCWS6AnmMoFLFy8uHxZPMJ9JXMvNdezcO8mcJnH71i3Xl9JJ
+5jWF+/fueVTETDG3KTyuqPAukk8xv2k8r6nxzYmdZo7TaGxoCDinnGaeM+ho
+bw9OjJthrjN429cX9od6hvnOYnRkJDJ63yxznsXszMzubdpZ5j0HpUIRGxw/
+x9znYDQY9m/UzzF/MczMzKovrhOTAzEsLCz8bBPE5EEMS0vL+uRKMbkQw9ra
+OvCdeRLyIYGNjU3r4fUSciKBra1tiOGAhLxIYGdn1/t7lYTcSGBvbx8uni8l
+P1I4ODiIdm6QkiMpnJycdogOScmTFC4uLlM/VEvJlRRubm7RHWYy8iWDu7u7
+LPALGTmTwdPTM67uiIy8yeDl5aXbUCMjdzIISnhkLid/cvj4+Jit+VJODuXw
+8/M7XnhMTh7l8Pf3t3SulZNLOQIDA89csVCQTwWCgoJslm1UkFMFQkJC0tNO
+KMirAqGhoXbWdQpyq0B4eHjWiUVK8qtERESEw4KvleRYiR07duTFn1SSZyWi
+oqJcFC+V5FqJ6Ojowj2WKvKtQkxMjPu4v4qcqxAXF/dg62kVeVchPj7eq/eV
+ityrkJCQULnZSk3+1Thy+LBPY4CaPVDjxPHjtX5/qtkHNU6fOuVf1ahmL9RI
+PnOmaa21hv3Q4K/U1KCSQA17osH59PRO12QN+6LB35mZoXmvNeyNBpezsvpX
+LNayP1pczcmJuLBJyx5pcT0vb8zmrJZ90qIgPz8qqUXLXmlRVFg4t9BGx37p
+UFJcHHMgSMee6VD64IFKk6pj33R4VF4eH9OmY+90eFJZaZp+T8/+6fGsuvrw
+9mA9e6jHi9pai4E0Pfuox6v6+lNbOvTspR6vm5qsW983sJ8GtLW2pn4TYmBP
+Dejq7LR9nm5gXw1409ubiS4De2vAQH+/fdlSI/trxLBIlPPJFiN7bMT42JhT
+QYaRfTZiemoq37HHyF4bIZ6bc8v60MR+myCXyYqXhprYcxPUKpXn2UwT+26C
+Xqcrt3xjYu9NEP7yL294d976fwDSwwik
+       "], {{95, 12}, {98, 52}}, {0., 2.006963014602661},
+       ColorFunction->"TemperatureMap"], InsetBox[
+       StyleBox[
+        StyleBox["\<\"H DN\"\>",
+         StripOnInput->False,
+         FontSize->12.],
+        StripOnInput->False,
+        FontSize->12], NCache[{Rational[193, 2], 52}, {96.5, 52}], NCache[
+       ImageScaled[{Rational[1, 2], -0.25}], ImageScaled[{0.5, -0.25}]]], 
+      InsetBox["\<\"0.\"\>", {98, 12}, ImageScaled[{-0.25, 0}]], 
+      InsetBox["\<\"2.01\"\>", {98, 52}, ImageScaled[{-0.25, 1}]], 
+      InsetBox["\<\"1.\"\>", {98, 32}, NCache[
+       ImageScaled[{-0.25, Rational[1, 2]}], ImageScaled[{-0.25, 0.5}]]], 
+      {Opacity[0], 
+       InsetBox["\<\"20000\"\>", {98, 12}, ImageScaled[{-0.25, 0}]]}},
+     StripOnInput->False,
+     FontSize->12.], 
+    StyleBox[{RasterBox[CompressedData["
+1:eJw9k3tQVHUUx++9u3fXaIBG+EP6A2rIRqRSS9MoOsco1LRMxkeFlY98VWgj
+NoFT2AOygRqhSfwDmgEbHzEKk9EYNjI0OIoNYK7YooHyWkCWx92Fuwv7gM6v
+35m+wwzDY+8953w+34e37cvYoSkU9b+v//MO5ZDjMMjvx+Aw5W5nJf98CpZS
+Eq6c5d//DNmUBe21/PfzsJpyrfkC/99FKKGc39LA//8HfEqxZzby5y7BHsqm
+DZf581dgA+XU2qv8nD9hOcW/qpmf1wKPU1a8eI2f+xd8Q1mdcJ2ffx2+oGSX
+O/g9NyCHUhbXxu9rg72UxtKb/N6/4V2KO8bJ73fCm5SYknae4xa8Rnk26jbP
+cxvSKduL/uG5OuA5StGsTp6vE56k/FJwh+e8C7Gxsd9nqV08bxdER0cfURu6
+eO5uiIiIKDya183zd4Ou6wVJqT28Rw8Qks8uBnt4n14IBgIH113o5b36wGea
+H7ly+ni/PvAYxoe5S128pwuG3e73I30u3rcfBvr7d1bW9vPeA9DT3b11SfYA
+7z8AHR0dm68uGuQ7DILT6dz0ljHI97gHDocjw1N9j+8yBC0tLa8UZA3xfYag
+qalpZdxjbr6TGxobG9PODrn5XsNQX1///PKfhvluI1BXV/fMzV0jfL8RqK2t
+Xbzn0VG+4yjU1NQsCPeN8j3HoKqqan7Jj2N8VwNuOBzfzV5k8H0NMVfx5mKD
+72xAa0vLtyfHDL63R8xZZLzq4bt74GpT09cp1R6+v0fM/VV+pJc5eMX8X7Z+
+4GUeXrHH53OavczFK/bJ25Y8znzGxV6fnCkcZ07jYr9c371x5jUh9vwYV00w
+twmx74HC0xPMb0Lsvb/NbjJHU+y/L36XyTxNcYes3ZdN5mqKe7x3bq6P+fpg
+3rx5u0P5PubsgxMnTuxI7/Mxbz8kJiZuL07zM3c/VFRUbLl93M/8/RAfH//2
+I9okezAJZWVlmXu3TrIPkxAXF/fGbw2T7MUklJaWbtQemmI/pgSX9WsOTbEn
+U4LLutI7U+xLQHBZ25UaYG8Cgsua+T8E2J+A4PLygVCAPQoKLivqM4PsU1Bw
+eWnW70H2Kii4vJDxYIj9CgkuWJ4bYs9Cgktqf3uIfQsLLikLl4XZu7Dgsuzg
+sTD7FwbTNJdc8oXZw2nB5amojdPs4zQYhrHw9V+n2ctpweWJ47Ez7OcMuN3u
+5OHsGfZ0RnBJevrGDPuqID0vBuMUlN4qSI+d7VqpoPRXQeL+QGGOgtJjBek9
+0QtOKyh9VpDeF9XmVFB6rSC9NjLXrqL0W0Xy4v74pSpKz1WkOSIad6oofVeR
+5rlvd6mK0nsVyZdZkZdVlP6rSN7Yzpkqyh5oSP7om+ZqKPugIWlkDa3XUPZC
+Q/LJUpmvoeyHhuSVml6roeyJhuSX4u7VUPZFQ9Js5kiMBWVvLEi+TS9Os6Ds
+jwU7OzpCt/ZbUPbIguRfMO+4BWWfLEgaBhIdFpS9siD5ONWkWlH2y4rtTqc/
+a5EVZc+sSH76Zm+1ouybFUlT83yxFWXvrEhcJjY3WFH2z4rkrVc1rCh7qAsu
+npMJOso+6oKLsXqtjrKXuuAyZuTpKPupI3k9crRaR9lTXXAZTrmjo+yrLri4
+70baUPbWJrgM5afaUPbXhuT9YFKWDWWPbYLLQGu5DWWfbYJLf3azDWWvbYKL
+a07IhrLfdsGl92KyHWXP7YJLz7ZMO8q+2wWXbnuRHWXv7YJL15kLdvwXK42t
+fQ==
+       "], {{115, 12}, {118, 52}}, {0., 2.9661500453948975`},
+       ColorFunction->"TemperatureMap"], InsetBox[
+       StyleBox[
+        StyleBox["\<\"V DN\"\>",
+         StripOnInput->False,
+         FontSize->12.],
+        StripOnInput->False,
+        FontSize->12], NCache[{Rational[233, 2], 52}, {116.5, 52}], NCache[
+       ImageScaled[{Rational[1, 2], -0.25}], ImageScaled[{0.5, -0.25}]]], 
+      InsetBox["\<\"0.\"\>", {118, 12}, ImageScaled[{-0.25, 0}]], 
+      InsetBox["\<\"2.97\"\>", {118, 52}, ImageScaled[{-0.25, 1}]], 
+      InsetBox["\<\"1.48\"\>", {118, 32}, NCache[
+       ImageScaled[{-0.25, Rational[1, 2]}], ImageScaled[{-0.25, 0.5}]]], 
+      {Opacity[0], 
+       InsetBox["\<\"20000\"\>", {118, 12}, ImageScaled[{-0.25, 0}]]}},
+     StripOnInput->False,
+     FontSize->12.]}, {}},
+  Frame->None]], "Output",
+ CellChangeTimes->{{3.8948886961027184`*^9, 3.894888720396234*^9}, 
+   3.89488876184518*^9, 3.8948888032625923`*^9, 3.894889765542343*^9, {
+   3.894889860324024*^9, 3.894889894412395*^9}, 3.894889955056843*^9, 
+   3.894890092170389*^9, {3.8948901566806498`*^9, 3.894890185043601*^9}, 
+   3.894890218378343*^9, {3.8948903780533533`*^9, 3.894890390726604*^9}, {
+   3.894894854340659*^9, 3.894894953908841*^9}, 3.8948950264189463`*^9},
+ CellLabel->"Out[70]=",ExpressionUUID->"4ff9042d-43ef-4ccb-8403-dcf298a06154"]
+}, Open  ]]
+},
+WindowSize->{1436, 747},
+WindowMargins->{{Automatic, 0}, {Automatic, 4}},
+FrontEndVersion->"13.2 for Mac OS X ARM (64-bit) (January 30, 2023)",
+StyleDefinitions->"Default.nb",
+ExpressionUUID->"c4e9eae8-710c-4f2b-b863-fc7dc615c747"
+]
+(* End of Notebook Content *)
+
+(* Internal cache information *)
+(*CellTagsOutline
+CellTagsIndex->{}
+*)
+(*CellTagsIndex
+CellTagsIndex->{}
+*)
+(*NotebookFileOutline
+Notebook[{
+Cell[CellGroupData[{
+Cell[580, 22, 294, 5, 37, "Input",ExpressionUUID->"ce5f9cb9-dc90-4370-9b80-5104ccaefd42"],
+Cell[877, 29, 238, 4, 42, "Output",ExpressionUUID->"fd5aaedc-7ae7-4664-9a1b-b2677cd94cc4"]
+}, Open  ]],
+Cell[1130, 36, 229, 3, 37, "Input",ExpressionUUID->"7a98d658-7923-481b-b289-5e32aa47c8be"],
+Cell[1362, 41, 642, 14, 64, "Input",ExpressionUUID->"817a79b2-7fef-4e95-9b9a-f2a472bdc5f8"],
+Cell[CellGroupData[{
+Cell[2029, 59, 961, 24, 90, "Input",ExpressionUUID->"6502eb69-5428-4e3a-80d4-32bccd537ef1"],
+Cell[2993, 85, 18011, 327, 305, "Output",ExpressionUUID->"4ff9042d-43ef-4ccb-8403-dcf298a06154"]
+}, Open  ]]
+}
+]
+*)
+

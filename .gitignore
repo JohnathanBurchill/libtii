@@ -4,6 +4,7 @@ usr
 example/anomaly_stats
 example/gainmapdata
 example/test.txt
+example/tmp
 **/.DS_Store
 
 
