@@ -1,8 +1,8 @@
 #!/bin/bash
 
-# TIILIB: tools/tii_moments/process_tii_moments.sh
+# TIILIB: tools/lp_stats/process_lp_stats.sh
 
-# Copyright (C) 2022  Johnathan K Burchill
+# Copyright (C) 2024  Johnathan K Burchill
 
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -22,16 +22,16 @@
 # http://stackoverflow.com/questions/28226229/how-to-loop-through-dates-using-bash
 
 if test "$#" -ne "6"; then
-  echo "Usage: $0 satelliteLetter gainMapId startDate stopDate stride outputDirectory"
+  echo "Usage: $0 satelliteLetter startDate stopDate stride outputDirectory averagingWindowSeconds"
   exit 1
 fi
 
 satellite=$1
-gainMapId=$2
-startDate=$(date -d "$3" +%s)
-stopDate=$(date -d "$4" +%s)
-stride=$5
-outDir=$6
+startDate=$(date -d "$2" +%s)
+stopDate=$(date -d "$3" +%s)
+stride=$4
+outDir=$5
+intervalSeconds=$6
 
 processingDate=$(date +%Y%m%dT%H%M%S)
 
@@ -74,8 +74,8 @@ while [ "$dateToProcess" -le "$stopDate" ]; do
 	day=$(date -d "@$dateToProcess" +%d)
 	daysProcessed=$((daysProcessed + 1))
 	datestring=`date -I -d "@$dateToProcess"`
-	draw_progress_bar $daysProcessed $daysToProcess "days: TIIM_STATS ${satellite} $datestring"
- 	tii_moments ${satellite}${year}${month}${day} ${gainMapId} ${outDir}
+	draw_progress_bar $daysProcessed $daysToProcess "days: LP_STATS ${satellite} $datestring"
+ 	lp_stats ${satellite}${year}${month}${day} ${outDir} ${intervalSeconds}
 	dateToProcess=$((dateToProcess + stride * 86400))
 done
 )
