@@ -605,6 +605,9 @@ int getLpTiiTimeSeries(char satellite, SciencePackets *packets, LpTiiTimeSeries 
     double minTime = 1e20;
     double maxTime = -1;
 
+    double ifp = 0.0;
+    int16_t offsetCorrection = 23;
+
     // LP&TII Science
     if (packets->numberOfLpTiiSciencePackets > 0)
     {
@@ -651,6 +654,21 @@ int getLpTiiTimeSeries(char satellite, SciencePackets *packets, LpTiiTimeSeries 
         if (timeSeries->columnSumV == NULL)
             return TIME_SERIES_MALLOC;
 
+        // 16 Hz
+        timeSeries->n16Hz = 16 * packets->numberOfLpTiiSciencePackets;
+        timeSeries->lpTiiTime16Hz = (double*) malloc(timeSeries->n16Hz * sizeof(double));
+        if (timeSeries->lpTiiTime16Hz == NULL)
+            return TIME_SERIES_MALLOC;
+        timeSeries->x1H = (double*) malloc(timeSeries->n16Hz * sizeof(double));
+        if (timeSeries->x1H == NULL)
+            return TIME_SERIES_MALLOC;
+        timeSeries->y1H = (double*) malloc(timeSeries->n16Hz * sizeof(double));
+        if (timeSeries->y1H == NULL)
+            return TIME_SERIES_MALLOC;
+        timeSeries->faceplateCurrent = (double*) malloc(timeSeries->n16Hz * sizeof(double));
+        if (timeSeries->faceplateCurrent == NULL)
+            return TIME_SERIES_MALLOC;
+
 
         for (long i = 0; i < packets->numberOfLpTiiSciencePackets; i++)
         {
@@ -678,25 +696,17 @@ int getLpTiiTimeSeries(char satellite, SciencePackets *packets, LpTiiTimeSeries 
                     timeSeries->columnSumH[2*32*i + 32*s + p] = science.ColumnSumH[s][p];
                     timeSeries->columnSumV[2*32*i + 32*s + p] = science.ColumnSumV[s][p];
                 }
+                // 16 Hz
+                for (int p = 0; p < 8; p++)
+                {
+                    timeSeries->lpTiiTime16Hz[2*8*i + 8 * s + p] = science.dateTime.secondsSince1970 + 0.5 * s + (double)p * 0.5/8.0;
+                    ifp = -(double)(science.faceplateCurrentRaw[8*s + p] - offsetCorrection) * ( 5.0 / 32768.0 / 9909.0);
+                    timeSeries->faceplateCurrent[2*8*i + 8 * s + p] = ifp;
+                }
             }            
         }
         timeSeries->minTime2Hz = minTime;
         timeSeries->maxTime2Hz = maxTime;
-
-        // 16 Hz
-        timeSeries->n16Hz = 16 * packets->numberOfLpTiiSciencePackets;
-        timeSeries->lpTiiTime16Hz = (double*) malloc(timeSeries->n16Hz * sizeof(double));
-        if (timeSeries->lpTiiTime16Hz == NULL)
-            return TIME_SERIES_MALLOC;
-        timeSeries->x1H = (double*) malloc(timeSeries->n16Hz * sizeof(double));
-        if (timeSeries->x1H == NULL)
-            return TIME_SERIES_MALLOC;
-        timeSeries->y1H = (double*) malloc(timeSeries->n16Hz * sizeof(double));
-        if (timeSeries->y1H == NULL)
-            return TIME_SERIES_MALLOC;
-        timeSeries->faceplateCurrent = (double*) malloc(timeSeries->n16Hz * sizeof(double));
-        if (timeSeries->faceplateCurrent == NULL)
-            return TIME_SERIES_MALLOC;
 
 
 

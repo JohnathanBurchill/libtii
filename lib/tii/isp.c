@@ -369,6 +369,11 @@ void getLpTiiScienceData(LpTiiSciencePacket * pkt, LpTiiScience * science)
         science->ColumnSumV[1][i] = getu16(bytes, 578 + 2 * i);
     }
 
+    for (int i = 0; i < 16; i++)
+    {
+        science->faceplateCurrentRaw[i] = gets16(bytes, 2*i);
+    }
+
     setDateTime(&(science->dateTime), pkt->DataFieldHeader);
 
     return;
