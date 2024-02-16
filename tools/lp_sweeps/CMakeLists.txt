@@ -1,4 +1,4 @@
-# TIILIB: tools/CMakeLists.txt
+# TIILIB: tools/lp_sweeps/CMakeLists.txt
 
 # Copyright (C) 2022  Johnathan K Burchill
 
@@ -17,19 +17,16 @@
 
 CMAKE_MINIMUM_REQUIRED(VERSION 3.0)
 
-PROJECT(tii_tools)
+PROJECT(lp_sweeps)
 
-ADD_SUBDIRECTORY(tiim)
-ADD_SUBDIRECTORY(tiim_stats)
-ADD_SUBDIRECTORY(anomaly_stats)
-ADD_SUBDIRECTORY(anomaly_stats_parallel)
-ADD_SUBDIRECTORY(lp_stats)
-ADD_SUBDIRECTORY(lp_sweeps)
-ADD_SUBDIRECTORY(tii_moments)
-ADD_SUBDIRECTORY(tii_dump)
-ADD_SUBDIRECTORY(tii_look)
-ADD_SUBDIRECTORY(gainmap_estimation)
+# SET(LIBS ${LIBS} ${MATH} ${LIBXML2_LIBRARIES} ${ZLIB_LIBRARIES})
+INCLUDE_DIRECTORIES(${INCLUDE_DIRS} ${LIBXML2_INCLUDE_DIR})
 
-ADD_SUBDIRECTORY(process_anomaly_stats)
-ADD_SUBDIRECTORY(get_image_stats)
-ADD_SUBDIRECTORY(get_operations)
+ADD_EXECUTABLE(lp_sweeps lp_sweeps.c)
+TARGET_LINK_LIBRARIES(lp_sweeps ${LIBS} tii -lm)
+
+install(TARGETS lp_sweeps DESTINATION $ENV{HOME}/bin)
+
+install(PROGRAMS parallel_process_lp_sweeps.sh DESTINATION $ENV{HOME}/bin)
+install(PROGRAMS process_lp_sweeps.sh DESTINATION $ENV{HOME}/bin)
+

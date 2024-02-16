@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# TIILIB: tools/lp_stats/parallel_process_lp_stats.sh
+# TIILIB: tools/lp_sweeps/parallel_process_lp_sweeps.sh
 
 # Copyright (C) 2024  Johnathan K Burchill
 
@@ -39,7 +39,7 @@ cpuNum=0
 
 while [ $cpuNum -lt $numCpus ]; do
 	cpuNum=$((cpuNum + 1))
-	xterm -geometry 80x1 -e "process_lp_stats.sh ${satellite} ${dateToProcess} ${stopDate} $numCpus ${outDir} ${intervalSeconds}" &
+	xterm -geometry 80x1 -e "process_lp_sweeps.sh ${satellite} ${dateToProcess} ${stopDate} $numCpus ${outDir} ${intervalSeconds}" &
 	dateToProcess=$(date -I -d "$dateToProcess + 1 day")
 done
 

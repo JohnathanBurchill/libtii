@@ -23,6 +23,8 @@
 
 #include "tii.h"
 
+#include <bits/stdint-intn.h>
+#include <bits/stdint-uintn.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <stdbool.h>
@@ -116,9 +118,9 @@ typedef struct LpSweepPacket
     uint8_t DataFieldHeader[12];
     uint8_t StructureId; // 39 bytes
 
-    uint8_t AuxData[25];
+    uint8_t AuxDataBytes[25];
     uint8_t MeasurementTimestamp[2];
-    uint8_t LpSweepData[1040];
+    uint8_t LpSweepDataBytes[1040];
     uint8_t ErrorControlField[2];
 
 } LpSweepPacket;
@@ -265,9 +267,43 @@ typedef struct LpTiiScience
 
 } LpTiiScience;
 
+typedef struct LpSweepAuxData {
+    uint8_t commonParameters1;
+    uint8_t commonParameters2;
+    uint8_t commonParameters3;
+    
+    uint16_t faceplateDuration;
+    uint16_t faceplateFixBias;
+
+    uint8_t downsampleWithAnalogFilters;
+    uint8_t downsampleInCpu;
+
+    uint16_t fpgaControlRegister;
+    uint16_t durationInSweepSteps;
+
+    int16_t heightOfBiasStep;
+
+    uint16_t startBiasInTmUnits;
+    uint16_t stepAtWhichWeChangeSignOfStepHeight;
+
+    uint8_t numberOfSweepSamplesBetweenSteps;
+    uint8_t downsamplingInCpu;
+    uint8_t options;
+    uint8_t informationAboutSensorFirCicAndRipple;
+    uint8_t lpInstrumentId;
+
+} LpSweepAuxData;
+
 typedef struct LpSweep {
     char satellite;
     IspDateTime dateTime;
+
+    LpSweepAuxData auxData;
+
+    int16_t faceplateSamples[16];
+    
+    int16_t currentSensor1[252];
+    int16_t currentSensor2[252];
 
 } LpSweep;
 
@@ -357,6 +393,8 @@ void setDateTime(IspDateTime * dateTime, uint8_t *dataFieldHeader);
 void getLpTiiScienceData(LpTiiSciencePacket * pkt, LpTiiScience * science);
 
 void getConfigData(ConfigPacket * pkt, Config * config);
+
+void getLpSweepData(LpSweepPacket * pkt, LpSweep* sweep);
 
 
 uint16_t getu16(uint8_t *bytes, int offset);

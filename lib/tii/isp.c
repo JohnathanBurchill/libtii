@@ -416,6 +416,45 @@ void getConfigData(ConfigPacket * pkt, Config * config)
 
 }
 
+void getLpSweepData(LpSweepPacket * pkt, LpSweep* sweep)
+{
+    uint8_t *aux = pkt->AuxDataBytes;
+    uint8_t *data = pkt->LpSweepDataBytes;
+
+    sweep->auxData.commonParameters1 = aux[0];
+    sweep->auxData.commonParameters2 = aux[1];
+    sweep->auxData.commonParameters3 = aux[2];
+    sweep->auxData.faceplateDuration = getu16(aux, 3);
+    sweep->auxData.faceplateFixBias = getu16(aux, 5);
+    sweep->auxData.downsampleWithAnalogFilters = aux[7];
+    sweep->auxData.downsampleInCpu = aux[8];
+    sweep->auxData.fpgaControlRegister = getu16(aux, 9);
+    sweep->auxData.durationInSweepSteps = getu16(aux, 11);
+    sweep->auxData.heightOfBiasStep = gets16(aux, 13);
+    sweep->auxData.startBiasInTmUnits = getu16(aux, 15);
+    sweep->auxData.stepAtWhichWeChangeSignOfStepHeight = getu16(aux, 17);
+    sweep->auxData.numberOfSweepSamplesBetweenSteps = aux[19];
+    sweep->auxData.downsamplingInCpu = aux[20];
+    sweep->auxData.options = aux[21];
+    sweep->auxData.informationAboutSensorFirCicAndRipple = aux[22];
+    sweep->auxData.lpInstrumentId = (aux[23] >> 4) & 0b1111;
+
+    for (int i = 0; i < 16; i++)
+    {
+        sweep->faceplateSamples[i] = gets16(data, 2*i);
+    }
+    for (int i = 0; i < 252; i++)
+    {
+        sweep->currentSensor1[i] = gets16(data, 32 + 4*i);
+        sweep->currentSensor2[i] = gets16(data, 32 + 2 + 4*i);
+    }
+
+    setDateTime(&(sweep->dateTime), pkt->DataFieldHeader);
+
+    return;
+
+}
+
 uint16_t getu16(uint8_t *bytes, int offset)
 {
     uint16_t tmp = bytes[offset]*256 + bytes[offset+1];
