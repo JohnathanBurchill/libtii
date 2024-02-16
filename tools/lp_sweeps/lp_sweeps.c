@@ -82,17 +82,29 @@ int main(int argc, char **argv)
     }
 
     // time in sec since 1970, ion density probe 1, ion density probe 2, faceplate current
-    fprintf(dailyLpStatsFile, "secondsSince1970 ni1 ni2 ifp\n");
+    fprintf(dailyLpStatsFile, "secondsSince1970 nSteps stepHeight StartBias signChangeStep samplesPerStep i1[...] i2[...]\n");
 
     LpSweepPacket *p = NULL;
     LpSweep sweep = {0};
+    double t = 0.0;
     for (size_t i = 0; i <  sciencePackets.numberOfLpSweepPackets; i++)
     {
         p = (LpSweepPacket*)(sciencePackets.lpSweepPackets + i * LP_SWEEP_PACKET_SIZE);
         getLpSweepData(p, &sweep);
-        fprintf(dailyLpStatsFile, "%lf", sweep.dateTime.secondsSince1970);
+        t = sweep.dateTime.secondsSince1970;
+        if (t < dayStart || t >= dayEnd)
+            continue;
+                
+        fprintf(dailyLpStatsFile, "%lf", t);
+        // Biases
+        fprintf(dailyLpStatsFile, " %u %d %u %u %u", sweep.auxData.durationInSweepSteps, 
+                sweep.auxData.heightOfBiasStep, sweep.auxData.startBiasInTmUnits, 
+                sweep.auxData.stepAtWhichWeChangeSignOfStepHeight, 
+                sweep.auxData.numberOfSweepSamplesBetweenSteps);
+        // Currents probe 1
         for (int k = 0; k < 252; k++)
             fprintf(dailyLpStatsFile, " %d", sweep.currentSensor1[k]);
+        // Currents probe 2
         for (int k = 0; k < 252; k++)
             fprintf(dailyLpStatsFile, " %d", sweep.currentSensor2[k]);
         fprintf(dailyLpStatsFile, "\n");
