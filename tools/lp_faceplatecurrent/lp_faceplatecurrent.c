@@ -94,6 +94,8 @@ int main(int argc, char **argv)
     dayEnd = dayStart + 86400.0; // ignore leap second on this day
 
     double t = 0.0;
+    ssize_t startInd = -1;
+    ssize_t stopInd = -1;
     for (size_t i = 0; i <  timeSeries.n16Hz; i++)
     {
         t = timeSeries.lpTiiTime16Hz[i];
@@ -101,8 +103,12 @@ int main(int argc, char **argv)
         {
             continue;
         }
-        fprintf(stderr, "%lf\n", t);
+        if (startInd <0)
+            startInd = (ssize_t)i;
+        stopInd = i;
+//        fprintf(stderr, "%lf %lg\n", t, timeSeries.faceplateCurrent[i]);
     }
+    fprintf(stderr, "start: %ld stop: %ld\n", startInd, stopInd);
 
 
 cleanup:
