@@ -21,6 +21,27 @@
 #ifndef _LP_FACEPLATECURRENT_H
 #define _LP_FACEPLATECURRENT_H
 
+#include <cdf.h>
+
+#define NUM_EXPORT_VARIABLES 2
+#define SOFTWARE_VERSION_STRING "0.1"
+
+typedef struct varAttr {
+    char * name;
+    char * type;
+    char * units;
+    char * desc;
+    double validMin;
+    double validMax;
+} varAttr;
+
 void usage(const char * name);
+CDFstatus createVarFrom1DVar(CDFid id, char *name, long dataType, long startIndex, long stopIndex, void *buffer);
+void printErrorMessage(CDFstatus status);
+CDFstatus addgEntry(CDFid id, long attrNum, long entryNum, const char *entry);
+
+CDFstatus addVariableAttributes(CDFid id, varAttr attr);
+
+void addAttributes(CDFid id, const char *calVersion, const char *satellite, const char *version, double minTime, double maxTime);
 
 #endif // _LP_FACEPLATECURRENT_H
