@@ -23,6 +23,7 @@ RUN apt -y install libswscale-dev
 RUN apt -y install libavformat-dev
 RUN apt -y install libswresample-dev
 RUN apt -y install libx264-dev
+RUN apt -y install neovim 
 RUN chown science.science /home/science
 USER science
 WORKDIR /home/science/src
