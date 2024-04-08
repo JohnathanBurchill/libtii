@@ -1,6 +1,6 @@
-# TIILIB: tools/CMakeLists.txt
+# TIILIB: tools/tii_dump_2hz/CMakeLists.txt
 
-# Copyright (C) 2022  Johnathan K Burchill
+# Copyright (C) 2024  Johnathan K Burchill
 
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -17,21 +17,15 @@
 
 CMAKE_MINIMUM_REQUIRED(VERSION 3.0)
 
-PROJECT(tii_tools)
+PROJECT(tii_dump_2hz)
 
-ADD_SUBDIRECTORY(tiim)
-ADD_SUBDIRECTORY(tiim_stats)
-ADD_SUBDIRECTORY(anomaly_stats)
-ADD_SUBDIRECTORY(anomaly_stats_parallel)
-ADD_SUBDIRECTORY(lp_stats)
-ADD_SUBDIRECTORY(lp_sweeps)
-ADD_SUBDIRECTORY(lp_faceplatecurrent)
-ADD_SUBDIRECTORY(tii_moments)
-ADD_SUBDIRECTORY(tii_dump)
-ADD_SUBDIRECTORY(tii_dump_2hz)
-ADD_SUBDIRECTORY(tii_look)
-ADD_SUBDIRECTORY(gainmap_estimation)
+INCLUDE_DIRECTORIES(${INCLUDE_DIRS} ${LIBXML2_INCLUDE_DIR})
 
-ADD_SUBDIRECTORY(process_anomaly_stats)
-ADD_SUBDIRECTORY(get_image_stats)
-ADD_SUBDIRECTORY(get_operations)
+ADD_EXECUTABLE(tii_dump_2hz tii_dump_2hz.c)
+TARGET_LINK_LIBRARIES(tii_dump_2hz ${LIBS} tii -lm)
+
+install(TARGETS tii_dump_2hz DESTINATION $ENV{HOME}/bin)
+
+install(PROGRAMS parallel_process_tii_dump_2hz.sh DESTINATION $ENV{HOME}/bin)
+install(PROGRAMS process_tii_dump_2hz.sh DESTINATION $ENV{HOME}/bin)
+
