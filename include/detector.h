@@ -27,4 +27,6 @@ void detectorCoordinates(char satellite, int sensor, float *xc, float *yc);
 
 float eofr(double r, float innerDomeVoltage, float mcpVoltage);
 
+float rOPlusOfVmcp(float mcpVoltage);
+
 #endif // _DETECTOR_H

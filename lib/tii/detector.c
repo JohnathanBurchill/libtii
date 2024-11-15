@@ -113,3 +113,11 @@ float eofr(double r, float innerDomeVoltage, float mcpVoltage)
     return (float)energy;
 }
 
+// Radial position of O+ rammed at satellite velocity
+// From Mathematica/Eofr.nb in libtii trunk, 15 Nov 2024
+float rOPlusOfVmcp(float mcpVoltage)
+{
+    float r0 = 2.49407 + 1491.76 / fabsf(mcpVoltage);
+
+    return r0;
+}
