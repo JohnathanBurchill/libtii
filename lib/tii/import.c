@@ -2,7 +2,7 @@
 
     TIIM processing library: lib/tii/import.c
 
-    Copyright (C) 2022  Johnathan K Burchill
+    Copyright (C) 2024  Johnathan K Burchill
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -18,11 +18,9 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include "import.h"
-#include "isp.h"
-#include "utility.h"
-
-#include "xml.h"
+#include "tii/import.h"
+#include "tii/isp.h"
+#include "tii/xml.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -35,7 +33,7 @@ int sortFiles(const FTSENT **first, const FTSENT **second)
 {
     if (((*first)->fts_namelen != 59) || (*second)->fts_namelen != 59)
         return 0;
-    else 
+    else
         return strncmp((*first)->fts_name + 19, (*second)->fts_name + 19, 15);
 }
 
@@ -100,7 +98,7 @@ int importImageryWithFilenames(const char *source, ImagePackets *imagePackets, c
     }
     else
         return IMPORT_SOURCE;
-    
+
     sortImagePackets(imagePackets);
 
     // Align packets if there aren't the same number of full image and full image continued packets
@@ -182,7 +180,7 @@ int importImageryFromHdr(const char *hdr, ImagePackets *imagePackets)
 
 cleanup:
     if (dblFile != NULL) fclose(dblFile);
-    return status; 
+    return status;
 }
 
 void alignPackets(uint8_t* fullImagePackets, uint8_t *continuedPackets, long nImages, long nGaps)
@@ -324,7 +322,7 @@ int importScience(const char *source, SciencePackets *sciencePackets)
     }
     else
         return IMPORT_SOURCE;
-    
+
     sortSciencePackets(sciencePackets);
     // TODO remove duplicate packets
 
@@ -397,7 +395,7 @@ int importScienceFromHdr(const char *hdr, SciencePackets *sciencePackets)
 
 cleanup:
     if (dblFile != NULL) fclose(dblFile);
-    return status; 
+    return status;
 }
 
 int comparePacketTimes(const void *p1, const void *p2)

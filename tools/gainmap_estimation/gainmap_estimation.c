@@ -21,18 +21,15 @@
 #include "gainmap_estimation.h"
 
 #include "parse_args.h"
-#include "tii.h"
 
-#include "isp.h"
-#include "gainmap.h"
-#include "import.h"
-#include "analysis.h"
-#include "timeseries.h"
-#include "png.h"
-#include "filters.h"
-#include "draw.h"
-#include "fonts.h"
-#include "colors.h"
+#include "tii/isp.h"
+#include "tii/gainmap.h"
+#include "tii/import.h"
+#include "tii/analysis.h"
+#include "tiigraphics/png.h"
+#include "tiigraphics/draw.h"
+#include "tiigraphics/fonts.h"
+#include "tiigraphics/colors.h"
 
 #include <stdio.h>
 #include <string.h>
@@ -45,7 +42,7 @@ int main(int argc, char **argv)
 {
     State state = {0};
     int status = 0;
-    
+
     parseArgs(&state, argc, argv);
 
     if (state.printGainMapTable)
@@ -106,7 +103,7 @@ int main(int argc, char **argv)
 
         dayStart = (double)theTime;
         dayEnd = dayStart + 86400.0;
-        
+
         numberOfImagePairs = countImagePairs(&imagePackets, &imagePair, dayStart, dayEnd);
         uint16_t pixVal = 0;
 
@@ -189,11 +186,11 @@ int main(int argc, char **argv)
         {
             status = writeImagePng(&state, state.pngIndH, state.pngIndV);
         }
-        
+
     }
 
 cleanup:
- 
+
     fflush(stdout);
 
     exit(0);
@@ -232,7 +229,7 @@ void gainMapInfo(const char satellite)
     {
         printf("Invalid satellite requested.\n");
         return;
-    }    
+    }
 
     struct tm *date;
 
@@ -529,15 +526,15 @@ int setCropMasks(State *state)
 
     // Adjust crop ellipses by amounts set in command line options
     // Defult adjustment is 0
-    state->calDataH.cropMask.x0 += state->calDataH.cropMask.dx0; 
-    state->calDataH.cropMask.y0 += state->calDataH.cropMask.dy0; 
-    state->calDataH.cropMask.rx += state->calDataH.cropMask.drx; 
+    state->calDataH.cropMask.x0 += state->calDataH.cropMask.dx0;
+    state->calDataH.cropMask.y0 += state->calDataH.cropMask.dy0;
+    state->calDataH.cropMask.rx += state->calDataH.cropMask.drx;
     state->calDataH.cropMask.ry += state->calDataH.cropMask.dry;
 
-    state->calDataV.cropMask.x0 += state->calDataV.cropMask.dx0; 
-    state->calDataV.cropMask.y0 += state->calDataV.cropMask.dy0; 
-    state->calDataV.cropMask.rx += state->calDataV.cropMask.drx; 
-    state->calDataV.cropMask.ry += state->calDataV.cropMask.dry; 
+    state->calDataV.cropMask.x0 += state->calDataV.cropMask.dx0;
+    state->calDataV.cropMask.y0 += state->calDataV.cropMask.dy0;
+    state->calDataV.cropMask.rx += state->calDataV.cropMask.drx;
+    state->calDataV.cropMask.ry += state->calDataV.cropMask.dry;
 
     return GAINMAP_OK;
 }

@@ -21,7 +21,7 @@
 #ifndef _TII_LOOK_H
 #define _TII_LOOK_H
 
-#include "draw.h"
+#include "tiigraphics/draw.h"
 
 #define LOOK_IMAGE_WIDTH 1024
 #define LOOK_IMAGE_HEIGHT 768

@@ -2,7 +2,7 @@
 
     TIIM processing library: lib/tiigraphics/video.c
 
-    Copyright (C) 2022  Johnathan K Burchill
+    Copyright (C) 2024  Johnathan K Burchill
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -18,13 +18,13 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include "video.h"
+#include "tiigraphics/video.h"
+#include "tiigraphics/tiigraphics.h"
+#include "tiigraphics/colors.h"
+#include "tiigraphics/fonts.h"
+#include "tiigraphics/draw.h"
 
-#include "tiigraphics.h"
-#include "colors.h"
 #include "colortable.h"
-#include "fonts.h"
-#include "draw.h"
 
 #include <libavformat/avformat.h>
 #include <libavcodec/avcodec.h>
@@ -41,7 +41,7 @@
 // -preset slow gives better quality for a given crf
 // -tune stillimage?
 
-// static ... here constrains global variables to the scope of this file 
+// static ... here constrains global variables to the scope of this file
 static AVFormatContext *videoContext = NULL;
 static AVDictionary *dict = NULL;
 static AVStream *videoStream;
@@ -92,7 +92,7 @@ int initVideo(const char * videofilename)
         fprintf(stderr, "Problem initializing output stream\n");
         return VIDEO_OUTPUT_STREAM;
     }
-    videoStream->id = 0;    
+    videoStream->id = 0;
 
     // Get packet
     videoPacket = av_packet_alloc();
@@ -214,7 +214,7 @@ int generateFrame(Image *image, int frameNumber)
         videoFrame->pts = frameNumber;
         status = avcodec_send_frame(codecContext, videoFrame);
     }
-    else 
+    else
     {
         status = avcodec_send_frame(codecContext, NULL);
     }

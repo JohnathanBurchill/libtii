@@ -21,8 +21,8 @@
 #ifndef _PNG_H
 #define _PNG_H
 
-#include "draw.h"
-#include "spng.h"
+#include "tiigraphics/draw.h"
+#include "tiigraphics/spng.h"
 
 #include <stdint.h>
 

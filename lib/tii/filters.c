@@ -2,7 +2,7 @@
 
     TIIM processing library: lib/tii/filters.c
 
-    Copyright (C) 2022  Johnathan K Burchill
+    Copyright (C) 2024  Johnathan K Burchill
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -18,9 +18,8 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include "filters.h"
-
-#include "analysis.h"
+#include "tii/filters.h"
+#include "tii/analysis.h"
 
 #include <stdint.h>
 #include <stdarg.h>
@@ -42,7 +41,7 @@ double paAngularSpectrumFilter(int k, void *pixelBuf, bool *missing, void *args)
     int x, y;
     double dx, dy, r, r1, phidx, phidy, phi;
     int paBin;
-    
+
     x = k / TII_ROWS;
     y = (TII_ROWS-1) - (k % TII_ROWS);
     dx = (double) x - OPTICAL_CENTER_X;
@@ -64,7 +63,7 @@ double paAngularSpectrumFilter(int k, void *pixelBuf, bool *missing, void *args)
         else
             *missing = false;
     }
-        
-    
+
+
     return v;
 }

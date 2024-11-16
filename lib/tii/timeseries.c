@@ -2,7 +2,7 @@
 
     TIIM processing library: lib/tii/timeseries.c
 
-    Copyright (C) 2022  Johnathan K Burchill
+    Copyright (C) 2024  Johnathan K Burchill
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -18,10 +18,10 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include "timeseries.h"
-#include "isp.h"
-#include "analysis.h"
-#include "utility.h"
+#include "tii/timeseries.h"
+#include "tii/isp.h"
+#include "tii/analysis.h"
+#include "tii/utility.h"
 
 #include <stdio.h>
 
@@ -527,11 +527,11 @@ int getImagePairTimeSeries(char satellite, ImagePackets * imagePackets, ImagePai
 
         }
 
-    
+
     }
 
     return TIME_SERIES_OK;
-    
+
 
 }
 
@@ -678,7 +678,7 @@ int getLpTiiTimeSeries(char satellite, SciencePackets *packets, LpTiiTimeSeries 
                     timeSeries->columnSumH[2*32*i + 32*s + p] = science.ColumnSumH[s][p];
                     timeSeries->columnSumV[2*32*i + 32*s + p] = science.ColumnSumV[s][p];
                 }
-            }            
+            }
         }
         timeSeries->minTime2Hz = minTime;
         timeSeries->maxTime2Hz = maxTime;

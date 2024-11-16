@@ -2,7 +2,7 @@
 
     TIIM processing tools: tools/process_anomaly_stats/process_anomaly_stats.c
 
-    Copyright (C) 2022  Johnathan K Burchill
+    Copyright (C) 2024  Johnathan K Burchill
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -22,7 +22,6 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
-#include <math.h>
 #include <fts.h>
 
 #define TII_ANOMALY_PARSER_VERSION "1.0"
@@ -65,7 +64,7 @@ int main( int argc, char **argv)
     }
     FTSENT * f = fts_read(fts);
     int nameLength;
-    
+
     double nValues = 0.0;
     double t, pah, pav, mh, mv, cwh, cwv, bah, bav, uawh, uawv, lawh, lawv, uax1h, uax1v, uay1h, uay1v, uax2h, uax2v, uay2h, uay2v, lax1h, lax1v, lay1h, lay1v, lax2h, lax2v, lay2h, lay2v;
     int valuesRead = 0;
@@ -89,7 +88,7 @@ int main( int argc, char **argv)
             while((valuesRead = fscanf(file, "%lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf", &t, &pah, &pav, &mh, &mv, &cwh, &cwv, &bah, &bav, &uawh, &uawv, &lawh, &lawv, &uax1h, &uax1v, &uay1h, &uay1v, &uax2h, &uax2v, &uay2h, &uay2v, &lax1h, &lax1v, &lay1h, &lay1v, &lax2h, &lax2v, &lay2h, &lay2v)) != EOF)
             {
                 if (valuesRead != 29)
-                    break;                    
+                    break;
                 nValues += 1.0;
                 ta += t;
                 paha += pah;

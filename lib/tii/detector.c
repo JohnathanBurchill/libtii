@@ -2,7 +2,7 @@
 
     TIIM processing library: lib/tii/detector.c
 
-    Copyright (C) 2023  Johnathan K Burchill
+    Copyright (C) 2024  Johnathan K Burchill
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -19,9 +19,8 @@
 */
 
 
-#include "detector.h"
-
-#include "isp.h"
+#include "tii/detector.h"
+#include "tii/isp.h"
 
 #include <stdio.h>
 #include <math.h>
@@ -88,7 +87,7 @@ float eofr(double r, float innerDomeVoltage, float mcpVoltage)
 {
     // Passing r by casting as double to avoid
     // making a temporary variable for r^3 calculations in double precision
-    
+
     // innerDomeVoltage is voltage after subtracting faceplate voltage
     // i.e., the voltage between the domes
 

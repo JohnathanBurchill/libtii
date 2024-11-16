@@ -2,7 +2,7 @@
 
     TIIM processing library: lib/tii/xml.c
 
-    Copyright (C) 2022  Johnathan K Burchill
+    Copyright (C) 2024  Johnathan K Burchill
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -18,9 +18,8 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include "xml.h"
-
-#include "isp.h"
+#include "tii/xml.h"
+#include "tii/isp.h"
 
 #include <string.h>
 #include <libxml/xpath.h>
@@ -53,7 +52,7 @@ int parseHdr(const char *hdr, PacketFileContents *packetInfo)
     if ((doc = xmlReadFile(hdr, NULL, 0)) == NULL)
     {
         status = HDR_PARSE_ERR_FILE_READ;
-        goto cleanup;                
+        goto cleanup;
     }
 
     char query[256];
@@ -244,10 +243,10 @@ int getLongValue(xmlDocPtr doc, const char * xpath, long *value)
     xmlXPathObjectPtr xpathObj;
     xpathCtx = xmlXPathNewContext(doc);
     xpathObj = xmlXPathEvalExpression(BAD_CAST xpath, xpathCtx);
-    if(xpathObj == NULL) 
+    if(xpathObj == NULL)
     {
         fprintf(stderr,"I did not find what you are looking for.\n");
-        xmlXPathFreeContext(xpathCtx); 
+        xmlXPathFreeContext(xpathCtx);
         return -1;
     }
     xmlNodeSetPtr nodeset = xpathObj->nodesetval;

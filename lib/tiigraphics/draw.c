@@ -2,7 +2,7 @@
 
     TIIM processing library: lib/tiigraphics/draw.c
 
-    Copyright (C) 2022  Johnathan K Burchill
+    Copyright (C) 2024  Johnathan K Burchill
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -18,17 +18,15 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include "draw.h"
+#include "tiigraphics/draw.h"
+#include "tiigraphics/tiigraphics.h"
+#include "tiigraphics/colors.h"
+#include "tiigraphics/fonts.h"
 
-#include "tiigraphics.h"
-#include "colors.h"
-
-#include "analysis.h"
-#include "isp.h"
-#include "gainmap.h"
-#include "filters.h"
-#include "utility.h"
-#include "fonts.h"
+#include "tii/analysis.h"
+#include "tii/isp.h"
+#include "tii/filters.h"
+#include "tii/utility.h"
 
 #include <stdio.h>
 #include <string.h>
@@ -125,7 +123,7 @@ void drawFrame(Image *imageBuf, Image *templateBuf, ImagePair *imagePair, LpTiiT
     int plotHeight0 = 45;
     int plotHeight1 = 30;
     int plotdy = 15;
-    
+
     int plotX0 = 400;
     int plotY0 = 210;
     int plotY1 = plotY0 + plotHeight0 + plotdy;
@@ -133,12 +131,12 @@ void drawFrame(Image *imageBuf, Image *templateBuf, ImagePair *imagePair, LpTiiT
     int plotY3 = plotY2 + plotHeight0 + plotdy;
     int plotY4 = plotY3 + plotHeight1 + plotdy;
     int plotY5 = plotY4 + plotHeight1 + plotdy;
-    
+
     x = rescaleAsInteger(imagePair->secondsSince1970, dayStart, dayEnd, plotX0, plotX0 + plotWidth);
     drawIndicatorLine(imageBuf, x, plotY5 + 10, plotY0 - plotHeight0 + 10);
 
     return;
-    
+
 }
 
 
@@ -302,7 +300,7 @@ void drawMonitors(Image *imageBuf, ImagePair *imagePair, int x0, int y0)
     }
 
     if (imagePair->gotImageV)
-    {            
+    {
         sprintf(title, "  %6.0lf V", imagePair->auxV->McpVoltageMonitor);
         annotate(title, font2, x0 + 150, 50 + y0, imageBuf);
         sprintf(title, "  %6.0lf V", imagePair->auxV->PhosphorVoltageMonitor);
@@ -337,7 +335,7 @@ void drawTemplate(Image *templateBuf, LpTiiTimeSeries *timeSeries, ImagePairTime
     int plotHeight0 = 45;
     int plotHeight1 = 30;
     int plotdy = 15;
-    
+
     int plotX0 = 400;
     int plotY0 = 225;
     int plotY1 = plotY0 + plotHeight0 + plotdy;
@@ -468,7 +466,7 @@ void drawTimeSeries(Image *imageBuf, double *times, double *values, size_t nValu
                     setBufferColorIndex(imageBuf, x0, y0, colorIndex);
                     break;
             }
-        }             
+        }
     }
 }
 
@@ -514,7 +512,7 @@ void setBufferColorIndex(Image *imageBuf, int x, int y, int colorIndex)
 
 int rescaleAsInteger(double x, double minX, double maxX, int minScale, int maxScale)
 {
-    if (minX == maxX) 
+    if (minX == maxX)
     {
         if (x <= minX) return minScale;
         else return maxScale;

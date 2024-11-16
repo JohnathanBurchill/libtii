@@ -2,7 +2,7 @@
 
     TIIM processing library: lib/tii/analysis.c
 
-    Copyright (C) 2022  Johnathan K Burchill
+    Copyright (C) 2024  Johnathan K Burchill
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -18,13 +18,10 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include "analysis.h"
-
-#include "isp.h"
-#include "timeseries.h"
-#include "utility.h"
-
-#include "gainmap.h"
+#include "tii/analysis.h"
+#include "tii/isp.h"
+#include "tii/utility.h"
+#include "tii/gainmap.h"
 
 #include <math.h>
 #include <stdlib.h>
@@ -201,7 +198,7 @@ void onboardProcessing(uint16_t *correctedPixels, bool gotImage, uint16_t minCol
             columnSumsAndNonZeroPixels[2*(i / TII_ROWS)] += value;
             columnSumsAndNonZeroPixels[2*(i / TII_ROWS) + 1] ++;
         }
-        
+
         x = 65.0 - (double) (i/TII_ROWS);
         y = 65.0 - (double) (i % TII_ROWS);
         if (x >= minCol && x <= maxCol && y >=1 && y <= 64)
@@ -279,11 +276,11 @@ int histogram(double* values, size_t nValues, double binWidth, double minValue, 
     long bin;
     for (size_t i = 0; i < nValues; i++)
     {
-        bin = (long) floor((values[i] - minValue) / binWidth); 
+        bin = (long) floor((values[i] - minValue) / binWidth);
         if (bin >= 0 && bin < bins)
         {
             (*binnedCounts)[bin]++;
-        }        
+        }
     }
 
     double max = 0.0;
@@ -458,14 +455,14 @@ void analyzeRawImageAnomalies(uint16_t *pixels, bool gotImage, char satellite, I
 
 
         // Ring anomaly
-        // Not calculated fo now as there is PAs and ring anomaly 
+        // Not calculated fo now as there is PAs and ring anomaly
         // have similar effects, if any, on the image's moments.
 
-        // Sum pixels in five regions around an arc at left of image. 
+        // Sum pixels in five regions around an arc at left of image.
         // If all regions have counts greater than some threshold
         // and central region has higher count than any other
         // and each adjacent region has higher count than the adjacent arc tip regions
-        // class ring anomaly 
+        // class ring anomaly
 
     }
 
@@ -506,7 +503,7 @@ void analyzeGainCorrectedImageAnomalies(uint16_t *pixels, bool gotImage, char sa
             {
                 imageIndex = i * TII_ROWS + ((TII_ROWS) - j);
                 value = (double)pixels[imageIndex];
-                total += value;        
+                total += value;
                 x1 += i * value;
                 y1 += j * value;
             }
@@ -550,7 +547,7 @@ void analyzeGainCorrectedImageAnomalies(uint16_t *pixels, bool gotImage, char sa
             }
 
             // Bifurcation anomaly
-            // Get pixel counts above and below y1. 
+            // Get pixel counts above and below y1.
             // If those values are both larger than pixel count at y1, bifurcation is probable
             for (int i = ix - BIFURCATION_ANALYSIS_WIDTH/2; i <= ix + BIFURCATION_ANALYSIS_WIDTH/2; i++)
             {

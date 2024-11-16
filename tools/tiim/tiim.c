@@ -2,7 +2,7 @@
 
     TIIM processing tools: tools/tiim/tiim.c
 
-    Copyright (C) 2022  Johnathan K Burchill
+    Copyright (C) 2024  Johnathan K Burchill
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -20,19 +20,18 @@
 
 #include "tiim.h"
 
-#include "tiigraphics.h"
-#include "colors.h"
+#include "tii/isp.h"
+#include "tii/import.h"
+#include "tii/utility.h"
+#include "tii/analysis.h"
+#include "tii/timeseries.h"
+#include "tii/filters.h"
 
-#include "isp.h"
-#include "import.h"
-#include "utility.h"
-#include "analysis.h"
-#include "timeseries.h"
-
-#include "draw.h"
-#include "fonts.h"
-#include "video.h"
-#include "filters.h"
+#include "tiigraphics/tiigraphics.h"
+#include "tiigraphics/colors.h"
+#include "tiigraphics/draw.h"
+#include "tiigraphics/fonts.h"
+#include "tiigraphics/video.h"
 
 #include <string.h>
 #include <unistd.h>
@@ -89,12 +88,12 @@ int main(int argc, char **argv)
     {
         printf("Could not allocate memory for template image.\n");
         goto cleanup;
-    }    
+    }
     if (allocImage(&image, IMAGE_WIDTH, IMAGE_HEIGHT, 1) != DRAW_OK)
     {
         printf("Could not allocate memory for image.\n");
         goto cleanup;
-    }    
+    }
     status = importImagery(hdr, &imagePackets);
     if (status)
     {
@@ -118,7 +117,7 @@ int main(int argc, char **argv)
             fprintf(stderr, "No images found in file %s\n", hdr);
         goto cleanup;
     }
-    
+
     uint16_t pixelsH[NUM_FULL_IMAGE_PIXELS], pixelsV[NUM_FULL_IMAGE_PIXELS];
 
     FullImagePacket * fip1, *fip2;
@@ -198,7 +197,7 @@ int main(int argc, char **argv)
             continue;
 
         drawFrame(&image, &templateImage, &imagePair, &timeSeries, &imagePairTimeSeries, nImagePairs, frameCounter, dayStart, dayEnd);
-        // Add Ion density 
+        // Add Ion density
         annotate("  Density:", 9, MONITOR_LABEL_OFFSET_X, 50 + 5 * LINE_SPACING + MONITOR_LABEL_OFFSET_Y, &image);
         while (lastScienceIndex < timeSeries.n2Hz && lastScienceTime < imagePair.secondsSince1970)
         {
@@ -259,7 +258,7 @@ int main(int argc, char **argv)
             drawTimestamp(&image, 15, yborder + yoffset * dy + 25, imagePair.auxH, 12);
         if (xoffset == nAcross-1 && imagePair.gotImageH)
             drawTimestamp(&image, IMAGE_WIDTH - 8*8-60, yborder + yoffset * dy+25, imagePair.auxH, 12);
-            
+
         drawImage(&image, imagePair.pixelsH, imagePair.gotImageH, imagePairTimeSeries.maxValueH[nImagePairs], xborder+(xoffset++)*dx, yborder+yoffset*dy, 1, false, imagePair.auxH, &identityFilter, NULL);
         xoffset %= nAcross;
         if (xoffset == 0) yoffset++;
@@ -332,11 +331,11 @@ int main(int argc, char **argv)
         dotSize = 2; // full day
         sprintf(xlabel, "%s", "UT hours");
     }
-     
+
     insertTransition(&image, "Anomaly overview", IMAGE_WIDTH/2, IMAGE_HEIGHT/2-16, 24, 3.0, &frameCounter);
     drawIntTimeSeries(&image, imagePairTimeSeries.time, imagePairTimeSeries.paCountH, nImagePairs, ox, oy, plotWidth, plotHeight, dayStart, dayEnd, 0, 1000, "", "PA Level", 1, MAX_COLOR_VALUE + 1, "0", "1000", false, dotSize, 12, true);
     drawIntTimeSeries(&image, imagePairTimeSeries.time, imagePairTimeSeries.paCountV, nImagePairs, ox, oy, plotWidth, plotHeight, dayStart, dayEnd, 0, 1000, "", "", 1, 13, "", "", false, dotSize, 12, false);
-    
+
     drawIntTimeSeries(&image, imagePairTimeSeries.time, imagePairTimeSeries.measlesCountH, nImagePairs, ox, oy + plotHeight + 50, plotWidth, plotHeight, dayStart, dayEnd, 0, 200, xlabel, "Measles Level", 1, MAX_COLOR_VALUE + 1, "0", "200", false, dotSize, 12, true);
     drawIntTimeSeries(&image, imagePairTimeSeries.time, imagePairTimeSeries.measlesCountV, nImagePairs, ox, oy + plotHeight + 50, plotWidth, plotHeight, dayStart, dayEnd, 0, 200, "", "", 1, 13, "", "", false, dotSize, 12, false);
     for (int c = 0; c < 3.0 * VIDEO_FPS; c++)

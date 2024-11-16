@@ -2,7 +2,7 @@
 
     TIIM processing tools: tools/get_image_stats/get_image_stats.c
 
-    Copyright (C) 2022  Johnathan K Burchill
+    Copyright (C) 2024  Johnathan K Burchill
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -18,13 +18,12 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include "tii.h"
+#include "tii/tii.h"
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
-#include <math.h>
 #include <fts.h>
 
 // read image stats text files between date range, select data for science only imaging mode or all imagery, and average
@@ -82,7 +81,7 @@ int main( int argc, char **argv)
     }
     FTSENT * f = fts_read(fts);
     int nameLength;
-    
+
     size_t nValues = 0;
     double t, mh, mv, pah, pav, vph, vpv, vmh, vmv, vbh, vbv, vf;
     int valuesRead = 0;

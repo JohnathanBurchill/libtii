@@ -2,7 +2,7 @@
 
     TIIM processing library: lib/tiigraphics/png.c
 
-    Copyright (C) 2022  Johnathan K Burchill
+    Copyright (C) 2024  Johnathan K Burchill
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -18,13 +18,12 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include "png.h"
+#include "tiigraphics/png.h"
+#include "tiigraphics/colors.h"
+#include "tiigraphics/fonts.h"
+#include "tiigraphics/spng.h"
 
-#include "tiigraphics.h"
-#include "colors.h"
 #include "colortable.h"
-#include "fonts.h"
-#include "spng.h"
 
 #include <errno.h>
 

@@ -2,7 +2,7 @@
 
     TIIM processing library: lib/tii/isp.c
 
-    Copyright (C) 2022  Johnathan K Burchill
+    Copyright (C) 2024  Johnathan K Burchill
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -18,7 +18,7 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include "isp.h"
+#include "tii/isp.h"
 
 #include <math.h>
 #include <stdio.h>
@@ -127,7 +127,7 @@ void getImageData(FullImagePacket * fip, FullImageContinuedPacket * cip, ImageAu
         // times and sensors match; we have a consistent image if the Full Image Packet was present
         aux->consistentImage = fip->StructureId == ISP_TYPE_FULL_IMAGE;
     }
- 
+
     return;
 
 }
@@ -327,7 +327,7 @@ void getLpTiiScienceData(LpTiiSciencePacket * pkt, LpTiiScience * science)
     science->McpVoltageSettingH = ((double)science->McpVoltageSettingRawH) / 255. * (-2400.0);
     science->PhosphorVoltageSettingRawH = pkt->AuxDataH[5];
     science->PhosphorVoltageSettingH = ((double)science->PhosphorVoltageSettingRawH) / 255. * 8000.0;
-    
+
     science->BiasGridVoltageSettingRawV = pkt->AuxDataV[3];
     science->BiasGridVoltageSettingV = ((double)science->BiasGridVoltageSettingRawV) / 255. * -100.0;
     science->McpVoltageSettingRawV = pkt->AuxDataV[4];

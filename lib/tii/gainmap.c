@@ -2,7 +2,7 @@
 
     TIIM processing library: lib/tii/gainmap.c
 
-    Copyright (C) 2022  Johnathan K Burchill
+    Copyright (C) 2024  Johnathan K Burchill
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -18,10 +18,10 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include "gainmap.h"
+#include "tii/gainmap.h"
+#include "tii/isp.h"
 
 #include "gainmapdata.h"
-#include "isp.h"
 
 #include <stdlib.h>
 

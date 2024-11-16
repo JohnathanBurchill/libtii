@@ -2,7 +2,7 @@
 
     TIIM processing library: lib/tii/utility.c
 
-    Copyright (C) 2022  Johnathan K Burchill
+    Copyright (C) 2024  Johnathan K Burchill
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -18,10 +18,9 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include "utility.h"
-
-#include "tii.h"
-#include "isp.h"
+#include "tii/utility.h"
+#include "tii/tii.h"
+#include "tii/isp.h"
 
 #include <stdio.h>
 #include <string.h>
@@ -64,7 +63,7 @@ int dateToSecondsSince1970(const char * yyyymmdd, double *seconds)
 
 
     *seconds = (double) timegm(&timeStruct);
-    
+
     return UTIL_OK;
 
 }

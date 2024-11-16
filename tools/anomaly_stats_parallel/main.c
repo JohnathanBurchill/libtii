@@ -2,7 +2,7 @@
 
     TIIM: util/anomaly_stats_parallel/main.c
 
-    Copyright (C) 2022  Johnathan K Burchill
+    Copyright (C) 2024  Johnathan K Burchill
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -29,7 +29,6 @@
 #include <unistd.h>
 
 #include <pthread.h>
-#include <signal.h>
 #include <sys/wait.h>
 
 #include <time.h>
@@ -44,7 +43,7 @@
 
 char infoHeader[50];
 
-enum STATUS 
+enum STATUS
 {
 	STATUS_OK = 0,
 	STATUS_PERMISSION,
@@ -76,7 +75,7 @@ static int cols = 0;
 #define END_DATE_ORIGIN 3,1
 #define START_TIME_ORIGIN 5,1
 #define PROCESSING_TIME_ORIGIN 6, 1
-#define PROCESSING_STATUS_ORIGIN 8,3 
+#define PROCESSING_STATUS_ORIGIN 8,3
 #define KEYBOARD_ORIGIN 10,2
 
 void initScreen(void);
@@ -148,7 +147,7 @@ int main(int argc, char *argv[])
 	int status = pthread_attr_init(&attr);
 	if (status)
 	{
-		endwin();		
+		endwin();
 		printf("Could not init pthread attributes.\n");
 		exit(EXIT_FAILURE);
 	}
@@ -165,7 +164,7 @@ int main(int argc, char *argv[])
 
 	int completed = 0;
 	int allCompleted[3] = {0};
-	int queued = 0;	
+	int queued = 0;
 
 	int latestYear = 0;
 	int latestMonth = 0;
@@ -347,7 +346,7 @@ int dayCount(char *startDate, char *endDate)
 	}
 
 	return count;
-		
+
 }
 
 void incrementDate(char *date)
@@ -368,7 +367,7 @@ void incrementDate(char *date)
 	sprintf(date, "%04d%02d%02d", d.tm_year + 1900, d.tm_mon+1, d.tm_mday);
 
 	return;
-		
+
 }
 
 void initScreen(void)

@@ -2,7 +2,7 @@
 
 #define SPNG__BUILD
 
-#include "spng.h"
+#include "tiigraphics/spng.h"
 
 #include <limits.h>
 #include <string.h>

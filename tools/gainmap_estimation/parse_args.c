@@ -19,8 +19,8 @@
 */
 #include "parse_args.h"
 
-#include "utility.h"
-#include "gainmap.h"
+#include "tii/utility.h"
+#include "tii/gainmap.h"
 #include "usage.h"
 
 #include <stdio.h>
@@ -342,7 +342,7 @@ void parseArgs(State *state, int argc, char **argv)
 
     state->nDates = 1 + (int)((state->t2 - state->t1)/ 86400.0);
 
-    fprintf(stderr, "Processing imagery spanning %d %s\n", state->nDates, state->nDates == 1 ? "day" : "days"); 
+    fprintf(stderr, "Processing imagery spanning %d %s\n", state->nDates, state->nDates == 1 ? "day" : "days");
 
     // Check valid gain map ID
     int nGainMaps = 0;

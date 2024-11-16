@@ -2,7 +2,7 @@
 
     TIIM processing tools: tools/get_operations/get_operations.c
 
-    Copyright (C) 2022  Johnathan K Burchill
+    Copyright (C) 2024  Johnathan K Burchill
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -24,7 +24,6 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
-#include <math.h>
 #include <fts.h>
 #include <stdbool.h>
 #include <time.h>
@@ -79,7 +78,7 @@ int main( int argc, char **argv)
     {
         if (strcmp(argv[3], "--reverse") == 0)
         {
-            reverseWeekOrder = true;            
+            reverseWeekOrder = true;
         }
         else
         {
@@ -103,7 +102,7 @@ int main( int argc, char **argv)
     }
 
     FTSENT * f = fts_read(fts);
-    
+
     // From man getline
     char *line = NULL;
     ssize_t linelen = 0;
@@ -131,7 +130,7 @@ int main( int argc, char **argv)
                 f = fts_read(fts);
                 continue;
             }
-            gotStart = false;            
+            gotStart = false;
             gotTimeRange = true;
 
             getYearAndWeek(f->fts_name, &fileYear, &fileWeek);
@@ -283,15 +282,15 @@ void getYearAndWeek(const char *filename, int *year, int *week)
 
     if (*(filename + 33) != '_')
         weekDigits = 2;
-    
+
     snprintf(weekStr, weekDigits + 1, "%s", filename + 32);
 
     snprintf(yearStr, 5, "%s", filename + 33 + weekDigits);
 
     if (week != NULL)
-        *week = atoi(weekStr); 
+        *week = atoi(weekStr);
     if (year != NULL)
-        *year = atoi(yearStr);  
+        *year = atoi(yearStr);
 
     return;
 }

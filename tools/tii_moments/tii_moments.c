@@ -2,7 +2,7 @@
 
     TIIM processing tools: tools/tii_moments/tii_moments.c
 
-    Copyright (C) 2022  Johnathan K Burchill
+    Copyright (C) 2024  Johnathan K Burchill
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -20,14 +20,13 @@
 
 #include "tii_moments.h"
 
-#include "tii.h"
-
-#include "isp.h"
-#include "gainmap.h"
-#include "import.h"
-#include "utility.h"
-#include "analysis.h"
-#include "timeseries.h"
+#include "tii/tii.h"
+#include "tii/isp.h"
+#include "tii/gainmap.h"
+#include "tii/import.h"
+#include "tii/utility.h"
+#include "tii/analysis.h"
+#include "tii/timeseries.h"
 
 #include <stdio.h>
 #include <string.h>
@@ -91,7 +90,7 @@ int main(int argc, char **argv)
     double gainMapTime = 0.0;
     if (gainMapId > 0)
     {
-        gainMapTime = gainMapTimeArray[gainMapId-1]; 
+        gainMapTime = gainMapTimeArray[gainMapId-1];
     }
 
     // Data
@@ -108,7 +107,7 @@ int main(int argc, char **argv)
         fprintf(stderr, "No images found for satellite %c on %s\n", satDate[0], satDate+1);
         goto cleanup;
     }
-    
+
     // If there are no config packets we bail, since we need to be able to apply the gain correction maps
     // and calculate onboard moments.
     SciencePackets sciencePackets;
@@ -137,7 +136,7 @@ int main(int argc, char **argv)
         goto cleanup;
     }
     dayEnd = dayStart + 86400.0; // ignore leap second on this day
- 
+
     size_t numberOfImagePairs = countImagePairs(&imagePackets, &imagePair, dayStart, dayEnd);
 
     char gainCorrectionString[255];
@@ -234,7 +233,7 @@ void gainMapInfo(const char satellite)
     {
         printf("Invalid satellite requested.\n");
         return;
-    }    
+    }
 
     struct tm *date;
 

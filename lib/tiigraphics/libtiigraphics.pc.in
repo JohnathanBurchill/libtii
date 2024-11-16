@@ -1,0 +1,10 @@
+prefix=@CMAKE_INSTALL_PREFIX@
+exec_prefix=${prefix}
+libdir=${prefix}/@CMAKE_INSTALL_LIBDIR@
+includedir=${prefix}/include
+
+Name: libtiigraphics
+Description: TII Level 0 plotting and movie generation library
+Version: @PROJECT_VERSION@
+Libs: -L${libdir} -ltiigraphics
+Cflags: -I${includedir}/tiigraphics

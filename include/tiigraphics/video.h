@@ -21,7 +21,7 @@
 #ifndef _VIDEO_H
 #define _VIDEO_H
 
-#include <draw.h>
+#include <tiigraphics/draw.h>
 
 #include <stdint.h>
 

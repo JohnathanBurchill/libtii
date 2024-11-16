@@ -2,7 +2,7 @@
 
     TIIM processing tools: tools/tii_look/tii_look.c
 
-    Copyright (C) 2022  Johnathan K Burchill
+    Copyright (C) 2024  Johnathan K Burchill
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -20,18 +20,17 @@
 
 #include "tii_look.h"
 
-#include "tii.h"
-#include "tiigraphics.h"
-#include "draw.h"
-#include "colors.h"
-#include "filters.h"
-#include "png.h"
+#include "tii/tii.h"
+#include "tii/filters.h"
+#include "tii/isp.h"
+#include "tii/import.h"
+#include "tii/utility.h"
+#include "tii/analysis.h"
+#include "tii/timeseries.h"
 
-#include "isp.h"
-#include "import.h"
-#include "utility.h"
-#include "analysis.h"
-#include "timeseries.h"
+#include "tiigraphics/draw.h"
+#include "tiigraphics/colors.h"
+#include "tiigraphics/png.h"
 
 #include <stdio.h>
 #include <string.h>
@@ -83,7 +82,7 @@ int main(int argc, char **argv)
         fprintf(stderr, "No images found for satellite %c on %s\n", satDate[0], satDate+1);
         goto cleanup;
     }
-    
+
     // If there are no config packets we bail, since we need to be able to apply the gain correction maps
     // and calculate onboard moments.
     SciencePackets sciencePackets;
@@ -111,7 +110,7 @@ int main(int argc, char **argv)
         goto cleanup;
     }
     dayEnd = dayStart + 86400.0; // ignore leap second on this day
- 
+
     size_t numberOfImagePairs = countImagePairs(&imagePackets, &imagePair, dayStart, dayEnd);
 
     if (imagePairNumber > numberOfImagePairs)
@@ -233,7 +232,7 @@ int main(int argc, char **argv)
         imageHorizontalLine(&imageBuf, true, V_SENSOR, x1v - dxv, x1v + dxv, y1v, FOREGROUND_COLOR, 2);
         imageVerticalLine(&imageBuf, true, V_SENSOR, x1v, y1v - dyv, y1v + dyv, FOREGROUND_COLOR, 2);
     }
-    
+
 
     // Export PNG
     char filename[FILENAME_MAX];
@@ -276,7 +275,7 @@ void imagePoint(Image *image, bool correctedImage, int sensor, int columnFromLef
 {
     if (columnFromLeft < 0 || columnFromLeft > TII_COLS - 1 || rowFromTop < 0 || rowFromTop > TII_ROWS - 1)
         return;
-    
+
     int x0 = 0, y0 = 0;
     imageOrigin(correctedImage, sensor, &x0, &y0);
     drawPoint(image, x0 + LOOK_IMAGE_SCALE * columnFromLeft, y0 + LOOK_IMAGE_SCALE * rowFromTop, color, size);

@@ -1,6 +1,6 @@
 # TIILIB: lib/tiigraphics/CMakeLists.txt
 
-# Copyright (C) 2022  Johnathan K Burchill
+# Copyright (C) 2024  Johnathan K Burchill
 
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -25,13 +25,27 @@ ADD_LIBRARY(tiigraphics fonts.c draw.c video.c png.c spng.c)
 SET_TARGET_PROPERTIES(tiigraphics PROPERTIES
     VERSION ${PROJECT_VERSION}
     SOVERSION 1
-    PUBLIC_HEADER tiigraphics.h
 )
 TARGET_INCLUDE_DIRECTORIES(tiigraphics PRIVATE . )
 TARGET_LINK_LIBRARIES(tiigraphics tii)
 
-#install(TARGETS tiigraphics
-#    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-#    PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
-# install(FILES ${CMAKE_BINARY_DIR}/mylib.pc
-#     DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/pkgconfig)
+SET(INSTALL_TIIGRAPHICS_DIR ${CMAKE_INSTALL_PREFIX}/include/tiigraphics)
+INSTALL(DIRECTORY ${CMAKE_SOURCE_DIR}/include/tiigraphics/
+        DESTINATION ${INSTALL_TIIGRAPHICS_DIR}
+        FILES_MATCHING PATTERN "*.h"
+)
+
+install(TARGETS tiigraphics
+    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+)
+
+
+SET(INSTALL_PKGCONFIG_DIR ${CMAKE_INSTALL_DATAROOTDIR}/pkgconfig)
+CONFIGURE_FILE(${CMAKE_SOURCE_DIR}/lib/tiigraphics/libtiigraphics.pc.in
+        ${CMAKE_BINARY_DIR}/libtiigraphics.pc @ONLY
+)
+
+INSTALL(FILES ${CMAKE_BINARY_DIR}/libtiigraphics.pc
+        DESTINATION ${INSTALL_PKGCONFIG_DIR}
+)
+

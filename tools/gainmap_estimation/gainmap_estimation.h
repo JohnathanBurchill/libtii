@@ -21,8 +21,8 @@
 #include <stdio.h>
 #include <stdint.h>
 
-#include "isp.h"
-#include "draw.h"
+#include "tii/isp.h"
+#include "tiigraphics/draw.h"
 
 #ifndef _TII_MOMENTS_H
 #define _TII_MOMENTS_H
@@ -83,7 +83,7 @@ typedef struct CalData
     double maxBias;
     double deltaBias;
     int nBiases;
-    
+
 } CalData;
 
 typedef struct State
@@ -118,7 +118,7 @@ typedef struct State
     int nDates;
     double t1;
     double t2;
-    
+
     CalData calDataH;
     CalData calDataV;
 

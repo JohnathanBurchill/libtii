@@ -2,7 +2,7 @@
 
     TIIM processing library: include/draw.h
 
-    Copyright (C) 2022  Johnathan K Burchill
+    Copyright (C) 2024  Johnathan K Burchill
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -21,11 +21,8 @@
 #ifndef _DRAW_H
 #define _DRAW_H
 
-#include "tii.h"
-
-#include "isp.h"
-#include "analysis.h"
-#include "timeseries.h"
+#include "tii/isp.h"
+#include "tii/timeseries.h"
 
 #include <stdint.h>
 #include <stdbool.h>

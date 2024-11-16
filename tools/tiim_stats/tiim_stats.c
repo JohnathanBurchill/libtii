@@ -2,7 +2,7 @@
 
     TIIM processing tools: tools/tiim_stats/tiim_stats.c
 
-    Copyright (C) 2022  Johnathan K Burchill
+    Copyright (C) 2024  Johnathan K Burchill
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -18,13 +18,12 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include "tii.h"
-
-#include "isp.h"
-#include "import.h"
-#include "utility.h"
-#include "analysis.h"
-#include "timeseries.h"
+#include "tii/tii.h"
+#include "tii/isp.h"
+#include "tii/import.h"
+#include "tii/utility.h"
+#include "tii/analysis.h"
+#include "tii/timeseries.h"
 
 #include <stdio.h>
 #include <string.h>
@@ -73,7 +72,7 @@ int main(int argc, char **argv)
         fprintf(stderr, "No images found for satellite %c on %s\n", satDate[0], satDate+1);
         goto cleanup;
     }
-    
+
     uint16_t pixelsH[NUM_FULL_IMAGE_PIXELS], pixelsV[NUM_FULL_IMAGE_PIXELS];
     FullImagePacket * fip1, *fip2;
     FullImageContinuedPacket *cip1, *cip2;
@@ -95,7 +94,7 @@ int main(int argc, char **argv)
         goto cleanup;
     }
     dayEnd = dayStart + 86400.0; // ignore leap second on this day
- 
+
     size_t numberOfImagePairs = countImagePairs(&imagePackets, &imagePair, dayStart, dayEnd);
     getImagePairTimeSeries(satellite, &imagePackets, &imagePair, &imagePairTimeSeries, numberOfImagePairs, dayStart, dayEnd, max);
 

@@ -2,7 +2,7 @@
 
     TIIM processing library: lib/tiigraphics/fonts.c
 
-    Copyright (C) 2022  Johnathan K Burchill
+    Copyright (C) 2024  Johnathan K Burchill
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -18,10 +18,8 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include "fonts.h"
-
-#include "tiigraphics.h"
-#include "colors.h"
+#include "tiigraphics/fonts.h"
+#include "tiigraphics/colors.h"
 
 #include "fonts9_to_24.h"
 
@@ -113,7 +111,7 @@ int placeCharacter(uint8_t characterNumber, int8_t *font, int x, int y, Image *i
         fontColorIndex = font[positionIndex++];
         if (xoffset == -1 || yoffset == -1 || fontColorIndex == -1)
         {
-            // Font offsets not paired 
+            // Font offsets not paired
             status = FONTS_FONT_FILE_ISSUE;
             break;
         }
