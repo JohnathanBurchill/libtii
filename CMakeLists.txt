@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-CMAKE_MINIMUM_REQUIRED(VERSION 3.0)
+CMAKE_MINIMUM_REQUIRED(VERSION 3.20)
 
 PROJECT(tii_processing)
 SET(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bin)
@@ -36,7 +36,17 @@ FIND_LIBRARY(MATH m)
 FIND_PACKAGE(ZLIB REQUIRED)
 FIND_PACKAGE(LibXml2)
 
-INCLUDE_DIRECTORIES(include)
+# LIB AVUTIL, from https://newbedev.com/cmake-configuration-for-ffmpeg-in-c-project
+FIND_PACKAGE(PkgConfig REQUIRED)
+pkg_check_modules(LIBAV REQUIRED IMPORTED_TARGET
+    libavformat
+    libavcodec
+    libswresample
+    libswscale
+    libavutil
+)
+
+INCLUDE_DIRECTORIES(include ${LIBAV_libavformat_INCLUDEDIR})
 
 ADD_SUBDIRECTORY(lib)
 

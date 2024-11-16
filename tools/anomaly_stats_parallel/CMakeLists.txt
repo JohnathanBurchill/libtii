@@ -1,6 +1,6 @@
 # TIICT Processor: util/anomaly_stats_parallel/CMakeLists.txt
 
-# Copyright (C) 2022  Johnathan K Burchill
+# Copyright (C) 2024  Johnathan K Burchill
 
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -16,8 +16,6 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 project(TIIM)
-
-CMAKE_MINIMUM_REQUIRED(VERSION 3.1)
 
 SET(THREADS_PREFER_PTHREAD_FLAG ON)
 FIND_PACKAGE(Threads REQUIRED)

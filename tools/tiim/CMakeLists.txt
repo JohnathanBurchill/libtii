@@ -1,6 +1,6 @@
 # TIILIB: tools/tiim/CMakeLists.txt
 
-# Copyright (C) 2022  Johnathan K Burchill
+# Copyright (C) 2024  Johnathan K Burchill
 
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -15,19 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-CMAKE_MINIMUM_REQUIRED(VERSION 3.0)
-
 PROJECT(tiim)
-
-# LIB AVUTIL, from https://newbedev.com/cmake-configuration-for-ffmpeg-in-c-project
-FIND_PACKAGE(PkgConfig REQUIRED)
-pkg_check_modules(LIBAV REQUIRED IMPORTED_TARGET
-    libavformat
-    libavcodec
-    libswresample
-    libswscale
-    libavutil
-)
 
 SET(LIBS ${LIBS} ${MATH} ${LIBXML2_LIBRARIES} ${ZLIB_LIBRARIES} PkgConfig::LIBAV)
 INCLUDE_DIRECTORIES(${INCLUDE_DIRS} ${LIBXML2_INCLUDE_DIR})
