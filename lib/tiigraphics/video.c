@@ -32,6 +32,7 @@
 #include <libavutil/mathematics.h>
 #include <libavutil/timestamp.h>
 #include <libswscale/swscale.h>
+#include <libavutil/pixdesc.h>
 
 
 // consider -movflags +faststart
@@ -63,13 +64,6 @@ int initVideo(const char * videofilename)
 
     videoFrame = av_frame_alloc();
     videoPacket = av_packet_alloc();
-    av_dict_set(&dict, "profile", "baseline", 0);
-    av_dict_set(&dict, "preset", "medium", 0);
-    av_dict_set(&dict, "level", "3", 0);
-    av_dict_set(&dict, "crf", "23", 0);
-    av_dict_set(&dict, "tune", "grain", 0);
-    av_dict_set(&dict, "loglevel", "quiet", 0);
-    av_dict_set(&dict, "movflags", "faststart", 0);
 
     avformat_alloc_output_context2(&videoContext, NULL, NULL, videofilename);
     if (!videoContext)
@@ -85,6 +79,7 @@ int initVideo(const char * videofilename)
         fprintf(stderr, "Problem finding the H.264 codec.\n");
         return VIDEO_NO_CODEC;
     }
+    printf("Using codec: %s\n", codec->name);
     // Get a stream
     videoStream = avformat_new_stream(videoContext, NULL);
     if (!videoStream)
@@ -115,14 +110,23 @@ int initVideo(const char * videofilename)
     videoStream->time_base = (AVRational){1, VIDEO_FPS};
     codecContext->time_base = videoStream->time_base;
     codecContext->gop_size = 250;
+    codecContext->max_b_frames = 0;
     codecContext->pix_fmt = AV_PIX_FMT_YUV420P;
     if (videoContext->oformat->flags & AVFMT_GLOBALHEADER)
         codecContext->flags |= AV_CODEC_FLAG_GLOBAL_HEADER;
 
-    status = avcodec_open2(codecContext, codec, &dict);
+    av_opt_set(codecContext->priv_data, "profile", "baseline", 0);
+    av_opt_set(codecContext->priv_data, "level", "3.0", 0);
+    av_opt_set(codecContext->priv_data, "preset", "medium", 0);
+    av_opt_set(codecContext->priv_data, "crf", "23", 0);
+    av_opt_set(codecContext->priv_data, "tune", "grain", 0);
+
+    status = avcodec_open2(codecContext, codec, NULL);
     if (status < 0)
     {
-        fprintf(stderr, "Problem opening codec.\n");
+        char errbuf[AV_ERROR_MAX_STRING_SIZE];
+        av_strerror(status, errbuf, sizeof(errbuf));
+        fprintf(stderr, "Problem opening codec: %s\n", errbuf);
         return VIDEO_CODEC_OPEN;
     }
 
