@@ -79,7 +79,7 @@ int initVideo(const char * videofilename)
         fprintf(stderr, "Problem finding the H.264 codec.\n");
         return VIDEO_NO_CODEC;
     }
-    printf("Using codec: %s\n", codec->name);
+
     // Get a stream
     videoStream = avformat_new_stream(videoContext, NULL);
     if (!videoStream)
