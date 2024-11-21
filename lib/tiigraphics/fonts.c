@@ -27,13 +27,23 @@
 #include <string.h>
 #include <stdio.h>
 
+int fontheight(int fontsize)
+{
+    return 16 * fontsize / 12;
+}
+
+int fontwidth(int fontsize)
+{
+    return 8 * fontsize / 12;
+}
+
 // Draw text in the image buffer
 int annotate(const char * text, int fontsize, int x, int y, Image *imageBuffer)
 {
     int status = FONTS_OK;
     int8_t *font;
-    int fontWidth = 8 * fontsize / 12;
-    int fontHeight = 16 * fontsize / 12;
+    int fontWidth = fontwidth(fontsize);
+    int fontHeight = fontheight(fontsize);
     switch (fontsize)
     {
         case 9:

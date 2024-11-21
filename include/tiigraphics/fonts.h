@@ -2,7 +2,7 @@
 
     TIIM processing library: include/fonts.h
 
-    Copyright (C) 2022  Johnathan K Burchill
+    Copyright (C) 2024  Johnathan K Burchill
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -38,6 +38,8 @@ enum FONTS_ERR {
     FONTS_FONT_FILE_ISSUE = -3
 };
 
+int fontheight(int fontsize);
+int fontwidth(int fontsize);
 int annotate(const char * text, int fontsize, int x, int y, Image *imageBuffer);
 int placeCharacter(uint8_t c, int8_t *font, int x, int y, Image *imageBuffer);
 
