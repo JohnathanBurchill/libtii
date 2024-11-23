@@ -23,7 +23,7 @@
 
 #include <libxml/xpathInternals.h>
 
-#define TIIM_VERSION "0101"
+#define TIIM_VERSION "0102"
 
 void usage(const char * name);
 

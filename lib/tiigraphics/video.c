@@ -53,9 +53,9 @@ static const AVCodec *codec = NULL;
 static AVCodecContext *codecContext = NULL;
 
 static struct SwsContext *colorConversionContext = NULL;
-static uint8_t frameBuffer[3*IMAGE_BUFFER_SIZE];
+static uint8_t *frameBuffer = NULL;
 
-int initVideo(const char * videofilename)
+int initVideo(const char * videofilename, int width, int height, int framesPerSecond)
 {
     int status;
 
@@ -105,9 +105,9 @@ int initVideo(const char * videofilename)
     }
     codecContext->codec_id = AV_CODEC_ID_H264;
     codecContext->bit_rate = 1000000;
-    codecContext->width = IMAGE_WIDTH;
-    codecContext->height = IMAGE_HEIGHT;
-    videoStream->time_base = (AVRational){1, VIDEO_FPS};
+    codecContext->width = width;
+    codecContext->height = height;
+    videoStream->time_base = (AVRational){1, framesPerSecond};
     codecContext->time_base = videoStream->time_base;
     codecContext->gop_size = 250;
     codecContext->max_b_frames = 0;
@@ -185,6 +185,12 @@ int initVideo(const char * videofilename)
     colorsrgbrgb[3*255+1] = 255;
     colorsrgbrgb[3*255+2] = 255;
 
+    frameBuffer = malloc(3 * sizeof frameBuffer * width * height);
+    if (!frameBuffer)
+    {
+        fprintf(stderr, "Problem allocating frame buffer.\n");
+        return VIDEO_MEMORY;
+    }
 
     return VIDEO_OK;
 
@@ -270,6 +276,7 @@ void cleanupVideo(void)
     sws_freeContext(colorConversionContext);
     avio_closep(&videoContext->pb);
     avformat_free_context(videoContext);
+    free(frameBuffer);
     return;
 }
 

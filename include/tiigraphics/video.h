@@ -37,11 +37,12 @@ enum VIDEO_ERR {
     VIDEO_STREAM_PARAMETERS = -8,
     VIDEO_FRAME_SEND = -9,
     VIDEO_FRAME_ENCODE = -10,
-    VIDEO_FRAME_WRITE = -11
+    VIDEO_FRAME_WRITE = -11,
+    VIDEO_MEMORY = -12,
 
 };
 
-int initVideo(const char * filename);
+int initVideo(const char * filename, int width, int height, int framesPerSecond);
 int generateFrame(Image *image, int frameNumber);
 int finishVideo(void);
 void cleanupVideo(void);

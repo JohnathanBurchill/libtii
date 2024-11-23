@@ -157,7 +157,7 @@ int main(int argc, char **argv)
         goto cleanup;
     }
 
-    status = initVideo(movieFilename);
+    status = initVideo(movieFilename, IMAGE_WIDTH, IMAGE_HEIGHT, VIDEO_FPS);
     if (status < 0)
     {
         fprintf(stderr, "Problem intializing video: got status %d.\n", status);
@@ -406,7 +406,7 @@ void usage(const char * name)
 {
     printf("\nTII Movie Generator Version %s compiled %s %s UTC\n", TIIM_VERSION, __DATE__, __TIME__);
     printf("\nLicense: GPL 3.0 ");
-    printf("Copyright 2022 Johnathan Kerr Burchill\n");
+    printf("Copyright 2024 Johnathan Kerr Burchill\n");
     printf("\nUsage:\n");
     printf("\n  %s SW_OPER_EFIXDDD_0__yyyyMMddThhmmss_yyyyMMddThhmmss_vvvv.HDR maxSignal outputDir [-f] \n", name);
     printf("\nor\n");
