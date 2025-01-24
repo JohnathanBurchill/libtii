@@ -209,6 +209,10 @@ void freeLpTiiTimeSeries(LpTiiTimeSeries * ts)
         free(ts->phosphorVoltageSettingH);
     if (ts->phosphorVoltageSettingV != NULL)
         free(ts->phosphorVoltageSettingV);
+    if (ts->shutterDutyCycleH != NULL)
+        free(ts->shutterDutyCycleH);
+    if (ts->shutterDutyCycleV != NULL)
+        free(ts->shutterDutyCycleV);
     if (ts->columnSumH != NULL)
         free(ts->columnSumH);
     if (ts->columnSumV != NULL)
@@ -556,6 +560,8 @@ void initLpTiiTimeSeries(LpTiiTimeSeries * timeSeries)
     timeSeries->mcpVoltageSettingV = NULL;
     timeSeries->phosphorVoltageSettingH = NULL;
     timeSeries->phosphorVoltageSettingV = NULL;
+    timeSeries->shutterDutyCycleH = NULL;
+    timeSeries->shutterDutyCycleV = NULL;
     timeSeries->columnSumH = NULL;
     timeSeries->columnSumV = NULL;
 
@@ -644,6 +650,13 @@ int getLpTiiTimeSeries(char satellite, SciencePackets *packets, LpTiiTimeSeries 
         if (timeSeries->phosphorVoltageSettingV == NULL)
             return TIME_SERIES_MALLOC;
 
+        timeSeries->shutterDutyCycleH = (double*) malloc(timeSeries->n2Hz * sizeof(double));
+        if (timeSeries->shutterDutyCycleH == NULL)
+            return TIME_SERIES_MALLOC;
+        timeSeries->shutterDutyCycleV = (double*) malloc(timeSeries->n2Hz * sizeof(double));
+        if (timeSeries->shutterDutyCycleV == NULL)
+            return TIME_SERIES_MALLOC;
+
         timeSeries->columnSumH = (uint16_t*) malloc(timeSeries->n2Hz * sizeof(uint16_t) * 32);
         if (timeSeries->columnSumH == NULL)
             return TIME_SERIES_MALLOC;
@@ -667,12 +680,16 @@ int getLpTiiTimeSeries(char satellite, SciencePackets *packets, LpTiiTimeSeries 
                 timeSeries->ionDensity2[2*i+s] = science.IonDensityL1aProbe2[s];
                 timeSeries->y2H[2*i+s] = science.Y2H[s];
                 timeSeries->y2V[2*i+s] = science.Y2V[s];
+                // Repeat values for 2 Hz from 1 Hz
                 timeSeries->biasGridVoltageSettingH[2*i + s] = science.BiasGridVoltageSettingH;
                 timeSeries->biasGridVoltageSettingV[2*i + s] = science.BiasGridVoltageSettingV;
                 timeSeries->mcpVoltageSettingH[2*i + s] = science.McpVoltageSettingH;
                 timeSeries->mcpVoltageSettingV[2*i + s] = science.McpVoltageSettingV;
                 timeSeries->phosphorVoltageSettingH[2*i + s] = science.PhosphorVoltageSettingH;
                 timeSeries->phosphorVoltageSettingV[2*i + s] = science.PhosphorVoltageSettingV;
+                timeSeries->shutterDutyCycleH[2*i + s] = science.ShutterDutyCycleH;
+                timeSeries->shutterDutyCycleV[2*i + s] = science.ShutterDutyCycleV;
+                // 2 Hz 32 values per column
                 for (int p = 0; p < 32; p++)
                 {
                     timeSeries->columnSumH[2*32*i + 32*s + p] = science.ColumnSumH[s][p];

@@ -2,7 +2,7 @@
 
     TIIM processing tools: tools/tii_dump/tii_dump.c
 
-    Copyright (C) 2024  Johnathan K Burchill
+    Copyright (C) 2025  Johnathan K Burchill
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -29,14 +29,14 @@
 
 #include <stdio.h>
 #include <string.h>
-#include <stdint.h>
 #include <time.h>
 #include <math.h>
 
 int main(int argc, char **argv)
 {
 
-    size_t nTiiParameters = 10;
+    int allData = 0;
+
     TiiParameter tiiParameters[] =
     {
         // Science 2 Hz
@@ -49,15 +49,28 @@ int main(int argc, char **argv)
         {7, PARAM_2HZ, PARAM_DOUBLE, "VMcpSettingH", "MCP front voltage setting H sensor", 6*sizeof(double)},
         {8, PARAM_2HZ, PARAM_DOUBLE, "VMcpSettingV", "MCP front voltage setting V sensor", 7*sizeof(double)},
         {9, PARAM_2HZ, PARAM_DOUBLE, "VPhosSettingH", "Phosphor voltage setting H sensor", 8*sizeof(double)},
-        {10, PARAM_2HZ, PARAM_DOUBLE, "VPhosSettingV", "Phosphor voltage setting V sensor", 9*sizeof(double)}
-};
+        {10, PARAM_2HZ, PARAM_DOUBLE, "VPhosSettingV", "Phosphor voltage setting V sensor", 9*sizeof(double)},
+        {11, PARAM_2HZ, PARAM_DOUBLE, "ShutterOpenDutyCycleH", "Shutter open duty cycle H sensor", 10*sizeof(double)},
+        {12, PARAM_2HZ, PARAM_DOUBLE, "ShutterOpenDutyCycleV", "Shutter open duty cycle V sensor", 11*sizeof(double)}
+    };
+    size_t nTiiParameters = sizeof(tiiParameters) / sizeof(TiiParameter);
 
-    if (argc > 1 && strcmp(argv[1], "--parameters") == 0)
-    {
-        parameterList(nTiiParameters, tiiParameters);
-        exit(0);
+
+    int nOptions = 0;
+    for (int i = 1; i < argc; i++) {
+        if (strcmp("--all-data", argv[i]) == 0) {
+            nOptions++;
+            allData = 1;
+        } else if (strcmp("--parameters", argv[i]) == 0) {
+            parameterList(nTiiParameters, tiiParameters);
+            return 0;
+        } else if (strncmp("--", argv[i], 2) == 0) {
+            fprintf(stderr, "Unable to parse option '%s'\n", argv[i]);
+            return 1;
+        }
     }
-    if (argc != 4)
+
+    if (argc - nOptions != 4)
     {
         usage(argv[0]);
         exit(0);
@@ -200,7 +213,7 @@ int main(int argc, char **argv)
 
         getAlignedImagePair(&imagePackets, 2*i, &imagePair, &imagesRead);
 
-        if (scienceMode(imagePair.auxH) && scienceMode(imagePair.auxV))
+        if (allData || (scienceMode(imagePair.auxH) && scienceMode(imagePair.auxV)))
         {
             fprintf(dailyParameterFile, "%.0lf", lastScienceTime);
             // Get next parameter value corresponding to image time.
@@ -215,7 +228,7 @@ int main(int argc, char **argv)
                             lastScienceTime = timeSeries.lpTiiTime2Hz[lastScienceIndex];
                         }
                         // Take the next parameter if it was sampled within 1 s of the image time
-                        if (fabs(lastScienceTime - imagePair.secondsSince1970) < 1.0)
+                        if (allData || (fabs(lastScienceTime - imagePair.secondsSince1970) < 1.0))
                         {
                             double value = (*((double**)(((char*)&timeSeries.ionDensity1) + tiiParameters[parameterIds[p]-1].offset)))[lastScienceIndex];
                             fprintf(dailyParameterFile, " %lf", value);
@@ -262,7 +275,7 @@ void usage(const char * name)
 {
     printf("\nTII Parameter Dump %s compiled %s %s UTC\n", TII_LIB_VERSION_STRING, __DATE__, __TIME__);
     printf("\nLicense: GPL 3.0 ");
-    printf("Copyright 2022 Johnathan Kerr Burchill\n");
+    printf("Copyright 2025 Johnathan Kerr Burchill\n");
     printf("\nUsage:\n");
     printf("\n  %s Xyyyymmdd parameterIds outputDir\n", name);
     printf("\n");

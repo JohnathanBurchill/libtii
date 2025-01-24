@@ -327,6 +327,8 @@ void getLpTiiScienceData(LpTiiSciencePacket * pkt, LpTiiScience * science)
     science->McpVoltageSettingH = ((double)science->McpVoltageSettingRawH) / 255. * (-2400.0);
     science->PhosphorVoltageSettingRawH = pkt->AuxDataH[5];
     science->PhosphorVoltageSettingH = ((double)science->PhosphorVoltageSettingRawH) / 255. * 8000.0;
+    science->ShutterDutyCycleRawH = pkt->AuxDataH[6] * 256 + pkt->AuxDataH[7];
+    science->ShutterDutyCycleH = 1.0 - (double)science->ShutterDutyCycleRawH / (52031.0 / 0.999); // 52031 corresponds to 0.1% open
 
     science->BiasGridVoltageSettingRawV = pkt->AuxDataV[3];
     science->BiasGridVoltageSettingV = ((double)science->BiasGridVoltageSettingRawV) / 255. * -100.0;
@@ -334,6 +336,8 @@ void getLpTiiScienceData(LpTiiSciencePacket * pkt, LpTiiScience * science)
     science->McpVoltageSettingV = ((double)science->McpVoltageSettingRawV) / 255. * (-2400.0);
     science->PhosphorVoltageSettingRawV = pkt->AuxDataV[5];
     science->PhosphorVoltageSettingV = ((double)science->PhosphorVoltageSettingRawV) / 255. * 8000.0;
+    science->ShutterDutyCycleRawV = pkt->AuxDataV[6] * 256 + pkt->AuxDataV[7];
+    science->ShutterDutyCycleV = 1.0 - (double)science->ShutterDutyCycleRawV / (52031.0 / 0.999); // 52031 corresponds to 0.1% open
 
     // 2nd y moment
     science->Y2H[0] = (double) getu16(bytes, 228)/ 1000.0;

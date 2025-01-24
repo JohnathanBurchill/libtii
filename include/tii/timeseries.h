@@ -50,6 +50,8 @@ typedef struct LpTiiTimeSeries
     double *mcpVoltageSettingV;
     double *phosphorVoltageSettingH;
     double *phosphorVoltageSettingV;
+    double *shutterDutyCycleH;
+    double *shutterDutyCycleV;
     uint16_t *columnSumH;
     uint16_t *columnSumV;
 
