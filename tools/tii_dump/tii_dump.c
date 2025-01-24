@@ -207,40 +207,63 @@ int main(int argc, char **argv)
     fprintf(dailyParameterFile, "\n");
 
     size_t lastScienceIndex = 0;
+    size_t refScienceIndex = 0;
     double lastScienceTime = timeSeries.lpTiiTime2Hz[0];
-    for (size_t i = 0; i < numberOfImagePairs; i++)
-    {
+    double value = 0.0;
 
-        getAlignedImagePair(&imagePackets, 2*i, &imagePair, &imagesRead);
-
-        if (allData || (scienceMode(imagePair.auxH) && scienceMode(imagePair.auxV)))
-        {
-            fprintf(dailyParameterFile, "%.0lf", lastScienceTime);
+    if (allData) {
+        for (size_t i = 0; i < timeSeries.n2Hz; i++) {
+            lastScienceTime = timeSeries.lpTiiTime2Hz[i];
+            fprintf(dailyParameterFile, "%.3lf", lastScienceTime);
             // Get next parameter value corresponding to image time.
             for (int p = 0; p < parameterCount; p++)
             {
                 switch (tiiParameters[parameterIds[p]-1].packetType)
                 {
                     case PARAM_2HZ:
-                        while (lastScienceTime < imagePair.secondsSince1970 && lastScienceIndex < timeSeries.n2Hz)
-                        {
-                            lastScienceIndex++;
-                            lastScienceTime = timeSeries.lpTiiTime2Hz[lastScienceIndex];
-                        }
                         // Take the next parameter if it was sampled within 1 s of the image time
-                        if (allData || (fabs(lastScienceTime - imagePair.secondsSince1970) < 1.0))
-                        {
-                            double value = (*((double**)(((char*)&timeSeries.ionDensity1) + tiiParameters[parameterIds[p]-1].offset)))[lastScienceIndex];
-                            fprintf(dailyParameterFile, " %lf", value);
-                        }
-                        else
-                            fprintf(dailyParameterFile, " -");
+                        value = (*((double**)(((char*)&timeSeries.ionDensity1) + tiiParameters[parameterIds[p]-1].offset)))[i];
+                        fprintf(dailyParameterFile, " %lf", value);
                         break;
                     default:
                         break;
                 }
             }
             fprintf(dailyParameterFile, "\n");
+        }
+    } else {
+        for (size_t i = 0; i < numberOfImagePairs; i++)
+        {
+            getAlignedImagePair(&imagePackets, 2*i, &imagePair, &imagesRead);
+            if (scienceMode(imagePair.auxH) && scienceMode(imagePair.auxV))
+            {
+                lastScienceIndex = refScienceIndex;
+                while (lastScienceTime < imagePair.secondsSince1970 && lastScienceIndex < timeSeries.n2Hz)
+                {
+                    lastScienceIndex++;
+                    lastScienceTime = timeSeries.lpTiiTime2Hz[lastScienceIndex];
+                }
+                refScienceIndex = lastScienceIndex;
+                if (fabs(lastScienceTime - imagePair.secondsSince1970) < 1.0)
+                {
+                    fprintf(dailyParameterFile, "%.3lf", lastScienceTime);
+                    // Get next parameter value corresponding to image time.
+                    for (int p = 0; p < parameterCount; p++)
+                    {
+                        switch (tiiParameters[parameterIds[p]-1].packetType)
+                        {
+                            case PARAM_2HZ:
+                                // Take the next parameter if it was sampled within 1 s of the image time
+                                value = (*((double**)(((char*)&timeSeries.ionDensity1) + tiiParameters[parameterIds[p]-1].offset)))[lastScienceIndex];
+                                fprintf(dailyParameterFile, " %lf", value);
+                                break;
+                            default:
+                                break;
+                        }
+                    }
+                    fprintf(dailyParameterFile, "\n");
+                }
+            }
         }
     }
     fclose(dailyParameterFile);
