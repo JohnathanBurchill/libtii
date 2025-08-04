@@ -2,7 +2,7 @@
 
     TIIM processing tools: tools/tii_moments/tii_moments.c
 
-    Copyright (C) 2024  Johnathan K Burchill
+    Copyright (C) 2025  Johnathan K Burchill
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -184,9 +184,9 @@ int main(int argc, char **argv)
 
         getAlignedImagePair(&imagePackets, 2*i, &imagePair, &imagesRead);
 
-        if (scienceMode(imagePair.auxH) && scienceMode(imagePair.auxV))
+        if (scienceMode(&imagePair, &timeSeries))
         {
-            latestConfigValues(&imagePair, &timeSeries, &pixelThreshold, &minCol, &maxCol, &nCols, NULL, NULL, NULL);
+            latestConfigValues(&imagePair, &timeSeries, &pixelThreshold, &minCol, &maxCol, &nCols, NULL, NULL, NULL, NULL, NULL);
 
             // Defaults to processing the raw image (no gain correction)
             // (i.e., gainMapId == -1)

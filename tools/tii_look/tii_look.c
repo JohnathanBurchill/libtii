@@ -199,7 +199,7 @@ int main(int argc, char **argv)
     // imageRectangle(&imageBuf, false, V_SENSOR, 32, 38, 14, 26, BACKGROUND_COLOR);
 
     // Gain corrected image anomalies
-    latestConfigValues(&imagePair, &timeSeries, &pixelThreshold, NULL, NULL, NULL, NULL, NULL, NULL);
+    latestConfigValues(&imagePair, &timeSeries, &pixelThreshold, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
     applyImagePairGainMaps(&imagePair, pixelThreshold, NULL, NULL);
 
     analyzeGainCorrectedImageAnomalies(imagePair.pixelsH, imagePair.gotImageH, imagePair.auxH->satellite, &h);

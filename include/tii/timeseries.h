@@ -168,6 +168,6 @@ int getImagePairTimeSeries(char satellite, ImagePackets *packets, ImagePair *ima
 void initLpTiiTimeSeries(LpTiiTimeSeries *timeSeries);
 void freeLpTiiTimeSeries(LpTiiTimeSeries * timeSeries);
 int getLpTiiTimeSeries(char satellite, SciencePackets *packets, LpTiiTimeSeries *timeSeries);
-void latestConfigValues(ImagePair *imagePair, LpTiiTimeSeries *timeSeries, int *pixelThreshold, int *minCol, int *maxCol, int *nCols, bool *agcEnabled, int *agcLower, int *agcUpper);
+void latestConfigValues(ImagePair *imagePair, LpTiiTimeSeries *timeSeries, int *pixelThreshold, int *minCol, int *maxCol, int *nCols, bool *agcEnabled, int *agcLower, int *agcUpper, int *shutterPlateauSettingH, int *shutterPlateauSettingV);
 
 #endif // _TIMESERIES_H

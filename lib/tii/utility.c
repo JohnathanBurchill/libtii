@@ -2,7 +2,7 @@
 
     TIIM processing library: lib/tii/utility.c
 
-    Copyright (C) 2024  Johnathan K Burchill
+    Copyright (C) 2025  Johnathan K Burchill
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -21,6 +21,7 @@
 #include "tii/utility.h"
 #include "tii/tii.h"
 #include "tii/isp.h"
+#include "tii/timeseries.h"
 
 #include <stdio.h>
 #include <string.h>
@@ -74,14 +75,26 @@ bool ignoreTime(double time, double dayStart, double dayEnd)
         return (time < dayStart || time > dayEnd);
 }
 
-bool scienceMode(ImageAuxData *aux)
+bool scienceMode(ImagePair *images, LpTiiTimeSeries *timeSeries)
 {
     // Unable to check AGC from image ISPs. Should be on for science mode, but will allow non-AGC ops.
+    // For both sensors:
     // MCP voltage less than -1000 V
     // Phosphor voltage > 3900 V
     // Bias voltage < -50 V
-    return aux->McpVoltageMonitor < -1000.0 && aux->PhosphorVoltageMonitor > 3900 && aux->BiasGridVoltageMonitor < -50.0;
+    // Shutter voltage < -50 V
 
+    static int latestConfigIndex = 0;
+    struct tm *ts = NULL;
+
+    ImageAuxData *aux = images->auxH;
+
+    int vShutterSettingThreshold = (int)((-50.0 / -100.0) * 255);
+    bool scienceModeA = aux->McpVoltageMonitor < -1000.0 && aux->PhosphorVoltageMonitor > 3900 && aux->BiasGridVoltageMonitor < -50.0 && timeSeries->shutterLowerPlateauVoltageSettingHConfig[latestConfigIndex] > vShutterSettingThreshold;
+    aux = images->auxV;
+    bool scienceModeB = aux->McpVoltageMonitor < -1000.0 && aux->PhosphorVoltageMonitor > 3900 && aux->BiasGridVoltageMonitor < -50.0 && timeSeries->shutterLowerPlateauVoltageSettingVConfig[latestConfigIndex] > vShutterSettingThreshold;
+
+    return scienceModeA && scienceModeB;
 }
 
 

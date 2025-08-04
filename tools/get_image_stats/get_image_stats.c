@@ -2,7 +2,7 @@
 
     TIIM processing tools: tools/get_image_stats/get_image_stats.c
 
-    Copyright (C) 2024  Johnathan K Burchill
+    Copyright (C) 2025  Johnathan K Burchill
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -83,7 +83,7 @@ int main( int argc, char **argv)
     int nameLength;
 
     size_t nValues = 0;
-    double t, mh, mv, pah, pav, vph, vpv, vmh, vmv, vbh, vbv, vf;
+    double t, mh, mv, pah, pav, vph, vpv, vmh, vmv, vbh, vbv, vf, vshh, vshv;
     int valuesRead = 0;
     double epoch1970 = 2208988800.0;
 
@@ -100,11 +100,11 @@ int main( int argc, char **argv)
                 fts_close(fts);
                 goto cleanup;
             }
-            while((valuesRead = fscanf(file, "%lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf", &t, &mh, &mv, &pah, &pav, &vph, &vpv, &vmh, &vmv, &vbh, &vbv, &vf)) != EOF)
+            while((valuesRead = fscanf(file, "%lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf", &t, &mh, &mv, &pah, &pav, &vph, &vpv, &vmh, &vmv, &vbh, &vbv, &vf, &vshh, &vshv)) != EOF)
             {
-                if (valuesRead != 12)
+                if (valuesRead != 14)
                     break;
-                if (scienceOnly == 0 || (vph >= 4700.0 && vpv >= 4700.0 && vmh <= -1000.0 && vmv <= -1000.0 && vbh <= -50.0 && vbv <= -50.0))
+                if (scienceOnly == 0 || (vph >= 4700.0 && vpv >= 4700.0 && vmh <= -1000.0 && vmv <= -1000.0 && vbh <= -50.0 && vbv <= -50.0 && vshh < -50.0 && vshv < -50.0))
                 {
                     nValues++;
                     timesValues = (double*) realloc(timesValues, 2*nValues * sizeof(double));

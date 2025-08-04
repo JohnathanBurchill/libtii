@@ -235,7 +235,7 @@ int main(int argc, char **argv)
         for (size_t i = 0; i < numberOfImagePairs; i++)
         {
             getAlignedImagePair(&imagePackets, 2*i, &imagePair, &imagesRead);
-            if (scienceMode(imagePair.auxH) && scienceMode(imagePair.auxV))
+            if (scienceMode(&imagePair, &timeSeries))
             {
                 lastScienceIndex = refScienceIndex;
                 while (lastScienceTime < imagePair.secondsSince1970 && lastScienceIndex < timeSeries.n2Hz)

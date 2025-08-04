@@ -17,14 +17,19 @@
 
 PROJECT(tiim_stats)
 
+SET(THREADS_PREFER_PTHREAD_FLAG ON)
+FIND_PACKAGE(Threads REQUIRED)
+FIND_LIBRARY(CURSES ncurses)
+
 # SET(LIBS ${LIBS} ${MATH} ${LIBXML2_LIBRARIES} ${ZLIB_LIBRARIES})
 INCLUDE_DIRECTORIES(${INCLUDE_DIRS} ${LIBXML2_INCLUDE_DIR})
 
 ADD_EXECUTABLE(tiim_stats tiim_stats.c)
 TARGET_LINK_LIBRARIES(tiim_stats ${LIBS} tii -lm)
 
-install(TARGETS tiim_stats DESTINATION $ENV{HOME}/bin)
+ADD_EXECUTABLE(tiim_stats_parallel tiim_stats_parallel.c)
+TARGET_LINK_LIBRARIES(tiim_stats_parallel PRIVATE ${LIBS} tii -lm Threads::Threads ${CURSES})
 
-install(PROGRAMS parallel_process_TIIM_stats.sh DESTINATION $ENV{HOME}/bin)
-install(PROGRAMS process_TIIM_stats.sh DESTINATION $ENV{HOME}/bin)
+install(TARGETS tiim_stats DESTINATION $ENV{HOME}/bin)
+install(TARGETS tiim_stats_parallel DESTINATION $ENV{HOME}/bin)
 

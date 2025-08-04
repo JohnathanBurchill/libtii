@@ -2,7 +2,7 @@
 
     TIIM processing tools: tools/anomaly_stats/anomaly_stats.c
 
-    Copyright (C) 2024  Johnathan K Burchill
+    Copyright (C) 2025  Johnathan K Burchill
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -127,7 +127,7 @@ int main(int argc, char **argv)
 
         getAlignedImagePair(&imagePackets, 2*i, &imagePair, &imagesRead);
 
-        if (scienceMode(imagePair.auxH) && scienceMode(imagePair.auxV))
+        if (scienceMode(&imagePair, &timeSeries))
         {
             initializeAnomalyData(&h);
             initializeAnomalyData(&v);
@@ -137,7 +137,7 @@ int main(int argc, char **argv)
             analyzeRawImageAnomalies(imagePair.pixelsV, imagePair.gotImageV, imagePair.auxV->satellite, &v);
 
             // Gain corrected image anomalies
-            latestConfigValues(&imagePair, &timeSeries, &pixelThreshold, NULL, NULL, NULL, NULL, NULL, NULL);
+            latestConfigValues(&imagePair, &timeSeries, &pixelThreshold, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
             applyImagePairGainMaps(&imagePair, pixelThreshold, NULL, NULL);
             analyzeGainCorrectedImageAnomalies(imagePair.pixelsH, imagePair.gotImageH, imagePair.auxH->satellite, &h);
             analyzeGainCorrectedImageAnomalies(imagePair.pixelsV, imagePair.gotImageV, imagePair.auxV->satellite, &v);

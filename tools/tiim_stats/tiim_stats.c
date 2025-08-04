@@ -2,7 +2,7 @@
 
     TIIM processing tools: tools/tiim_stats/tiim_stats.c
 
-    Copyright (C) 2024  Johnathan K Burchill
+    Copyright (C) 2025  Johnathan K Burchill
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -27,7 +27,6 @@
 
 #include <stdio.h>
 #include <string.h>
-#include <stdint.h>
 #include <time.h>
 #include <math.h>
 
@@ -57,9 +56,12 @@ int main(int argc, char **argv)
 
     // Data
     ImagePackets imagePackets;
+    SciencePackets sciencePackets = {0};
 
     ImagePairTimeSeries imagePairTimeSeries;
     initImagePairTimeSeries(&imagePairTimeSeries);
+    LpTiiTimeSeries timeSeries = {0};
+    initLpTiiTimeSeries(&timeSeries);
 
     status = importImagery(satDate, &imagePackets);
     if (status)
@@ -98,6 +100,18 @@ int main(int argc, char **argv)
     size_t numberOfImagePairs = countImagePairs(&imagePackets, &imagePair, dayStart, dayEnd);
     getImagePairTimeSeries(satellite, &imagePackets, &imagePair, &imagePairTimeSeries, numberOfImagePairs, dayStart, dayEnd, max);
 
+    importScience(satDate, &sciencePackets);
+    getLpTiiTimeSeries(satellite, &sciencePackets, &timeSeries);
+
+//    time_t tsec = 0;
+//    struct tm *ts = NULL;
+//    for (int i = 0; i < timeSeries.nConfig; ++i) {
+//        tsec = (time_t)timeSeries.configTime[i];
+//        ts = gmtime(&tsec);
+//        fprintf(stdout, "%d %4d%02d%02dT%02d%02d%02d %d %d\n", i, ts->tm_year + 1900, ts->tm_mon + 1, ts->tm_mday, ts->tm_hour, ts->tm_min, ts->tm_sec, timeSeries.shutterLowerPlateauVoltageSettingHConfig[i], timeSeries.shutterLowerPlateauVoltageSettingVConfig[i]);
+//    }
+//    return 0;
+
     // Summary
     // start time (sec from 1970), end time, satLetter, imagePairs, measlesCountH, measlesCountV, paCumulativeFrameCountH, paCumulativeFrameCountV, paAngularFrameCountsH... paAngularFramecountsV...
 
@@ -129,10 +143,18 @@ int main(int argc, char **argv)
         goto cleanup;
     }
 
+    int vshHSetting = 0;
+    int vshVSetting = 0;
+    double vshH = 0.0;
+    double vshV = 0.0;
     for (size_t i = 0; i < numberOfImagePairs; i++)
     {
-        // time in sec since 1970, measles count H, measles count V, PA count H, PA count V, VPhos H, VPhosV, VMcp H, VMcp V, VBias H, VBias V, VFP H
-        fprintf(measlesPaFile, "%ld %d %d %d %d %f %f %f %f %f %f %f\n", (time_t)floor(imagePairTimeSeries.time[i]), imagePairTimeSeries.measlesCountH[i], imagePairTimeSeries.measlesCountV[i], imagePairTimeSeries.paCountH[i], imagePairTimeSeries.paCountV[i], imagePairTimeSeries.PhosphorVoltageMonitorH[i], imagePairTimeSeries.PhosphorVoltageMonitorV[i], imagePairTimeSeries.McpVoltageMonitorH[i], imagePairTimeSeries.McpVoltageMonitorV[i], imagePairTimeSeries.BiasGridVoltageMonitorH[i], imagePairTimeSeries.BiasGridVoltageMonitorV[i], imagePairTimeSeries.FaceplateVoltageMonitorH[i]);
+        imagePair.secondsSince1970 = imagePairTimeSeries.time[i];
+        latestConfigValues(&imagePair, &timeSeries, NULL, NULL, NULL, NULL, NULL, NULL, NULL, &vshHSetting, &vshVSetting);
+        vshH = -100.0 * (double)vshHSetting / 255.0;
+        vshV = -100.0 * (double)vshVSetting / 255.0;
+        // time in sec since 1970, measles count H, measles count V, PA count H, PA count V, VPhos H, VPhosV, VMcp H, VMcp V, VBias H, VBias V, VFP H, VSh H, VSh V
+        fprintf(measlesPaFile, "%ld %d %d %d %d %f %f %f %f %f %f %f %f %f\n", (time_t)floor(imagePairTimeSeries.time[i]), imagePairTimeSeries.measlesCountH[i], imagePairTimeSeries.measlesCountV[i], imagePairTimeSeries.paCountH[i], imagePairTimeSeries.paCountV[i], imagePairTimeSeries.PhosphorVoltageMonitorH[i], imagePairTimeSeries.PhosphorVoltageMonitorV[i], imagePairTimeSeries.McpVoltageMonitorH[i], imagePairTimeSeries.McpVoltageMonitorV[i], imagePairTimeSeries.BiasGridVoltageMonitorH[i], imagePairTimeSeries.BiasGridVoltageMonitorV[i], imagePairTimeSeries.FaceplateVoltageMonitorH[i], vshH, vshV);
     }
     fclose(measlesPaFile);
 

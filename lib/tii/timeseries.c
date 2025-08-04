@@ -824,7 +824,7 @@ int getLpTiiTimeSeries(char satellite, SciencePackets *packets, LpTiiTimeSeries 
 
 }
 
-void latestConfigValues(ImagePair *imagePair, LpTiiTimeSeries *timeSeries, int *pixelThreshold, int *minCol, int *maxCol, int *nCols, bool *agcEnabled, int *agcLower, int *agcUpper)
+void latestConfigValues(ImagePair *imagePair, LpTiiTimeSeries *timeSeries, int *pixelThreshold, int *minCol, int *maxCol, int *nCols, bool *agcEnabled, int *agcLower, int *agcUpper, int *shutterPlateauSettingH, int *shutterPlateauSettingV)
 {
     // Default values in case there are no config packets
     static size_t lastConfigIndex = 0;
@@ -844,6 +844,10 @@ void latestConfigValues(ImagePair *imagePair, LpTiiTimeSeries *timeSeries, int *
         *agcLower = -1;
     if (agcUpper != NULL)
         *agcUpper = -1;
+    if (shutterPlateauSettingH != NULL)
+        *shutterPlateauSettingH = -1;
+    if (shutterPlateauSettingV != NULL)
+        *shutterPlateauSettingV = -1;
 
     // Get config values if available. All packets must have been sorted.
     // Search from beginning if this image is older than last one
@@ -874,6 +878,10 @@ void latestConfigValues(ImagePair *imagePair, LpTiiTimeSeries *timeSeries, int *
             *agcLower = timeSeries->agcLowerThresholdConfig[lastConfigIndex];
         if (agcUpper != NULL)
             *agcUpper = timeSeries->agcUpperThresholdConfig[lastConfigIndex];
+        if (shutterPlateauSettingH != NULL)
+            *shutterPlateauSettingH = timeSeries->shutterLowerPlateauVoltageSettingHConfig[lastConfigIndex];
+        if (shutterPlateauSettingV != NULL)
+            *shutterPlateauSettingV = timeSeries->shutterLowerPlateauVoltageSettingVConfig[lastConfigIndex];
     }
 
 }

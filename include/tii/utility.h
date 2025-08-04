@@ -22,6 +22,7 @@
 #define _UTILITY_H
 
 #include "isp.h"
+#include "timeseries.h"
 
 #include <time.h>
 
@@ -39,7 +40,7 @@ int dateToSecondsSince1970(const char * yyyymmdd, double *seconds);
 
 bool ignoreTime(double time, double dayStart, double dayEnd);
 
-bool scienceMode(ImageAuxData *aux);
+bool scienceMode(ImagePair *images, LpTiiTimeSeries *lpTiiTs);
 
 void binaryView(const char *name, long nBytes, uint8_t *array, int rowSize, int startRow, int endRow, int startCol, int endCol);
 
