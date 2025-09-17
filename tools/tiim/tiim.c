@@ -2,7 +2,7 @@
 
     TIIM processing tools: tools/tiim/tiim.c
 
-    Copyright (C) 2024  Johnathan K Burchill
+    Copyright (C) 2025  Johnathan K Burchill
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -370,8 +370,78 @@ int main(int argc, char **argv)
     int histHeight = 150;
     // TODO Only include AGC enabled data?
     drawHistogram(&image, imagePairTimeSeries.agcControlValueH, imagePairTimeSeries.nImagePairs, agcBinWidth, agcBinMin, agcBinMax, histWidth, histHeight, ox, oy, HISTOGRAM_PEAK_EQUALS_ONE, "AGC control value H");
-
     drawHistogram(&image, imagePairTimeSeries.agcControlValueV, imagePairTimeSeries.nImagePairs, agcBinWidth, agcBinMin, agcBinMax, histWidth, histHeight, ox, oy + histHeight + 50, HISTOGRAM_PEAK_EQUALS_ONE, "AGC control value V");
+
+    // Gain plot
+    // Replace the agcControlValues with gain estimate requested by Richard Enck (Torr Scientific Ltd)
+    // Estimate mean ion density leading up to this image
+    int lpInd = 0;
+    double lpTime = timeSeries.lpTiiTime2Hz[lpInd];
+    double ni = timeSeries.ionDensity2[lpInd];
+    double t = 0.0;
+    double meanni = 0.0;
+    double nni = 0.0;
+    double meangainH = 0.0;
+    double meangainV = 0.0;
+    double ngainH = 0.0;
+    double ngainV = 0.0;
+    double agcH = 0.0;
+    double agcV = 0.0;
+    int agcLower = 0.0;
+    latestConfigValues(&imagePair, &timeSeries, NULL, NULL, NULL, NULL, NULL, &agcLower, NULL, NULL, NULL);
+    for (int i = 0; i < nImagePairs; ++i) {
+        double t = imagePairTimeSeries.time[i];
+        meanni = 0.0;
+        nni = 0.0;
+        while(lpTime < t && lpInd < timeSeries.n2Hz - 1) {
+            ++lpInd;
+            lpTime = timeSeries.lpTiiTime2Hz[lpInd];
+            ni = timeSeries.ionDensity2[lpInd];
+            meanni += ni;
+            ++nni;
+        }
+        if (nni > 0) {
+            meanni /= nni;
+        } else {
+            meanni = 0;
+        }
+
+        agcH = imagePairTimeSeries.agcControlValueH[i];
+        agcV = imagePairTimeSeries.agcControlValueV[i];
+        if (meanni > 0 && agcH > 0 && agcH < agcLower) {
+            imagePairTimeSeries.agcControlValueH[i] /= meanni;
+            meangainH += imagePairTimeSeries.agcControlValueH[i];
+            ++ngainH;
+        } else {
+            imagePairTimeSeries.agcControlValueH[i] = 0;
+        }
+        if (meanni > 0 && agcV > 0 && agcV < agcLower) {
+            imagePairTimeSeries.agcControlValueV[i] /= meanni;
+            meangainV += imagePairTimeSeries.agcControlValueV[i];
+            ++ngainV;
+        } else {
+            imagePairTimeSeries.agcControlValueV[i] = 0;
+        }
+
+    }
+    if (ngainH > 0) {
+        meangainH /= ngainH;
+    }
+    if (ngainV > 0) {
+        meangainV /= ngainV;
+    }
+
+    ox = 20;
+    oy = 110;
+    char gainstr[32] = {0};
+    double plotscale = 1.0;
+    double maxgain = plotscale * meangainH;
+    if (meangainV > meangainH) {
+        maxgain = plotscale * meangainV;
+    }
+    snprintf(gainstr, 32, "%.2g", maxgain);
+    drawTimeSeries(&image, imagePairTimeSeries.time, imagePairTimeSeries.agcControlValueH, nImagePairs, ox, oy + 3*plotHeight + 3*dy, plotWidth, plotHeight, dayStart, dayEnd, 0, maxgain, "", "G-sub-F", 1, MAX_COLOR_VALUE + 1, "0", gainstr, false, dotSize, 12, true);
+    drawTimeSeries(&image, imagePairTimeSeries.time, imagePairTimeSeries.agcControlValueV, nImagePairs, ox, oy + 3*plotHeight + 3*dy, plotWidth, plotHeight, dayStart, dayEnd, 0, maxgain, "", "", 1, 13, "", "", false, dotSize, 12, false);
 
     for (int c = 0; c < 3.0 * VIDEO_FPS; c++)
         generateFrame(&image, frameCounter++);
