@@ -357,7 +357,7 @@ int main(int argc, char **argv)
     drawTimeSeries(&image, imagePairTimeSeries.time, imagePairTimeSeries.x1H, nImagePairs, ox, oy + plotHeight + dy, plotWidth, plotHeight, dayStart, dayEnd, 25, 55, "", "x1", 1, MAX_COLOR_VALUE + 1, "25", "55", false, dotSize, 12, true);
     drawTimeSeries(&image, imagePairTimeSeries.time, imagePairTimeSeries.x1V, nImagePairs, ox, oy + plotHeight + dy, plotWidth, plotHeight, dayStart, dayEnd, 25, 55, "", "", 1, 13, "", "", false, dotSize, 12, false);
 
-    drawTimeSeries(&image, imagePairTimeSeries.time, imagePairTimeSeries.y1H, nImagePairs, ox, oy + 2*plotHeight + 2*dy, plotWidth, plotHeight, dayStart, dayEnd, 20, 45, xlabel, "y1", 1, MAX_COLOR_VALUE + 1, "20", "45", false, dotSize, 12, true);
+    drawTimeSeries(&image, imagePairTimeSeries.time, imagePairTimeSeries.y1H, nImagePairs, ox, oy + 2*plotHeight + 2*dy, plotWidth, plotHeight, dayStart, dayEnd, 20, 45, "", "y1", 1, MAX_COLOR_VALUE + 1, "20", "45", false, dotSize, 12, true);
     drawTimeSeries(&image, imagePairTimeSeries.time, imagePairTimeSeries.y1V, nImagePairs, ox, oy + 2*plotHeight + 2*dy, plotWidth, plotHeight, dayStart, dayEnd, 20, 45, "", "", 1, 13, "", "", false, dotSize, 12, false);
 
     // AGC histograms
@@ -440,7 +440,7 @@ int main(int argc, char **argv)
         maxgain = plotscale * meangainV;
     }
     snprintf(gainstr, 32, "%.2g", maxgain);
-    drawTimeSeries(&image, imagePairTimeSeries.time, imagePairTimeSeries.agcControlValueH, nImagePairs, ox, oy + 3*plotHeight + 3*dy, plotWidth, plotHeight, dayStart, dayEnd, 0, maxgain, "", "G-sub-F", 1, MAX_COLOR_VALUE + 1, "0", gainstr, false, dotSize, 12, true);
+    drawTimeSeries(&image, imagePairTimeSeries.time, imagePairTimeSeries.agcControlValueH, nImagePairs, ox, oy + 3*plotHeight + 3*dy, plotWidth, plotHeight, dayStart, dayEnd, 0, maxgain, xlabel, "G-sub-F", 1, MAX_COLOR_VALUE + 1, "0", gainstr, false, dotSize, 12, true);
     drawTimeSeries(&image, imagePairTimeSeries.time, imagePairTimeSeries.agcControlValueV, nImagePairs, ox, oy + 3*plotHeight + 3*dy, plotWidth, plotHeight, dayStart, dayEnd, 0, maxgain, "", "", 1, 13, "", "", false, dotSize, 12, false);
 
     for (int c = 0; c < 3.0 * VIDEO_FPS; c++)
