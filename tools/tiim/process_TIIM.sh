@@ -64,7 +64,7 @@ draw_progress_bar() {
   for s in $(seq 1 $(( $PROGRESS_BAR_WIDTH - $__num_bar ))); do printf " "; done
   printf "] $__percentage%% ($__value / $__max $__unit)\r"
 }
-(cd /data/Swarm/EFI/Level0/Treated;
+(cd /data2/Swarm/EFI/Level0/Treated;
 while [ "$dateToProcess" -le "$stopDate" ]; do
 	
 	year=$(date -d "@$dateToProcess" +%Y)
@@ -73,10 +73,10 @@ while [ "$dateToProcess" -le "$stopDate" ]; do
 	daysProcessed=$((daysProcessed + 1))
 	datestring=`date -I -d "@$dateToProcess"`
 	draw_progress_bar $daysProcessed $daysToProcess "days: TIIM ${satellite} $datestring"
-	if [ ! -d "/data/Movies/Swarm/${year}${month}" ]; then
-		mkdir -p /data/Movies/Swarm/${year}${month}
+	if [ ! -d "/data2/Movies/Swarm/${year}${month}" ]; then
+		mkdir -p /data2/Movies/Swarm/${year}${month}
 	fi
- 	tiim ${satellite}${year}${month}${day} -1 /data/Movies/Swarm/${year}${month} -f
+ 	tiim ${satellite}${year}${month}${day} -1 /data2/Movies/Swarm/${year}${month} -f
 	dateToProcess=$((dateToProcess + stride * 86400))
 done
 )
