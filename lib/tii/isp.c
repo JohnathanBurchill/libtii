@@ -345,6 +345,12 @@ void getLpTiiScienceData(LpTiiSciencePacket * pkt, LpTiiScience * science)
     science->Y2V[0] = (double) getu16(bytes, 344)/ 1000.0;
     science->Y2V[1] = (double) getu16(bytes, 576)/ 1000.0;
 
+    // Ion current
+    science->IonCurrentProbe1[0] = (double)getfloat(bytes, 36);
+    science->IonCurrentProbe1[1] = (double)getfloat(bytes, 118);
+    science->IonCurrentProbe2[0] = (double)getfloat(bytes, 72);
+    science->IonCurrentProbe2[1] = (double)getfloat(bytes, 154);
+
     // Ion admittance
     science->IonAdmittanceProbe1[0] = (double)getfloat(bytes, 48);
     science->IonAdmittanceProbe1[1] = (double)getfloat(bytes, 130);
@@ -384,6 +390,7 @@ void getConfigData(ConfigPacket * pkt, Config * config)
     uint8_t *commonBytes = pkt->TiiAuxDataCommon;
     uint8_t *auxH = pkt->TiiAuxDataH;
     uint8_t *auxV = pkt->TiiAuxDataV;
+    uint8_t *auxLp = pkt->LpAuxData;
 
     config->agcIncrementMcpVoltage = commonBytes[0];
     config->agcIncrementShutterDutyCycle = commonBytes[1];
@@ -407,7 +414,14 @@ void getConfigData(ConfigPacket * pkt, Config * config)
     config->biasGridVoltageSettingV = auxV[2];
     config->shutterLowerPlateauVoltageSettingV = auxV[3];
     config->shutterDutyCycleV = getu16(auxV, 4);
-    config->gainMapIdV = (auxV[6] >> 4) & 0x0f;
+
+    config->lpCommonParams1 = auxLp[0];
+    config->lpCommonParams2 = auxLp[1];
+    config->lpCommonParams3 = auxLp[2];
+    config->lpFaceplateDuration = getu16(auxLp, 3);
+    config->lpFaceplateBias = getu16(auxLp, 5);
+    config->lpIonSaturationBiasProbe1 = getu16(auxLp, 25);
+    config->lpIonSaturationBiasProbe2 = getu16(auxLp, 29);
 
     setDateTime(&(config->dateTime), pkt->DataFieldHeader);
 

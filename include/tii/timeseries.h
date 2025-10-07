@@ -42,6 +42,10 @@ typedef struct LpTiiTimeSeries
 
     double *ionDensity1;
     double *ionDensity2;
+    double *ionCurrent1;
+    double *ionCurrent2;
+    double *ionAdmittance1;
+    double *ionAdmittance2;
     double *y2H;
     double *y2V;
     double *biasGridVoltageSettingH;
@@ -90,7 +94,13 @@ typedef struct LpTiiTimeSeries
     int *shutterLowerPlateauVoltageSettingVConfig;
     int *shutterDutyCycleVConfig;
     int *gainMapIdVConfig;
-
+    int *lpCommonParams1Config;
+    int *lpCommonParams2Config;
+    int *lpCommonParams3Config;
+    int *lpFaceplateDurationConfig;
+    int *lpFaceplateBiasConfig;
+    int *lpIonSaturationBiasProbe1Config;
+    int *lpIonSaturationBiasProbe2Config;
 
 } LpTiiTimeSeries;
 

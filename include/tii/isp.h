@@ -242,6 +242,9 @@ typedef struct LpTiiScience
 
     int16_t faceplateCurrentRaw[16];
 
+    double IonCurrentProbe1[2]; // 2 samples
+    double IonCurrentProbe2[2];
+
     double IonAdmittanceProbe1[2]; // 2 samples
     double IonAdmittanceProbe2[2];
 
@@ -298,6 +301,14 @@ typedef struct Config {
     uint8_t shutterLowerPlateauVoltageSettingV;
     uint16_t shutterDutyCycleV;
     uint8_t gainMapIdV;
+
+    uint8_t lpCommonParams1;
+    uint8_t lpCommonParams2;
+    uint8_t lpCommonParams3;
+    uint16_t lpFaceplateDuration;
+    uint16_t lpFaceplateBias;
+    uint16_t lpIonSaturationBiasProbe1;
+    uint16_t lpIonSaturationBiasProbe2;
 
 } Config;
 
