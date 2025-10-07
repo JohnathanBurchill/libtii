@@ -427,8 +427,13 @@ int main(int argc, char **argv)
     if (ngainH > 0) {
         meangainH /= ngainH;
     }
+    else {
+        meangainH = 1.0;
+    }
     if (ngainV > 0) {
         meangainV /= ngainV;
+    } else {
+        meangainV = 1.0;
     }
 
     ox = 20;
