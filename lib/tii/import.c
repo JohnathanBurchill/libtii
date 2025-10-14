@@ -37,12 +37,12 @@ int sortFiles(const FTSENT **first, const FTSENT **second)
         return strncmp((*first)->fts_name + 19, (*second)->fts_name + 19, 15);
 }
 
-int importImagery(const char *source, ImagePackets *imagePackets)
+int importImagery(const char *source, const char *pathIn, ImagePackets *imagePackets)
 {
-    return importImageryWithFilenames(source, imagePackets, NULL, NULL);
+    return importImageryWithFilenames(source, pathIn, imagePackets, NULL, NULL);
 }
 
-int importImageryWithFilenames(const char *source, ImagePackets *imagePackets, char **efiFilenames, size_t *nFiles)
+int importImageryWithFilenames(const char *source, const char *pathIn, ImagePackets *imagePackets, char **efiFilenames, size_t *nFiles)
 {
     int status = IMPORT_OK;
     bool readAtLeastOneFile = false;
@@ -61,7 +61,7 @@ int importImageryWithFilenames(const char *source, ImagePackets *imagePackets, c
     else if (len == 9)
     {
         char *path[2] = {NULL, NULL};
-        path[0] = ".";
+        path[0] = (char *)pathIn;
         FTS * fts = fts_open(path, FTS_PHYSICAL | FTS_NOCHDIR, &sortFiles);
         if (fts == NULL)
             return IMPORT_SOURCE;
@@ -275,7 +275,7 @@ int numberOfPacketGaps(uint8_t* fullImagePackets, uint8_t *continuedPackets, lon
     return nGaps;
 }
 
-int importScience(const char *source, SciencePackets *sciencePackets)
+int importScience(const char *source, const char *pathIn, SciencePackets *sciencePackets)
 {
     int status = IMPORT_OK;
 
@@ -299,7 +299,7 @@ int importScience(const char *source, SciencePackets *sciencePackets)
     else if (len == 9)
     {
         char *path[2] = {NULL, NULL};
-        path[0] = ".";
+        path[0] = (char *)pathIn;
         FTS * fts = fts_open(path, FTS_PHYSICAL | FTS_NOCHDIR, &sortFiles);
         if (fts == NULL)
             return IMPORT_SOURCE;

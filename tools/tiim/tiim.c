@@ -94,7 +94,7 @@ int main(int argc, char **argv)
         printf("Could not allocate memory for image.\n");
         goto cleanup;
     }
-    status = importImagery(hdr, &imagePackets);
+    status = importImagery(hdr, ".", &imagePackets);
     if (status)
     {
 	if (status == IMPORT_NO_RECORDS && sourceLen == 9)
@@ -169,7 +169,7 @@ int main(int argc, char **argv)
     getImagePairTimeSeries(satellite, &imagePackets, &imagePair, &imagePairTimeSeries, numberOfImagePairs, dayStart, dayEnd, max);
 
     // Ignore result status, as we will display imagery whether or not there are science packets
-    importScience(hdr, &sciencePackets);
+    importScience(hdr, ".", &sciencePackets);
     getLpTiiTimeSeries(satellite, &sciencePackets, &timeSeries);
 
     // Static content from frame to frame

@@ -96,7 +96,7 @@ int main(int argc, char **argv)
     // Data
     ImagePackets imagePackets;
 
-    status = importImagery(satDate, &imagePackets);
+    status = importImagery(satDate, ".", &imagePackets);
     if (status)
     {
         fprintf(stderr, "Could not import image data.\n");
@@ -113,7 +113,7 @@ int main(int argc, char **argv)
     SciencePackets sciencePackets;
     LpTiiTimeSeries timeSeries;
     initLpTiiTimeSeries(&timeSeries);
-    importScience(satDate, &sciencePackets);
+    importScience(satDate, ".", &sciencePackets);
     getLpTiiTimeSeries(satDate[0], &sciencePackets, &timeSeries);
 
 

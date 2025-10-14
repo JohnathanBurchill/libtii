@@ -41,15 +41,15 @@ enum IMPORT_ERROR
     IMPORT_NO_RECORDS = -10
 };
 
-int importImagery(const char *source, ImagePackets *imagePackets);
-int importImageryWithFilenames(const char *source, ImagePackets *imagePackets, char **efiFilenames, size_t *nFiles);
+int importImagery(const char *source, const char *pathIn, ImagePackets *imagePackets);
+int importImageryWithFilenames(const char *source, const char *pathIn, ImagePackets *imagePackets, char **efiFilenames, size_t *nFiles);
 int importImageryFromHdr(const char *hdr, ImagePackets *imagePackets);
 
 void alignPackets(uint8_t* fullImagePackets, uint8_t *continuedPackets, long nImages, long nGaps);
 
 int numberOfPacketGaps(uint8_t* fullImagePackets, uint8_t *continuedPackets, long nImages);
 
-int importScience(const char *source, SciencePackets *SciencePackets);
+int importScience(const char *source, const char *pathIn, SciencePackets *SciencePackets);
 int importScienceFromHdr(const char *hdr, SciencePackets *sciencePackets);
 
 int comparePacketTimes(const void *p1, const void *p2);

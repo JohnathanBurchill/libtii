@@ -63,7 +63,7 @@ int main(int argc, char **argv)
     LpTiiTimeSeries timeSeries = {0};
     initLpTiiTimeSeries(&timeSeries);
 
-    status = importImagery(satDate, &imagePackets);
+    status = importImagery(satDate, ".", &imagePackets);
     if (status)
     {
         fprintf(stderr, "Could not import image data.\n");
@@ -100,7 +100,7 @@ int main(int argc, char **argv)
     size_t numberOfImagePairs = countImagePairs(&imagePackets, &imagePair, dayStart, dayEnd);
     getImagePairTimeSeries(satellite, &imagePackets, &imagePair, &imagePairTimeSeries, numberOfImagePairs, dayStart, dayEnd, max);
 
-    importScience(satDate, &sciencePackets);
+    importScience(satDate, ".", &sciencePackets);
     getLpTiiTimeSeries(satellite, &sciencePackets, &timeSeries);
 
 //    time_t tsec = 0;

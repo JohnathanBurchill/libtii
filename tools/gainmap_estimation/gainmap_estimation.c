@@ -97,7 +97,7 @@ int main(int argc, char **argv)
         theTime = (time_t)state.t1 + d * 86400;
         dateInfo = gmtime(&theTime);
         sprintf(fileDate, "%c%4d%02d%02d", state.satellite, dateInfo->tm_year + 1900, dateInfo->tm_mon + 1, dateInfo->tm_mday);
-        status = importImagery(fileDate, &imagePackets);
+        status = importImagery(fileDate, ".", &imagePackets);
         if (status != IMPORT_OK || imagePackets.numberOfImages == 0)
             continue;
 
