@@ -2,7 +2,7 @@
 
     TIIM processing library: lib/tii/timeseries.c
 
-    Copyright (C) 2024  Johnathan K Burchill
+    Copyright (C) 2025  Johnathan K Burchill
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -24,6 +24,24 @@
 #include "tii/utility.h"
 
 #include <stdio.h>
+
+static double LP_TM_AMP_FACTORS[3][2][2] = {
+    // A
+    // Probe 1
+    {{2.2912898739821e-09, 4.60224934250328e-11},
+    // Probe 2
+    {2.27881613794304e-09, 4.60298096426561e-11}},
+    // B
+    // Probe 1
+    {{2.28286923741073e-09, 4.61699316131176e-11},
+    // Probe 2
+    {2.28319864763142e-09, 4.5968090495885e-11}},
+    // C
+    // Probe 1
+    {{2.29391374089632e-09, 4.59088707671326e-11},
+    // Probe 2
+    {2.29014135919299e-09, 4.60475058988004e-11}},
+};
 
 void initImagePairTimeSeries(ImagePairTimeSeries *ts)
 {
@@ -288,6 +306,10 @@ void freeLpTiiTimeSeries(LpTiiTimeSeries * ts)
         free(ts->lpCommonParams2Config);
     if (ts->lpCommonParams3Config != NULL)
         free(ts->lpCommonParams3Config);
+    if (ts->lpGainModeProbe1Config != NULL)
+        free(ts->lpGainModeProbe1Config);
+    if (ts->lpGainModeProbe2Config != NULL)
+        free(ts->lpGainModeProbe2Config);
     if (ts->lpFaceplateDurationConfig != NULL)
         free(ts->lpFaceplateDurationConfig);
     if (ts->lpFaceplateBiasConfig != NULL)
@@ -474,7 +496,7 @@ int getImagePairTimeSeries(char satellite, ImagePackets * imagePackets, ImagePai
         ts->minTime = 1e20;
         ts->maxTime = -1e20;
 
-        for (int i = 0; i < imagePackets->numberOfImages-1;)
+        for (int i = 0; i < imagePackets->numberOfImages - 1;)
         {
             status = getAlignedImagePair(imagePackets, i, imagePair, &imagesRead);
 
@@ -624,6 +646,8 @@ void initLpTiiTimeSeries(LpTiiTimeSeries * timeSeries)
     timeSeries->lpCommonParams1Config = NULL;
     timeSeries->lpCommonParams2Config = NULL;
     timeSeries->lpCommonParams3Config = NULL;
+    timeSeries->lpGainModeProbe1Config = NULL;
+    timeSeries->lpGainModeProbe2Config = NULL;
     timeSeries->lpFaceplateDurationConfig = NULL;
     timeSeries->lpFaceplateBiasConfig = NULL;
     timeSeries->lpIonSaturationBiasProbe1Config = NULL;
@@ -644,129 +668,7 @@ int getLpTiiTimeSeries(char satellite, SciencePackets *packets, LpTiiTimeSeries 
     double minTime = 1e20;
     double maxTime = -1;
 
-    // LP&TII Science
-    if (packets->numberOfLpTiiSciencePackets > 0)
-    {
-        // 2 Hz
-        timeSeries->n2Hz = 2 * packets->numberOfLpTiiSciencePackets;
-        timeSeries->lpTiiTime2Hz = (double*) malloc(timeSeries->n2Hz * sizeof(double));
-        if (timeSeries->lpTiiTime2Hz == NULL)
-            return TIME_SERIES_MALLOC;
-        timeSeries->ionDensity1 = (double*) malloc(timeSeries->n2Hz * sizeof(double));
-        if (timeSeries->ionDensity1 == NULL)
-            return TIME_SERIES_MALLOC;
-        timeSeries->ionDensity2 = (double*) malloc(timeSeries->n2Hz * sizeof(double));
-        if (timeSeries->ionDensity2 == NULL)
-            return TIME_SERIES_MALLOC;
-        timeSeries->ionCurrent1 = (double*) malloc(timeSeries->n2Hz * sizeof(double));
-        if (timeSeries->ionCurrent1 == NULL)
-            return TIME_SERIES_MALLOC;
-        timeSeries->ionCurrent2 = (double*) malloc(timeSeries->n2Hz * sizeof(double));
-        if (timeSeries->ionCurrent2 == NULL)
-            return TIME_SERIES_MALLOC;
-        timeSeries->ionAdmittance1 = (double*) malloc(timeSeries->n2Hz * sizeof(double));
-        if (timeSeries->ionAdmittance1 == NULL)
-            return TIME_SERIES_MALLOC;
-        timeSeries->ionAdmittance2 = (double*) malloc(timeSeries->n2Hz * sizeof(double));
-        if (timeSeries->ionAdmittance2 == NULL)
-            return TIME_SERIES_MALLOC;
-        timeSeries->y2H = (double*) malloc(timeSeries->n2Hz * sizeof(double));
-        if (timeSeries->y2H == NULL)
-            return TIME_SERIES_MALLOC;
-        timeSeries->y2V = (double*) malloc(timeSeries->n2Hz * sizeof(double));
-        if (timeSeries->y2V == NULL)
-            return TIME_SERIES_MALLOC;
-        timeSeries->biasGridVoltageSettingH = (double*) malloc(timeSeries->n2Hz * sizeof(double));
-        if (timeSeries->biasGridVoltageSettingH == NULL)
-            return TIME_SERIES_MALLOC;
-        timeSeries->biasGridVoltageSettingV= (double*) malloc(timeSeries->n2Hz * sizeof(double));
-        if (timeSeries->biasGridVoltageSettingV == NULL)
-            return TIME_SERIES_MALLOC;
-        timeSeries->mcpVoltageSettingH = (double*) malloc(timeSeries->n2Hz * sizeof(double));
-        if (timeSeries->mcpVoltageSettingH == NULL)
-            return TIME_SERIES_MALLOC;
-        timeSeries->mcpVoltageSettingV = (double*) malloc(timeSeries->n2Hz * sizeof(double));
-        if (timeSeries->mcpVoltageSettingV == NULL)
-            return TIME_SERIES_MALLOC;
-        timeSeries->phosphorVoltageSettingH = (double*) malloc(timeSeries->n2Hz * sizeof(double));
-        if (timeSeries->phosphorVoltageSettingH == NULL)
-            return TIME_SERIES_MALLOC;
-        timeSeries->phosphorVoltageSettingV = (double*) malloc(timeSeries->n2Hz * sizeof(double));
-        if (timeSeries->phosphorVoltageSettingV == NULL)
-            return TIME_SERIES_MALLOC;
-
-        timeSeries->shutterDutyCycleH = (double*) malloc(timeSeries->n2Hz * sizeof(double));
-        if (timeSeries->shutterDutyCycleH == NULL)
-            return TIME_SERIES_MALLOC;
-        timeSeries->shutterDutyCycleV = (double*) malloc(timeSeries->n2Hz * sizeof(double));
-        if (timeSeries->shutterDutyCycleV == NULL)
-            return TIME_SERIES_MALLOC;
-
-        timeSeries->columnSumH = (uint16_t*) malloc(timeSeries->n2Hz * sizeof(uint16_t) * 32);
-        if (timeSeries->columnSumH == NULL)
-            return TIME_SERIES_MALLOC;
-        timeSeries->columnSumV = (uint16_t*) malloc(timeSeries->n2Hz * sizeof(uint16_t) * 32);
-        if (timeSeries->columnSumV == NULL)
-            return TIME_SERIES_MALLOC;
-
-
-        for (long i = 0; i < packets->numberOfLpTiiSciencePackets; i++)
-        {
-            pkt = (LpTiiSciencePacket*)(packets->lpTiiSciencePackets + i*LP_TII_SCIENCE_PACKET_SIZE);
-            getLpTiiScienceData(pkt, &science);
-            // TODO set accurate times
-            timeSeries->lpTiiTime2Hz[2*i] = science.dateTime.secondsSince1970;
-            timeSeries->lpTiiTime2Hz[2*i+1] = science.dateTime.secondsSince1970 + 0.5;
-            if (timeSeries->lpTiiTime2Hz[2*i] > maxTime) maxTime = timeSeries->lpTiiTime2Hz[2*i] + 0.5;
-            if (timeSeries->lpTiiTime2Hz[2*i] < minTime) minTime = timeSeries->lpTiiTime2Hz[2*i];
-            for (int s = 0; s < 2; s++)
-            {
-                timeSeries->ionDensity1[2*i+s] = science.IonDensityL1aProbe1[s];
-                timeSeries->ionDensity2[2*i+s] = science.IonDensityL1aProbe2[s];
-                timeSeries->ionCurrent1[2*i+s] = science.IonCurrentProbe1[s];
-                timeSeries->ionCurrent2[2*i+s] = science.IonCurrentProbe2[s];
-                timeSeries->ionAdmittance1[2*i+s] = science.IonAdmittanceProbe1[s];
-                timeSeries->ionAdmittance2[2*i+s] = science.IonAdmittanceProbe2[s];
-                timeSeries->y2H[2*i+s] = science.Y2H[s];
-                timeSeries->y2V[2*i+s] = science.Y2V[s];
-                // Repeat values for 2 Hz from 1 Hz
-                timeSeries->biasGridVoltageSettingH[2*i + s] = science.BiasGridVoltageSettingH;
-                timeSeries->biasGridVoltageSettingV[2*i + s] = science.BiasGridVoltageSettingV;
-                timeSeries->mcpVoltageSettingH[2*i + s] = science.McpVoltageSettingH;
-                timeSeries->mcpVoltageSettingV[2*i + s] = science.McpVoltageSettingV;
-                timeSeries->phosphorVoltageSettingH[2*i + s] = science.PhosphorVoltageSettingH;
-                timeSeries->phosphorVoltageSettingV[2*i + s] = science.PhosphorVoltageSettingV;
-                timeSeries->shutterDutyCycleH[2*i + s] = science.ShutterDutyCycleH;
-                timeSeries->shutterDutyCycleV[2*i + s] = science.ShutterDutyCycleV;
-                // 2 Hz 32 values per column
-                for (int p = 0; p < 32; p++)
-                {
-                    timeSeries->columnSumH[2*32*i + 32*s + p] = science.ColumnSumH[s][p];
-                    timeSeries->columnSumV[2*32*i + 32*s + p] = science.ColumnSumV[s][p];
-                }
-            }
-        }
-        timeSeries->minTime2Hz = minTime;
-        timeSeries->maxTime2Hz = maxTime;
-
-        // 16 Hz
-        timeSeries->n16Hz = 16 * packets->numberOfLpTiiSciencePackets;
-        timeSeries->lpTiiTime16Hz = (double*) malloc(timeSeries->n16Hz * sizeof(double));
-        if (timeSeries->lpTiiTime16Hz == NULL)
-            return TIME_SERIES_MALLOC;
-        timeSeries->x1H = (double*) malloc(timeSeries->n16Hz * sizeof(double));
-        if (timeSeries->x1H == NULL)
-            return TIME_SERIES_MALLOC;
-        timeSeries->y1H = (double*) malloc(timeSeries->n16Hz * sizeof(double));
-        if (timeSeries->y1H == NULL)
-            return TIME_SERIES_MALLOC;
-        timeSeries->faceplateCurrent = (double*) malloc(timeSeries->n16Hz * sizeof(double));
-        if (timeSeries->faceplateCurrent == NULL)
-            return TIME_SERIES_MALLOC;
-
-
-
-    }
+    // Config data
     if (packets->numberOfConfigPackets > 0)
     {
         timeSeries->nConfig = packets->numberOfConfigPackets;
@@ -846,19 +748,27 @@ int getLpTiiTimeSeries(char satellite, SciencePackets *packets, LpTiiTimeSeries 
         timeSeries->lpCommonParams3Config = (int *) malloc(timeSeries->nConfig * sizeof(int));
         if (timeSeries->lpCommonParams3Config == NULL)
             return TIME_SERIES_MALLOC;
+        timeSeries->lpGainModeProbe1Config = (int *) malloc(timeSeries->nConfig * sizeof(int));
+        if (timeSeries->lpGainModeProbe1Config == NULL)
+            return TIME_SERIES_MALLOC;
+        timeSeries->lpGainModeProbe2Config = (int *) malloc(timeSeries->nConfig * sizeof(int));
+        if (timeSeries->lpGainModeProbe2Config == NULL)
+            return TIME_SERIES_MALLOC;
         timeSeries->lpFaceplateDurationConfig = (int *) malloc(timeSeries->nConfig * sizeof(int));
         if (timeSeries->lpFaceplateDurationConfig == NULL)
             return TIME_SERIES_MALLOC;
         timeSeries->lpFaceplateBiasConfig = (int *) malloc(timeSeries->nConfig * sizeof(int));
         if (timeSeries->lpFaceplateBiasConfig == NULL)
             return TIME_SERIES_MALLOC;
-        timeSeries->lpIonSaturationBiasProbe1Config = (int *) malloc(timeSeries->nConfig * sizeof(int));
+        timeSeries->lpIonSaturationBiasProbe1Config = (double *) malloc(timeSeries->nConfig * sizeof(double));
         if (timeSeries->lpIonSaturationBiasProbe1Config == NULL)
             return TIME_SERIES_MALLOC;
-        timeSeries->lpIonSaturationBiasProbe2Config = (int *) malloc(timeSeries->nConfig * sizeof(int));
+        timeSeries->lpIonSaturationBiasProbe2Config = (double *) malloc(timeSeries->nConfig * sizeof(double));
         if (timeSeries->lpIonSaturationBiasProbe2Config == NULL)
             return TIME_SERIES_MALLOC;
 
+        int value = 0;
+        double dval = 0.0;
         for (long i = 0; i < packets->numberOfConfigPackets; i++)
         {
             cfg = (ConfigPacket*)(packets->configPackets + i*CONFIG_PACKET_SIZE);
@@ -889,11 +799,154 @@ int getLpTiiTimeSeries(char satellite, SciencePackets *packets, LpTiiTimeSeries 
             timeSeries->lpCommonParams1Config[i] = config.lpCommonParams1;
             timeSeries->lpCommonParams2Config[i] = config.lpCommonParams2;
             timeSeries->lpCommonParams3Config[i] = config.lpCommonParams3;
+            // Probe gain modes
+            value = (config.lpCommonParams3 & 0b11);
+            timeSeries->lpGainModeProbe1Config[i] = value;
+            value = (config.lpCommonParams3 & 0b110000) >> 4;
+            timeSeries->lpGainModeProbe2Config[i] = value;
             timeSeries->lpFaceplateDurationConfig[i] = config.lpFaceplateDuration;
             timeSeries->lpFaceplateBiasConfig[i] = config.lpFaceplateBias;
-            timeSeries->lpIonSaturationBiasProbe1Config[i] = config.lpIonSaturationBiasProbe1;
-            timeSeries->lpIonSaturationBiasProbe2Config[i] = config.lpIonSaturationBiasProbe2;
+            // Probe bias voltages, ion saturation
+            dval = 0.000152592547379986;
+            timeSeries->lpIonSaturationBiasProbe1Config[i] = ((double)config.lpIonSaturationBiasProbe1 - 32768.0)*dval;
+            timeSeries->lpIonSaturationBiasProbe2Config[i] = ((double)config.lpIonSaturationBiasProbe2 - 32768.0)*dval;
         }
+
+    }
+
+    // LP&TII Science
+    if (packets->numberOfLpTiiSciencePackets > 0)
+    {
+        // 2 Hz
+        timeSeries->n2Hz = 2 * packets->numberOfLpTiiSciencePackets;
+        timeSeries->lpTiiTime2Hz = (double*) malloc(timeSeries->n2Hz * sizeof(double));
+        if (timeSeries->lpTiiTime2Hz == NULL)
+            return TIME_SERIES_MALLOC;
+        timeSeries->ionDensity1 = (double*) malloc(timeSeries->n2Hz * sizeof(double));
+        if (timeSeries->ionDensity1 == NULL)
+            return TIME_SERIES_MALLOC;
+        timeSeries->ionDensity2 = (double*) malloc(timeSeries->n2Hz * sizeof(double));
+        if (timeSeries->ionDensity2 == NULL)
+            return TIME_SERIES_MALLOC;
+        timeSeries->ionCurrent1 = (double*) malloc(timeSeries->n2Hz * sizeof(double));
+        if (timeSeries->ionCurrent1 == NULL)
+            return TIME_SERIES_MALLOC;
+        timeSeries->ionCurrent2 = (double*) malloc(timeSeries->n2Hz * sizeof(double));
+        if (timeSeries->ionCurrent2 == NULL)
+            return TIME_SERIES_MALLOC;
+        timeSeries->ionAdmittance1 = (double*) malloc(timeSeries->n2Hz * sizeof(double));
+        if (timeSeries->ionAdmittance1 == NULL)
+            return TIME_SERIES_MALLOC;
+        timeSeries->ionAdmittance2 = (double*) malloc(timeSeries->n2Hz * sizeof(double));
+        if (timeSeries->ionAdmittance2 == NULL)
+            return TIME_SERIES_MALLOC;
+        timeSeries->y2H = (double*) malloc(timeSeries->n2Hz * sizeof(double));
+        if (timeSeries->y2H == NULL)
+            return TIME_SERIES_MALLOC;
+        timeSeries->y2V = (double*) malloc(timeSeries->n2Hz * sizeof(double));
+        if (timeSeries->y2V == NULL)
+            return TIME_SERIES_MALLOC;
+        timeSeries->biasGridVoltageSettingH = (double*) malloc(timeSeries->n2Hz * sizeof(double));
+        if (timeSeries->biasGridVoltageSettingH == NULL)
+            return TIME_SERIES_MALLOC;
+        timeSeries->biasGridVoltageSettingV= (double*) malloc(timeSeries->n2Hz * sizeof(double));
+        if (timeSeries->biasGridVoltageSettingV == NULL)
+            return TIME_SERIES_MALLOC;
+        timeSeries->mcpVoltageSettingH = (double*) malloc(timeSeries->n2Hz * sizeof(double));
+        if (timeSeries->mcpVoltageSettingH == NULL)
+            return TIME_SERIES_MALLOC;
+        timeSeries->mcpVoltageSettingV = (double*) malloc(timeSeries->n2Hz * sizeof(double));
+        if (timeSeries->mcpVoltageSettingV == NULL)
+            return TIME_SERIES_MALLOC;
+        timeSeries->phosphorVoltageSettingH = (double*) malloc(timeSeries->n2Hz * sizeof(double));
+        if (timeSeries->phosphorVoltageSettingH == NULL)
+            return TIME_SERIES_MALLOC;
+        timeSeries->phosphorVoltageSettingV = (double*) malloc(timeSeries->n2Hz * sizeof(double));
+        if (timeSeries->phosphorVoltageSettingV == NULL)
+            return TIME_SERIES_MALLOC;
+
+        timeSeries->shutterDutyCycleH = (double*) malloc(timeSeries->n2Hz * sizeof(double));
+        if (timeSeries->shutterDutyCycleH == NULL)
+            return TIME_SERIES_MALLOC;
+        timeSeries->shutterDutyCycleV = (double*) malloc(timeSeries->n2Hz * sizeof(double));
+        if (timeSeries->shutterDutyCycleV == NULL)
+            return TIME_SERIES_MALLOC;
+
+        timeSeries->columnSumH = (uint16_t*) malloc(timeSeries->n2Hz * sizeof(uint16_t) * 32);
+        if (timeSeries->columnSumH == NULL)
+            return TIME_SERIES_MALLOC;
+        timeSeries->columnSumV = (uint16_t*) malloc(timeSeries->n2Hz * sizeof(uint16_t) * 32);
+        if (timeSeries->columnSumV == NULL)
+            return TIME_SERIES_MALLOC;
+
+        double vBias1 = 0.0;
+        double vBias2 = 0.0;
+        int gain1 = 0;
+        int gain2 = 0;
+        double currentscale1 = 1.0;
+        double currentscale2 = 1.0;
+
+        for (long i = 0; i < packets->numberOfLpTiiSciencePackets; i++)
+        {
+            pkt = (LpTiiSciencePacket*)(packets->lpTiiSciencePackets + i*LP_TII_SCIENCE_PACKET_SIZE);
+            getLpTiiScienceData(pkt, &science);
+            // TODO set accurate times
+            timeSeries->lpTiiTime2Hz[2*i] = science.dateTime.secondsSince1970;
+            timeSeries->lpTiiTime2Hz[2*i+1] = science.dateTime.secondsSince1970 + 0.5;
+            if (timeSeries->lpTiiTime2Hz[2*i] > maxTime) maxTime = timeSeries->lpTiiTime2Hz[2*i] + 0.5;
+            if (timeSeries->lpTiiTime2Hz[2*i] < minTime) minTime = timeSeries->lpTiiTime2Hz[2*i];
+            if (timeSeries->nConfig > 0) {
+                latestConfigValues(timeSeries->lpTiiTime2Hz[2*i], timeSeries, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, &vBias1, &vBias2, &gain1, &gain2);
+                currentscale1 = lpTm2Amp(satellite, 0, gain1);
+                currentscale2 = lpTm2Amp(satellite, 1, gain2);
+            } else {
+                currentscale1 = 1.0;
+                currentscale2 = 1.0;
+            }
+            for (int s = 0; s < 2; s++)
+            {
+                timeSeries->ionDensity1[2*i+s] = science.IonDensityL1aProbe1[s];
+                timeSeries->ionDensity2[2*i+s] = science.IonDensityL1aProbe2[s];
+                timeSeries->ionCurrent1[2*i+s] = science.IonCurrentProbe1[s] * currentscale1;
+                timeSeries->ionCurrent2[2*i+s] = science.IonCurrentProbe2[s] * currentscale2;
+                timeSeries->ionAdmittance1[2*i+s] = science.IonAdmittanceProbe1[s];
+                timeSeries->ionAdmittance2[2*i+s] = science.IonAdmittanceProbe2[s];
+                timeSeries->y2H[2*i+s] = science.Y2H[s];
+                timeSeries->y2V[2*i+s] = science.Y2V[s];
+                // Repeat values for 2 Hz from 1 Hz
+                timeSeries->biasGridVoltageSettingH[2*i + s] = science.BiasGridVoltageSettingH;
+                timeSeries->biasGridVoltageSettingV[2*i + s] = science.BiasGridVoltageSettingV;
+                timeSeries->mcpVoltageSettingH[2*i + s] = science.McpVoltageSettingH;
+                timeSeries->mcpVoltageSettingV[2*i + s] = science.McpVoltageSettingV;
+                timeSeries->phosphorVoltageSettingH[2*i + s] = science.PhosphorVoltageSettingH;
+                timeSeries->phosphorVoltageSettingV[2*i + s] = science.PhosphorVoltageSettingV;
+                timeSeries->shutterDutyCycleH[2*i + s] = science.ShutterDutyCycleH;
+                timeSeries->shutterDutyCycleV[2*i + s] = science.ShutterDutyCycleV;
+                // 2 Hz 32 values per column
+                for (int p = 0; p < 32; p++)
+                {
+                    timeSeries->columnSumH[2*32*i + 32*s + p] = science.ColumnSumH[s][p];
+                    timeSeries->columnSumV[2*32*i + 32*s + p] = science.ColumnSumV[s][p];
+                }
+            }
+        }
+        timeSeries->minTime2Hz = minTime;
+        timeSeries->maxTime2Hz = maxTime;
+
+        // 16 Hz
+        timeSeries->n16Hz = 16 * packets->numberOfLpTiiSciencePackets;
+        timeSeries->lpTiiTime16Hz = (double*) malloc(timeSeries->n16Hz * sizeof(double));
+        if (timeSeries->lpTiiTime16Hz == NULL)
+            return TIME_SERIES_MALLOC;
+        timeSeries->x1H = (double*) malloc(timeSeries->n16Hz * sizeof(double));
+        if (timeSeries->x1H == NULL)
+            return TIME_SERIES_MALLOC;
+        timeSeries->y1H = (double*) malloc(timeSeries->n16Hz * sizeof(double));
+        if (timeSeries->y1H == NULL)
+            return TIME_SERIES_MALLOC;
+        timeSeries->faceplateCurrent = (double*) malloc(timeSeries->n16Hz * sizeof(double));
+        if (timeSeries->faceplateCurrent == NULL)
+            return TIME_SERIES_MALLOC;
 
     }
 
@@ -901,11 +954,13 @@ int getLpTiiTimeSeries(char satellite, SciencePackets *packets, LpTiiTimeSeries 
 
 }
 
-void latestConfigValues(ImagePair *imagePair, LpTiiTimeSeries *timeSeries, int *pixelThreshold, int *minCol, int *maxCol, int *nCols, bool *agcEnabled, int *agcLower, int *agcUpper, int *shutterPlateauSettingH, int *shutterPlateauSettingV)
+void latestConfigValues(double secondsSince1970, LpTiiTimeSeries *timeSeries, int *pixelThreshold, int *minCol, int *maxCol, int *nCols, bool *agcEnabled, int *agcLower, int *agcUpper, int *shutterPlateauSettingH, int *shutterPlateauSettingV, double *lpIonSatBias1, double *lpIonSatBias2, int *lpGain1, int *lpGain2)
 {
     // Default values in case there are no config packets
     static size_t lastConfigIndex = 0;
     static double lastTime = 0;
+
+    double value = 0.0;
     // Init to reasonable defaults
     if (pixelThreshold != NULL)
         *pixelThreshold = 0;
@@ -925,16 +980,24 @@ void latestConfigValues(ImagePair *imagePair, LpTiiTimeSeries *timeSeries, int *
         *shutterPlateauSettingH = -1;
     if (shutterPlateauSettingV != NULL)
         *shutterPlateauSettingV = -1;
+    if (lpIonSatBias1 != NULL)
+        *lpIonSatBias1 = -99.0;
+    if (lpIonSatBias2 != NULL)
+        *lpIonSatBias2 = -99.0;
+    if (lpGain1 == NULL)
+        *lpGain1 = -1;
+    if (lpGain2 == NULL)
+        *lpGain2 = -2;
 
     // Get config values if available. All packets must have been sorted.
     // Search from beginning if this image is older than last one
-    if (imagePair->secondsSince1970 < lastTime)
+    if (secondsSince1970 < lastTime)
         lastConfigIndex = 0;
-    lastTime = imagePair->secondsSince1970;
+    lastTime = secondsSince1970;
     for (size_t i = lastConfigIndex; i < timeSeries->nConfig; i++)
     {
         lastConfigIndex = i;
-        if (timeSeries->configTime[i] > imagePair->secondsSince1970)
+        if (timeSeries->configTime[i] > secondsSince1970)
         {
             break;
         }
@@ -959,6 +1022,42 @@ void latestConfigValues(ImagePair *imagePair, LpTiiTimeSeries *timeSeries, int *
             *shutterPlateauSettingH = timeSeries->shutterLowerPlateauVoltageSettingHConfig[lastConfigIndex];
         if (shutterPlateauSettingV != NULL)
             *shutterPlateauSettingV = timeSeries->shutterLowerPlateauVoltageSettingVConfig[lastConfigIndex];
+        if (lpIonSatBias1 != NULL)
+            *lpIonSatBias1 = timeSeries->lpIonSaturationBiasProbe1Config[lastConfigIndex];
+        if (lpIonSatBias2 != NULL)
+            *lpIonSatBias2 = timeSeries->lpIonSaturationBiasProbe2Config[lastConfigIndex];
+        if (lpGain1 != NULL)
+            *lpGain1 = timeSeries->lpGainModeProbe1Config[lastConfigIndex];
+        if (lpGain2 != NULL)
+            *lpGain2 = timeSeries->lpGainModeProbe2Config[lastConfigIndex];
     }
 
+}
+
+double lpTm2Amp(char satellite, int probe, int gain)
+{
+    if (probe < 0 || probe > 1) {
+        return 1.0;
+    }
+
+    if (gain < 1 || gain > 2) {
+        return 1.0;
+    }
+
+    int sat = 0;
+    switch(satellite) {
+        case 'A':
+            sat = 0;
+            break;
+        case 'B':
+            sat = 1;
+            break;
+        default:
+            sat = 2;
+            break;
+    }
+
+    double scale = LP_TM_AMP_FACTORS[sat][probe][gain-1];
+
+    return scale;
 }

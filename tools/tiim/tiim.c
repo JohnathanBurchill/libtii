@@ -388,7 +388,7 @@ int main(int argc, char **argv)
     double agcH = 0.0;
     double agcV = 0.0;
     int agcLower = 0.0;
-    latestConfigValues(&imagePair, &timeSeries, NULL, NULL, NULL, NULL, NULL, &agcLower, NULL, NULL, NULL);
+    latestConfigValues(imagePair.secondsSince1970, &timeSeries, NULL, NULL, NULL, NULL, NULL, &agcLower, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
     for (int i = 0; i < nImagePairs; ++i) {
         double t = imagePairTimeSeries.time[i];
         meanni = 0.0;

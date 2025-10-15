@@ -137,7 +137,7 @@ int main(int argc, char **argv)
             analyzeRawImageAnomalies(imagePair.pixelsV, imagePair.gotImageV, imagePair.auxV->satellite, &v);
 
             // Gain corrected image anomalies
-            latestConfigValues(&imagePair, &timeSeries, &pixelThreshold, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+            latestConfigValues(imagePair.secondsSince1970, &timeSeries, &pixelThreshold, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
             applyImagePairGainMaps(&imagePair, pixelThreshold, NULL, NULL);
             analyzeGainCorrectedImageAnomalies(imagePair.pixelsH, imagePair.gotImageH, imagePair.auxH->satellite, &h);
             analyzeGainCorrectedImageAnomalies(imagePair.pixelsV, imagePair.gotImageV, imagePair.auxV->satellite, &v);

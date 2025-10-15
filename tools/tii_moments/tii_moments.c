@@ -186,7 +186,7 @@ int main(int argc, char **argv)
 
         if (scienceMode(&imagePair, &timeSeries))
         {
-            latestConfigValues(&imagePair, &timeSeries, &pixelThreshold, &minCol, &maxCol, &nCols, NULL, NULL, NULL, NULL, NULL);
+            latestConfigValues(imagePair.secondsSince1970, &timeSeries, &pixelThreshold, &minCol, &maxCol, &nCols, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
 
             // Defaults to processing the raw image (no gain correction)
             // (i.e., gainMapId == -1)

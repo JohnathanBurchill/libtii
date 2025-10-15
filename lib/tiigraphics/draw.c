@@ -75,7 +75,7 @@ void drawFrame(Image *imageBuf, Image *templateBuf, ImagePair *imagePair, LpTiiT
     bool agcEnabled = false;
     int agcLower = 0;
     int agcUpper = 0;
-    latestConfigValues(imagePair, timeSeries, &pixelThreshold, &minCol, &maxCol, &nCols, &agcEnabled, &agcLower, &agcUpper, NULL, NULL);
+    latestConfigValues(imagePair->secondsSince1970, timeSeries, &pixelThreshold, &minCol, &maxCol, &nCols, &agcEnabled, &agcLower, &agcUpper, NULL, NULL, NULL, NULL, NULL, NULL);
 
     sprintf(title, "Pixel threshold: %d", pixelThreshold);
     annotate(title, 9, 20, 490, imageBuf);

@@ -150,7 +150,7 @@ int main(int argc, char **argv)
     for (size_t i = 0; i < numberOfImagePairs; i++)
     {
         imagePair.secondsSince1970 = imagePairTimeSeries.time[i];
-        latestConfigValues(&imagePair, &timeSeries, NULL, NULL, NULL, NULL, NULL, NULL, NULL, &vshHSetting, &vshVSetting);
+        latestConfigValues(imagePair.secondsSince1970, &timeSeries, NULL, NULL, NULL, NULL, NULL, NULL, NULL, &vshHSetting, &vshVSetting, NULL, NULL, NULL, NULL);
         vshH = -100.0 * (double)vshHSetting / 255.0;
         vshV = -100.0 * (double)vshVSetting / 255.0;
         // time in sec since 1970, measles count H, measles count V, PA count H, PA count V, VPhos H, VPhosV, VMcp H, VMcp V, VBias H, VBias V, VFP H, VSh H, VSh V

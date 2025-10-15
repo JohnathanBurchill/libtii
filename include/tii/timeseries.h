@@ -2,7 +2,7 @@
 
     TIIM processing library: include/timeseries.h
 
-    Copyright (C) 2022  Johnathan K Burchill
+    Copyright (C) 2025  Johnathan K Burchill
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -99,8 +99,10 @@ typedef struct LpTiiTimeSeries
     int *lpCommonParams3Config;
     int *lpFaceplateDurationConfig;
     int *lpFaceplateBiasConfig;
-    int *lpIonSaturationBiasProbe1Config;
-    int *lpIonSaturationBiasProbe2Config;
+    double *lpIonSaturationBiasProbe1Config;
+    double *lpIonSaturationBiasProbe2Config;
+    int *lpGainModeProbe1Config;
+    int *lpGainModeProbe2Config;
 
 } LpTiiTimeSeries;
 
@@ -178,6 +180,7 @@ int getImagePairTimeSeries(char satellite, ImagePackets *packets, ImagePair *ima
 void initLpTiiTimeSeries(LpTiiTimeSeries *timeSeries);
 void freeLpTiiTimeSeries(LpTiiTimeSeries * timeSeries);
 int getLpTiiTimeSeries(char satellite, SciencePackets *packets, LpTiiTimeSeries *timeSeries);
-void latestConfigValues(ImagePair *imagePair, LpTiiTimeSeries *timeSeries, int *pixelThreshold, int *minCol, int *maxCol, int *nCols, bool *agcEnabled, int *agcLower, int *agcUpper, int *shutterPlateauSettingH, int *shutterPlateauSettingV);
+void latestConfigValues(double secondsSince1970, LpTiiTimeSeries *timeSeries, int *pixelThreshold, int *minCol, int *maxCol, int *nCols, bool *agcEnabled, int *agcLower, int *agcUpper, int *shutterPlateauSettingH, int *shutterPlateauSettingV, double *lpIonSatBias1, double *lpIonSatBias2, int *lpGain1, int *lpGain2);
+double lpTm2Amp(char satellite, int probe, int gain);
 
 #endif // _TIMESERIES_H
