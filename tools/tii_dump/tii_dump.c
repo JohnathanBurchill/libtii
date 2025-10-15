@@ -41,17 +41,19 @@ int main(int argc, char **argv)
     {
         // Science 2 Hz
         {1, PARAM_2HZ, PARAM_DOUBLE, "L1aDensity1", "Provisional Langmuir probe density estimate from probe 1.", 0},
-        {2, PARAM_2HZ, PARAM_DOUBLE, "L1aDensity2", "Provisional Langmuir probe density estimate from probe 1.", 1*sizeof(double)},
-        {3, PARAM_2HZ, PARAM_DOUBLE, "y2H", "2nd y moment H sensor.", 2*sizeof(double)},
-        {4, PARAM_2HZ, PARAM_DOUBLE, "y2V", "2nd y moment V sensor.", 3*sizeof(double)},
-        {5, PARAM_2HZ, PARAM_DOUBLE, "VBiasSettingH", "Bias grid voltage setting H sensor", 4*sizeof(double)},
-        {6, PARAM_2HZ, PARAM_DOUBLE, "VBiasSettingV", "Bias grid voltage setting V sensor", 5*sizeof(double)},
-        {7, PARAM_2HZ, PARAM_DOUBLE, "VMcpSettingH", "MCP front voltage setting H sensor", 6*sizeof(double)},
-        {8, PARAM_2HZ, PARAM_DOUBLE, "VMcpSettingV", "MCP front voltage setting V sensor", 7*sizeof(double)},
-        {9, PARAM_2HZ, PARAM_DOUBLE, "VPhosSettingH", "Phosphor voltage setting H sensor", 8*sizeof(double)},
-        {10, PARAM_2HZ, PARAM_DOUBLE, "VPhosSettingV", "Phosphor voltage setting V sensor", 9*sizeof(double)},
-        {11, PARAM_2HZ, PARAM_DOUBLE, "ShutterOpenDutyCycleH", "Shutter open duty cycle H sensor", 10*sizeof(double)},
-        {12, PARAM_2HZ, PARAM_DOUBLE, "ShutterOpenDutyCycleV", "Shutter open duty cycle V sensor", 11*sizeof(double)}
+        {2, PARAM_2HZ, PARAM_DOUBLE, "L1aDensity2", "Provisional Langmuir probe density estimate from probe 2.", 1*sizeof(double)},
+        {3, PARAM_2HZ, PARAM_DOUBLE, "IonCurrent1", "Ion saturation current probe 1.", 2*sizeof(double)},
+        {4, PARAM_2HZ, PARAM_DOUBLE, "IonCurrent2", "Ion saturation current probe 2.", 3*sizeof(double)},
+        {5, PARAM_2HZ, PARAM_DOUBLE, "y2H", "2nd y moment H sensor.", 4*sizeof(double)},
+        {6, PARAM_2HZ, PARAM_DOUBLE, "y2V", "2nd y moment V sensor.", 5*sizeof(double)},
+        {7, PARAM_2HZ, PARAM_DOUBLE, "VBiasSettingH", "Bias grid voltage setting H sensor", 6*sizeof(double)},
+        {8, PARAM_2HZ, PARAM_DOUBLE, "VBiasSettingV", "Bias grid voltage setting V sensor", 7*sizeof(double)},
+        {9, PARAM_2HZ, PARAM_DOUBLE, "VMcpSettingH", "MCP front voltage setting H sensor", 8*sizeof(double)},
+        {10, PARAM_2HZ, PARAM_DOUBLE, "VMcpSettingV", "MCP front voltage setting V sensor", 9*sizeof(double)},
+        {11, PARAM_2HZ, PARAM_DOUBLE, "VPhosSettingH", "Phosphor voltage setting H sensor", 10*sizeof(double)},
+        {12, PARAM_2HZ, PARAM_DOUBLE, "VPhosSettingV", "Phosphor voltage setting V sensor", 11*sizeof(double)},
+        {13, PARAM_2HZ, PARAM_DOUBLE, "ShutterOpenDutyCycleH", "Shutter open duty cycle H sensor", 12*sizeof(double)},
+        {14, PARAM_2HZ, PARAM_DOUBLE, "ShutterOpenDutyCycleV", "Shutter open duty cycle V sensor", 13*sizeof(double)},
     };
     size_t nTiiParameters = sizeof(tiiParameters) / sizeof(TiiParameter);
 
@@ -223,7 +225,11 @@ int main(int argc, char **argv)
                     case PARAM_2HZ:
                         // Take the next parameter if it was sampled within 1 s of the image time
                         value = (*((double**)(((char*)&timeSeries.ionDensity1) + tiiParameters[parameterIds[p]-1].offset)))[i];
-                        fprintf(dailyParameterFile, " %lf", value);
+                        if (fabs(value) < 1e-3) {
+                            fprintf(dailyParameterFile, " %g", value);
+                        } else {
+                            fprintf(dailyParameterFile, " %lf", value);
+                        }
                         break;
                     default:
                         break;
@@ -255,7 +261,11 @@ int main(int argc, char **argv)
                             case PARAM_2HZ:
                                 // Take the next parameter if it was sampled within 1 s of the image time
                                 value = (*((double**)(((char*)&timeSeries.ionDensity1) + tiiParameters[parameterIds[p]-1].offset)))[lastScienceIndex];
-                                fprintf(dailyParameterFile, " %lf", value);
+                                if (fabs(value) < 1e-3) {
+                                    fprintf(dailyParameterFile, " %g", value);
+                                } else {
+                                    fprintf(dailyParameterFile, " %lf", value);
+                                }
                                 break;
                             default:
                                 break;
