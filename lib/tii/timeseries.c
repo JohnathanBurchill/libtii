@@ -984,10 +984,10 @@ void latestConfigValues(double secondsSince1970, LpTiiTimeSeries *timeSeries, in
         *lpIonSatBias1 = -99.0;
     if (lpIonSatBias2 != NULL)
         *lpIonSatBias2 = -99.0;
-    if (lpGain1 == NULL)
+    if (lpGain1 != NULL)
         *lpGain1 = -1;
-    if (lpGain2 == NULL)
-        *lpGain2 = -2;
+    if (lpGain2 != NULL)
+        *lpGain2 = -1;
 
     // Get config values if available. All packets must have been sorted.
     // Search from beginning if this image is older than last one
