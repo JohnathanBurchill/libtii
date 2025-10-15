@@ -84,15 +84,16 @@ bool scienceMode(ImagePair *images, LpTiiTimeSeries *timeSeries)
     // Bias voltage < -50 V
     // Shutter voltage < -50 V
 
-    static int latestConfigIndex = 0;
-    struct tm *ts = NULL;
+    double secondsSince1970 = images->secondsSince1970;
+    int vShutterSettingThreshold = (int)((-50.0 / -100.0) * 255);
+    int shutterPlateauSettingH = 0;
+    int shutterPlateauSettingV = 0;
+    latestConfigValues(secondsSince1970, timeSeries, NULL, NULL, NULL, NULL, NULL, NULL, NULL, &shutterPlateauSettingH, &shutterPlateauSettingV, NULL, NULL, NULL, NULL);
 
     ImageAuxData *aux = images->auxH;
-
-    int vShutterSettingThreshold = (int)((-50.0 / -100.0) * 255);
-    bool scienceModeA = aux->McpVoltageMonitor < -1000.0 && aux->PhosphorVoltageMonitor > 3900 && aux->BiasGridVoltageMonitor < -50.0 && timeSeries->shutterLowerPlateauVoltageSettingHConfig[latestConfigIndex] > vShutterSettingThreshold;
+    bool scienceModeA = aux->McpVoltageMonitor < -1000.0 && aux->PhosphorVoltageMonitor > 3900 && aux->BiasGridVoltageMonitor < -50.0 && shutterPlateauSettingH > vShutterSettingThreshold;
     aux = images->auxV;
-    bool scienceModeB = aux->McpVoltageMonitor < -1000.0 && aux->PhosphorVoltageMonitor > 3900 && aux->BiasGridVoltageMonitor < -50.0 && timeSeries->shutterLowerPlateauVoltageSettingVConfig[latestConfigIndex] > vShutterSettingThreshold;
+    bool scienceModeB = aux->McpVoltageMonitor < -1000.0 && aux->PhosphorVoltageMonitor > 3900 && aux->BiasGridVoltageMonitor < -50.0 && shutterPlateauSettingV > vShutterSettingThreshold;
 
     return scienceModeA && scienceModeB;
 }
