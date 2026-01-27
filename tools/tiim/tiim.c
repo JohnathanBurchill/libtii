@@ -2,7 +2,7 @@
 
     TIIM processing tools: tools/tiim/tiim.c
 
-    Copyright (C) 2025  Johnathan K Burchill
+    Copyright (C) 2026  Johnathan K Burchill
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -444,6 +444,14 @@ int main(int argc, char **argv)
     if (meangainV > meangainH) {
         maxgain = plotscale * meangainV;
     }
+    // Request from Richard Enck 15 Jan 2026 to clip maxgain to 0.01 or less
+    // If reprocessing the full mission, this may not work for all dateToSecondsSince1970
+    double maxGainFixEpoch = 0.0;
+    dateToSecondsSince1970("20260101", &maxGainFixEpoch);
+    if (imagePairTimeSeries.time[0] >= maxGainFixEpoch && maxgain > 0.01) {
+        maxgain = 0.01;
+    }
+
     snprintf(gainstr, 32, "%.2g", maxgain);
     drawTimeSeries(&image, imagePairTimeSeries.time, imagePairTimeSeries.agcControlValueH, nImagePairs, ox, oy + 3*plotHeight + 3*dy, plotWidth, plotHeight, dayStart, dayEnd, 0, maxgain, xlabel, "G-sub-F", 1, MAX_COLOR_VALUE + 1, "0", gainstr, false, dotSize, 12, true);
     drawTimeSeries(&image, imagePairTimeSeries.time, imagePairTimeSeries.agcControlValueV, nImagePairs, ox, oy + 3*plotHeight + 3*dy, plotWidth, plotHeight, dayStart, dayEnd, 0, maxgain, "", "", 1, 13, "", "", false, dotSize, 12, false);
@@ -481,7 +489,7 @@ void usage(const char * name)
 {
     printf("\nTII Movie Generator Version %s compiled %s %s UTC\n", TIIM_VERSION, __DATE__, __TIME__);
     printf("\nLicense: GPL 3.0 ");
-    printf("Copyright 2024 Johnathan Kerr Burchill\n");
+    printf("Copyright Johnathan Kerr Burchill 2026 \n");
     printf("\nUsage:\n");
     printf("\n  %s SW_OPER_EFIXDDD_0__yyyyMMddThhmmss_yyyyMMddThhmmss_vvvv.HDR maxSignal outputDir [-f] \n", name);
     printf("\nor\n");
