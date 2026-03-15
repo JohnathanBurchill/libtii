@@ -23,5 +23,5 @@ INCLUDE_DIRECTORIES(${INCLUDE_DIRS} ${LIBXML2_INCLUDE_DIR})
 ADD_EXECUTABLE(gainmap_estimation gainmap_estimation.c usage.c parse_args.c)
 TARGET_LINK_LIBRARIES(gainmap_estimation ${LIBS} tii tiigraphics -lm ${ZLIB_LIBRARIES})
 
-install(TARGETS gainmap_estimation DESTINATION $ENV{HOME}/bin)
+install(TARGETS gainmap_estimation DESTINATION ${CMAKE_INSTALL_BINDIR})
 

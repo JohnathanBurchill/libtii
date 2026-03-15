@@ -23,8 +23,8 @@ INCLUDE_DIRECTORIES(${INCLUDE_DIRS} ${LIBXML2_INCLUDE_DIR})
 ADD_EXECUTABLE(tii_dump tii_dump.c)
 TARGET_LINK_LIBRARIES(tii_dump ${LIBS} tii -lm)
 
-install(TARGETS tii_dump DESTINATION $ENV{HOME}/bin)
+install(TARGETS tii_dump DESTINATION ${CMAKE_INSTALL_BINDIR})
 
-install(PROGRAMS parallel_process_tii_dump.sh DESTINATION $ENV{HOME}/bin)
-install(PROGRAMS process_tii_dump.sh DESTINATION $ENV{HOME}/bin)
+install(PROGRAMS parallel_process_tii_dump.sh DESTINATION ${CMAKE_INSTALL_BINDIR})
+install(PROGRAMS process_tii_dump.sh DESTINATION ${CMAKE_INSTALL_BINDIR})
 

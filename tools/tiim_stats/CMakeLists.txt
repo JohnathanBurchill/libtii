@@ -30,6 +30,6 @@ TARGET_LINK_LIBRARIES(tiim_stats ${LIBS} tii -lm)
 ADD_EXECUTABLE(tiim_stats_parallel tiim_stats_parallel.c)
 TARGET_LINK_LIBRARIES(tiim_stats_parallel PRIVATE ${LIBS} tii -lm Threads::Threads ${CURSES})
 
-install(TARGETS tiim_stats DESTINATION $ENV{HOME}/bin)
-install(TARGETS tiim_stats_parallel DESTINATION $ENV{HOME}/bin)
+install(TARGETS tiim_stats DESTINATION ${CMAKE_INSTALL_BINDIR})
+install(TARGETS tiim_stats_parallel DESTINATION ${CMAKE_INSTALL_BINDIR})
 

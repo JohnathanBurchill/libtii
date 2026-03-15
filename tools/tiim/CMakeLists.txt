@@ -24,8 +24,8 @@ ADD_EXECUTABLE(tiim tiim.c)
 target_include_directories(tiim PRIVATE include)
 TARGET_LINK_LIBRARIES(tiim ${LIBS} tii tiigraphics)
 
-install(TARGETS tiim DESTINATION $ENV{HOME}/bin)
+install(TARGETS tiim DESTINATION ${CMAKE_INSTALL_BINDIR})
 
-install(PROGRAMS parallel_process_TIIM.sh DESTINATION $ENV{HOME}/bin)
-install(PROGRAMS process_TIIM.sh DESTINATION $ENV{HOME}/bin)
+install(PROGRAMS parallel_process_TIIM.sh DESTINATION ${CMAKE_INSTALL_BINDIR})
+install(PROGRAMS process_TIIM.sh DESTINATION ${CMAKE_INSTALL_BINDIR})
 

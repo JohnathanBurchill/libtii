@@ -23,8 +23,8 @@ INCLUDE_DIRECTORIES(${INCLUDE_DIRS} ${LIBXML2_INCLUDE_DIR})
 ADD_EXECUTABLE(tii_moments tii_moments.c)
 TARGET_LINK_LIBRARIES(tii_moments ${LIBS} tii -lm)
 
-install(TARGETS tii_moments DESTINATION $ENV{HOME}/bin)
+install(TARGETS tii_moments DESTINATION ${CMAKE_INSTALL_BINDIR})
 
-install(PROGRAMS parallel_process_tii_moments.sh DESTINATION $ENV{HOME}/bin)
-install(PROGRAMS process_tii_moments.sh DESTINATION $ENV{HOME}/bin)
+install(PROGRAMS parallel_process_tii_moments.sh DESTINATION ${CMAKE_INSTALL_BINDIR})
+install(PROGRAMS process_tii_moments.sh DESTINATION ${CMAKE_INSTALL_BINDIR})
 

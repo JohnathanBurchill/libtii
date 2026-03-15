@@ -23,4 +23,4 @@ FIND_LIBRARY(CURSES ncurses)
 ADD_EXECUTABLE(anomaly_stats_parallel main.c)
 TARGET_LINK_LIBRARIES(anomaly_stats_parallel PRIVATE Threads::Threads ${CURSES})
 
-install(TARGETS anomaly_stats_parallel DESTINATION $ENV{HOME}/bin)
+install(TARGETS anomaly_stats_parallel DESTINATION ${CMAKE_INSTALL_BINDIR})

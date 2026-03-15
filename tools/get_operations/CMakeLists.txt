@@ -23,5 +23,5 @@ INCLUDE_DIRECTORIES(${INCLUDE_DIRS} ${LIBXML2_INCLUDE_DIR})
 ADD_EXECUTABLE(get_operations get_operations.c)
 TARGET_LINK_LIBRARIES(get_operations ${LIBS} tii -lm)
 
-install(TARGETS get_operations DESTINATION $ENV{HOME}/bin)
+install(TARGETS get_operations DESTINATION ${CMAKE_INSTALL_BINDIR})
 
