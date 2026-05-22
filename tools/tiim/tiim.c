@@ -444,12 +444,19 @@ int main(int argc, char **argv)
     if (meangainV > meangainH) {
         maxgain = plotscale * meangainV;
     }
-    // Request from Richard Enck 15 Jan 2026 to clip maxgain to 0.01 or less
+
+    // Request from Richard Enck 17 Mau 2026 to clip maxgain to 0.005 or less
     // If reprocessing the full mission, this may not work for all dateToSecondsSince1970
     double maxGainFixEpoch = 0.0;
-    dateToSecondsSince1970("20260101", &maxGainFixEpoch);
-    if (imagePairTimeSeries.time[0] >= maxGainFixEpoch && maxgain > 0.01) {
-        maxgain = 0.01;
+    dateToSecondsSince1970("20260517", &maxGainFixEpoch);
+    if (imagePairTimeSeries.time[0] >= maxGainFixEpoch && maxgain > 0.005) {
+        maxgain = 0.005;
+    } else {
+        // Request from Richard Enck 15 Jan 2026 to clip maxgain to 0.01 or less
+        dateToSecondsSince1970("20260101", &maxGainFixEpoch);
+        if (imagePairTimeSeries.time[0] >= maxGainFixEpoch && maxgain > 0.01) {
+            maxgain = 0.01;
+        }
     }
 
     snprintf(gainstr, 32, "%.2g", maxgain);
