@@ -445,20 +445,25 @@ int main(int argc, char **argv)
         maxgain = plotscale * meangainV;
     }
 
-    // Request from Richard Enck 17 Mau 2026 to clip maxgain to 0.005 or less
-    // If reprocessing the full mission, this may not work for all dateToSecondsSince1970
-    double maxGainFixEpoch = 0.0;
-    dateToSecondsSince1970("20260517", &maxGainFixEpoch);
-    if (imagePairTimeSeries.time[0] >= maxGainFixEpoch && maxgain > 0.005) {
-        maxgain = 0.005;
+    if (satellite == 'C') {
+    // Request from Richard Enck 5 Aug 2026 to clip maxgain to 0.0001 or less for Swarm C
+        maxgain = 0.0001;
     } else {
-        // Request from Richard Enck 15 Jan 2026 to clip maxgain to 0.01 or less
-        dateToSecondsSince1970("20260101", &maxGainFixEpoch);
-        if (imagePairTimeSeries.time[0] >= maxGainFixEpoch && maxgain > 0.01) {
-            maxgain = 0.01;
+        // Request from Richard Enck 17 May 2026 to clip maxgain to 0.005 or less
+        // If reprocessing the full mission, this may not work for all dateToSecondsSince1970
+        double maxGainFixEpoch = 0.0;
+        dateToSecondsSince1970("20260517", &maxGainFixEpoch);
+        if (imagePairTimeSeries.time[0] >= maxGainFixEpoch && maxgain > 0.005) {
+            maxgain = 0.005;
+        } else {
+            // Request from Richard Enck 15 Jan 2026 to clip maxgain to 0.01 or less
+            dateToSecondsSince1970("20260101", &maxGainFixEpoch);
+            if (imagePairTimeSeries.time[0] >= maxGainFixEpoch && maxgain > 0.01) {
+                maxgain = 0.01;
+            }
         }
     }
-
+    
     snprintf(gainstr, 32, "%.2g", maxgain);
     drawTimeSeries(&image, imagePairTimeSeries.time, imagePairTimeSeries.agcControlValueH, nImagePairs, ox, oy + 3*plotHeight + 3*dy, plotWidth, plotHeight, dayStart, dayEnd, 0, maxgain, xlabel, "G-sub-F", 1, MAX_COLOR_VALUE + 1, "0", gainstr, false, dotSize, 12, true);
     drawTimeSeries(&image, imagePairTimeSeries.time, imagePairTimeSeries.agcControlValueV, nImagePairs, ox, oy + 3*plotHeight + 3*dy, plotWidth, plotHeight, dayStart, dayEnd, 0, maxgain, "", "", 1, 13, "", "", false, dotSize, 12, false);
