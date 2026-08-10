@@ -65,7 +65,7 @@ int main( int argc, char **argv)
         goto cleanup;
     }
     int paramToRead = atoi(argv[6]);
-    if (paramToRead < 1 || paramToRead > 4)
+    if (paramToRead < 1 || paramToRead > 6)
     {
         parserUsage(argv[0]);
         goto cleanup;
@@ -83,7 +83,7 @@ int main( int argc, char **argv)
     int nameLength;
 
     size_t nValues = 0;
-    double t, mh, mv, pah, pav, vph, vpv, vmh, vmv, vbh, vbv, vf, vshh, vshv;
+    double t, mh, mv, pah, pav, vph, vpv, vmh, vmv, vbh, vbv, vf, vshh, vshv, gfh, gfv;
     int valuesRead = 0;
     double epoch1970 = 2208988800.0;
 
@@ -100,9 +100,9 @@ int main( int argc, char **argv)
                 fts_close(fts);
                 goto cleanup;
             }
-            while((valuesRead = fscanf(file, "%lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf", &t, &mh, &mv, &pah, &pav, &vph, &vpv, &vmh, &vmv, &vbh, &vbv, &vf, &vshh, &vshv)) != EOF)
+            while((valuesRead = fscanf(file, "%lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf", &t, &mh, &mv, &pah, &pav, &vph, &vpv, &vmh, &vmv, &vbh, &vbv, &vf, &vshh, &vshv, &gfh, &gfv)) != EOF)
             {
-                if (valuesRead != 14)
+                if (valuesRead < 14)
                     break;
                 if (scienceOnly == 0 || (vph >= 4700.0 && vpv >= 4700.0 && vmh <= -1000.0 && vmv <= -1000.0 && vbh <= -50.0 && vbv <= -50.0 && vshh < -50.0 && vshv < -50.0))
                 {
@@ -128,6 +128,21 @@ int main( int argc, char **argv)
                             break;
                         case 4:
                             timesValues[2*(nValues-1)+1] = pav;
+                            break;
+                        case 5:
+                            if (valuesRead == 16) {
+                                timesValues[2*(nValues-1)+1] = gfh;
+                            } else {
+                                // Missing data (old file format does not have G_sub_F)
+                                timesValues[2*(nValues-1)+1] = -1.0;
+                            }
+                            break;
+                        case 6:
+                            if (valuesRead == 16) {
+                                timesValues[2*(nValues-1)+1] = gfv;
+                            } else {
+                                timesValues[2*(nValues-1)+1] = -1.0;
+                            }
                             break;
                         default:
                             break;
@@ -221,6 +236,8 @@ void parserUsage(const char *program)
     printf(" 2: measles count V\n");
     printf(" 3: PA count H\n");
     printf(" 4: PA count V\n");
+    printf(" 5: G_sub_F H\n");
+    printf(" 6: G_sub_F V\n");
 }
 
 int sortEm(const void *first, const void *second)

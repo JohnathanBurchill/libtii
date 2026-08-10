@@ -32,6 +32,8 @@
 
 void statsusage(const char * name);
 
+void gsubf(double t, LpTiiTimeSeries *timeSeries, int *lpIndex, int agcLower, double agcH, double agcV, double *meanDensity, double *gfH, double *gfV);
+
 int main(int argc, char **argv)
 {
     if (argc != 3)
@@ -103,36 +105,6 @@ int main(int argc, char **argv)
     importScience(satDate, ".", &sciencePackets);
     getLpTiiTimeSeries(satellite, &sciencePackets, &timeSeries);
 
-//    time_t tsec = 0;
-//    struct tm *ts = NULL;
-//    for (int i = 0; i < timeSeries.nConfig; ++i) {
-//        tsec = (time_t)timeSeries.configTime[i];
-//        ts = gmtime(&tsec);
-//        fprintf(stdout, "%d %4d%02d%02dT%02d%02d%02d %d %d\n", i, ts->tm_year + 1900, ts->tm_mon + 1, ts->tm_mday, ts->tm_hour, ts->tm_min, ts->tm_sec, timeSeries.shutterLowerPlateauVoltageSettingHConfig[i], timeSeries.shutterLowerPlateauVoltageSettingVConfig[i]);
-//    }
-//    return 0;
-
-    // Summary
-    // start time (sec from 1970), end time, satLetter, imagePairs, measlesCountH, measlesCountV, paCumulativeFrameCountH, paCumulativeFrameCountV, paAngularFrameCountsH... paAngularFramecountsV...
-
-    // TODO export to separate file the daily summary
-    // size_t n = imagePairTimeSeries.nImagePairs;
-    // if (n > 0)
-    // {
-    //     printf("%ld %ld %c %ld %d %d %d %d", (time_t)floor(imagePairTimeSeries.time[0]), (time_t)floor(imagePairTimeSeries.time[n-1]), imagePairTimeSeries.satellite, imagePairTimeSeries.nImagePairs, imagePairTimeSeries.cumulativeMeaslesCountH[n-1], imagePairTimeSeries.cumulativeMeaslesCountV[n-1], imagePairTimeSeries.paCumulativeFrameCountH[n-1], imagePairTimeSeries.paCumulativeFrameCountH[n-1]);
-
-    //     printf(" %d", PA_ANGULAR_NUM_BINS);
-    //     for (int i = 0; i < PA_ANGULAR_NUM_BINS; i++)
-    //     {
-    //         printf(" %d", imagePairTimeSeries.paAngularSpectrumCumulativeFrameCountH[(n-1)*PA_ANGULAR_NUM_BINS + i]);
-    //     }
-    //     for (int i = 0; i < PA_ANGULAR_NUM_BINS; i++)
-    //     {
-    //         printf(" %d", imagePairTimeSeries.paAngularSpectrumCumulativeFrameCountV[(n-1)*PA_ANGULAR_NUM_BINS + i]);
-    //     }
-    //     printf("\n");
-    // }
-
     // Per image measles and PA stats
     char measlesPaFilename[FILENAME_MAX];
     sprintf(measlesPaFilename, "%s/SW_EFI%s_image_stats.txt", outputDir, satDate);
@@ -147,14 +119,44 @@ int main(int argc, char **argv)
     int vshVSetting = 0;
     double vshH = 0.0;
     double vshV = 0.0;
-    for (size_t i = 0; i < numberOfImagePairs; i++)
-    {
-        imagePair.secondsSince1970 = imagePairTimeSeries.time[i];
-        latestConfigValues(imagePair.secondsSince1970, &timeSeries, NULL, NULL, NULL, NULL, NULL, NULL, NULL, &vshHSetting, &vshVSetting, NULL, NULL, NULL, NULL);
+
+    double agcH = 0.0;
+    double agcV = 0.0;
+    int lpInd = 0;
+    double meanDensity = 0.0;
+    double gfH = 0.0;
+    double gfV = 0.0;
+
+    for (size_t i = 0; i < numberOfImagePairs; /* INCREMENT HANDLED BELOW! */) {
+        status = getAlignedImagePair(&imagePackets, i, &imagePair, &imagesRead);
+        if (status == ISP_NO_IMAGE_PAIR)
+        {
+            i++;
+            continue;
+        }
+        i+=imagesRead;
+
+        int pixelthreshold = 0;
+        int mincol = 0;
+        int maxcol = 0;
+        int ncols = 0;
+        bool agcenabled = false;
+        int agclower = 0;
+        int agcupper = 0;
+        latestConfigValues(imagePair.secondsSince1970, &timeSeries, &pixelthreshold, &mincol, &maxcol, &ncols, &agcenabled, &agclower, &agcupper, &vshHSetting, &vshVSetting, NULL, NULL, NULL, NULL);
+        applyImagePairGainMaps(&imagePair, pixelthreshold, NULL, NULL);
+        onboardProcessing(imagePair.pixelsH, imagePair.gotImageH, mincol, maxcol, ncols, &imagePairTimeSeries.totalCountsH[i], &imagePairTimeSeries.x1H[i], &imagePairTimeSeries.y1H[i], &imagePairTimeSeries.agcControlValueH[i]);
+        onboardProcessing(imagePair.pixelsV, imagePair.gotImageV, mincol, maxcol, ncols, &imagePairTimeSeries.totalCountsV[i], &imagePairTimeSeries.x1V[i], &imagePairTimeSeries.y1V[i], &imagePairTimeSeries.agcControlValueV[i]);
+        agcH = imagePairTimeSeries.agcControlValueH[i];
+        agcV = imagePairTimeSeries.agcControlValueV[i];
+        gsubf(imagePair.secondsSince1970, &timeSeries, &lpInd, agclower, agcH, agcV, &meanDensity, &gfH, &gfV);
+
         vshH = -100.0 * (double)vshHSetting / 255.0;
         vshV = -100.0 * (double)vshVSetting / 255.0;
+
         // time in sec since 1970, measles count H, measles count V, PA count H, PA count V, VPhos H, VPhosV, VMcp H, VMcp V, VBias H, VBias V, VFP H, VSh H, VSh V
-        fprintf(measlesPaFile, "%ld %d %d %d %d %f %f %f %f %f %f %f %f %f\n", (time_t)floor(imagePairTimeSeries.time[i]), imagePairTimeSeries.measlesCountH[i], imagePairTimeSeries.measlesCountV[i], imagePairTimeSeries.paCountH[i], imagePairTimeSeries.paCountV[i], imagePairTimeSeries.PhosphorVoltageMonitorH[i], imagePairTimeSeries.PhosphorVoltageMonitorV[i], imagePairTimeSeries.McpVoltageMonitorH[i], imagePairTimeSeries.McpVoltageMonitorV[i], imagePairTimeSeries.BiasGridVoltageMonitorH[i], imagePairTimeSeries.BiasGridVoltageMonitorV[i], imagePairTimeSeries.FaceplateVoltageMonitorH[i], vshH, vshV);
+        fprintf(measlesPaFile, "%ld %d %d %d %d %f %f %f %f %f %f %f %f %f %f %f\n", (time_t)floor(imagePairTimeSeries.time[i]), imagePairTimeSeries.measlesCountH[i], imagePairTimeSeries.measlesCountV[i], imagePairTimeSeries.paCountH[i], imagePairTimeSeries.paCountV[i], imagePairTimeSeries.PhosphorVoltageMonitorH[i], imagePairTimeSeries.PhosphorVoltageMonitorV[i], imagePairTimeSeries.McpVoltageMonitorH[i], imagePairTimeSeries.McpVoltageMonitorV[i], imagePairTimeSeries.BiasGridVoltageMonitorH[i], imagePairTimeSeries.BiasGridVoltageMonitorV[i], imagePairTimeSeries.FaceplateVoltageMonitorH[i], vshH, vshV, gfH, gfV);
+
     }
     fclose(measlesPaFile);
 
@@ -169,6 +171,47 @@ cleanup:
     exit(0);
 }
 
+void gsubf(double t, LpTiiTimeSeries *timeSeries, int *lpIndex, int agcLower, double agcH, double agcV, double *meanDensity, double *gfH, double *gfV) {
+
+    // Estimate mean ion density leading up to this image
+    int lpInd = *lpIndex;
+    double lpTime = timeSeries->lpTiiTime2Hz[lpInd];
+    double ni = timeSeries->ionDensity2[lpInd];
+    double meanni = 0.0;
+    double nni = 0.0;
+    double meangainH = 0.0;
+    double meangainV = 0.0;
+    double ngainH = 0.0;
+    double ngainV = 0.0;
+    while(lpTime < t && lpInd < timeSeries->n2Hz - 1) {
+        ++lpInd;
+        lpTime = timeSeries->lpTiiTime2Hz[lpInd];
+        ni = timeSeries->ionDensity2[lpInd];
+        meanni += ni;
+        ++nni;
+    }
+    *lpIndex = lpInd;
+    if (nni > 0) {
+        meanni /= nni;
+    } else {
+        meanni = 0;
+    }
+    *meanDensity = meanni;
+
+    if (meanni > 0 && agcH > 0 && agcH < agcLower) {
+        *gfH = agcH / meanni;
+    } else {
+        *gfH = 0.0;
+    }
+    if (meanni > 0 && agcV > 0 && agcV < agcLower) {
+        *gfV = agcV / meanni;
+    } else {
+        *gfV = 0.0;
+    }
+
+    return;
+
+}
 
 void statsusage(const char * name)
 {
